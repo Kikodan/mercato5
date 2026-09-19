@@ -989,6 +989,37 @@ func _render_inspector(p: Player) -> void:
 	traits_box.add_child(trait_neg)
 	inspector_content.add_child(traits_box)
 
+	var cur = p.stats_current_season
+	var cur_m = cur.get("matches", 0)
+	var cur_g = cur.get("goals", 0)
+	var cur_a = cur.get("assists", 0)
+	var cur_t = cur.get("tackles", 0)
+	var cur_s = cur.get("saves", 0)
+	var cur_r = p.get_average_rating()
+	var cur_r_str = "-" if cur_m == 0 else "%.1f" % cur_r
+
+	var stats_badge = PanelContainer.new()
+	var sb_badge = StyleBoxFlat.new()
+	sb_badge.bg_color = Color(0.10, 0.16, 0.28, 0.7)
+	sb_badge.border_color = Color(0.22, 0.74, 0.97, 0.5)
+	sb_badge.set_border_width_all(1)
+	sb_badge.set_corner_radius_all(6)
+	sb_badge.content_margin_left = 8
+	sb_badge.content_margin_right = 8
+	sb_badge.content_margin_top = 4
+	sb_badge.content_margin_bottom = 4
+	stats_badge.add_theme_stylebox_override("panel", sb_badge)
+
+	var lbl_season_stats = Label.new()
+	if p.position == Player.Position.GK:
+		lbl_season_stats.text = "📊 Stats Saison : %d match(s) | %d arrêt(s) | Note: %s" % [cur_m, cur_s, cur_r_str]
+	else:
+		lbl_season_stats.text = "📊 Stats Saison : %d m | ⚽ %d but(s) | 🎯 %d pass. | 🛡️ %d tac. | Note: %s" % [cur_m, cur_g, cur_a, cur_t, cur_r_str]
+	lbl_season_stats.add_theme_font_size_override("font_size", 12)
+	lbl_season_stats.add_theme_color_override("font_color", Color("38bdf8"))
+	stats_badge.add_child(lbl_season_stats)
+	inspector_content.add_child(stats_badge)
+
 	var btn_box = HBoxContainer.new()
 	btn_box.add_theme_constant_override("separation", 6)
 

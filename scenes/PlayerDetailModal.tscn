@@ -356,66 +356,67 @@ theme_override_constants/separation = 10
 [node name="H_S" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Saison"
 
 [node name="H_C" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
 custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Club"
 
 [node name="H_M" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Matchs"
 horizontal_alignment = 1
 
 [node name="H_G" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Buts"
 horizontal_alignment = 1
 
 [node name="H_A" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Passes"
 horizontal_alignment = 1
 
 [node name="H_T" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Tacles"
 horizontal_alignment = 1
 
 [node name="H_Saves" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Arrêts"
 horizontal_alignment = 1
 
 [node name="H_R" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
 custom_minimum_size = Vector2(45, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
 text = "Note"
 horizontal_alignment = 1
 
 [node name="ScrollStats" type="ScrollContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox"]
+custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0

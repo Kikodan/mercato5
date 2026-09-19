@@ -175,63 +175,88 @@ func _set_attr(prog: ProgressBar, lbl: Label, val: int) -> void:
 	else:
 		lbl.modulate = Color("f87171")
 
-func _create_stats_row(season: String, club: String, m: int, g: int, a: int, t: int, s: int, r: float, is_current: bool) -> HBoxContainer:
+func _create_stats_row(season: String, club: String, m: int, g: int, a: int, t: int, s: int, r: float, is_current: bool) -> Control:
+	var container = PanelContainer.new()
+	var sb = StyleBoxFlat.new()
+	if is_current:
+		sb.bg_color = Color(0.12, 0.20, 0.35, 0.55)
+		sb.border_color = Color(0.22, 0.74, 0.97, 0.7)
+		sb.set_border_width_all(1)
+	else:
+		sb.bg_color = Color(0.06, 0.10, 0.16, 0.35)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 6
+	sb.content_margin_right = 6
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
+	container.add_theme_stylebox_override("panel", sb)
+
 	var hbox = HBoxContainer.new()
-	hbox.theme_override_constants_set("separation", 10)
+	hbox.add_theme_constant_override("separation", 10)
 
 	var col_s = Label.new()
 	col_s.custom_minimum_size = Vector2(100, 0)
 	col_s.text = season
-	col_s.add_theme_font_size_override("font_size", 11)
+	col_s.add_theme_font_size_override("font_size", 12)
 	if is_current:
 		col_s.modulate = Color("38bdf8")
 
 	var col_c = Label.new()
 	col_c.custom_minimum_size = Vector2(110, 0)
 	col_c.text = club
-	col_c.add_theme_font_size_override("font_size", 11)
+	col_c.add_theme_font_size_override("font_size", 12)
 
 	var col_m = Label.new()
-	col_m.custom_minimum_size = Vector2(40, 0)
+	col_m.custom_minimum_size = Vector2(44, 0)
 	col_m.text = str(m)
 	col_m.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_m.add_theme_font_size_override("font_size", 11)
+	col_m.add_theme_font_size_override("font_size", 12)
 
 	var col_g = Label.new()
-	col_g.custom_minimum_size = Vector2(40, 0)
+	col_g.custom_minimum_size = Vector2(44, 0)
 	col_g.text = str(g)
 	col_g.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_g.add_theme_font_size_override("font_size", 11)
+	col_g.add_theme_font_size_override("font_size", 12)
 	if g > 0:
 		col_g.modulate = Color("facc15")
 
 	var col_a = Label.new()
-	col_a.custom_minimum_size = Vector2(40, 0)
+	col_a.custom_minimum_size = Vector2(44, 0)
 	col_a.text = str(a)
 	col_a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_a.add_theme_font_size_override("font_size", 11)
+	col_a.add_theme_font_size_override("font_size", 12)
+	if a > 0:
+		col_a.modulate = Color("38bdf8")
 
 	var col_t = Label.new()
-	col_t.custom_minimum_size = Vector2(40, 0)
+	col_t.custom_minimum_size = Vector2(44, 0)
 	col_t.text = str(t)
 	col_t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_t.add_theme_font_size_override("font_size", 11)
+	col_t.add_theme_font_size_override("font_size", 12)
+	if t > 0:
+		col_t.modulate = Color("a78bfa")
 
 	var col_s_save = Label.new()
-	col_s_save.custom_minimum_size = Vector2(40, 0)
+	col_s_save.custom_minimum_size = Vector2(44, 0)
 	col_s_save.text = str(s)
 	col_s_save.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_s_save.add_theme_font_size_override("font_size", 11)
+	col_s_save.add_theme_font_size_override("font_size", 12)
+	if s > 0:
+		col_s_save.modulate = Color("34d399")
 
 	var col_r = Label.new()
 	col_r.custom_minimum_size = Vector2(45, 0)
-	col_r.text = "%.1f" % r
 	col_r.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col_r.add_theme_font_size_override("font_size", 11)
-	if r >= 7.0:
-		col_r.modulate = Color("34d399")
-	elif r <= 5.5:
-		col_r.modulate = Color("f87171")
+	col_r.add_theme_font_size_override("font_size", 12)
+	if m == 0:
+		col_r.text = "-"
+		col_r.modulate = Color("64748b")
+	else:
+		col_r.text = "%.1f" % r
+		if r >= 7.0:
+			col_r.modulate = Color("34d399")
+		elif r <= 5.5:
+			col_r.modulate = Color("f87171")
 
 	hbox.add_child(col_s)
 	hbox.add_child(col_c)
@@ -242,4 +267,5 @@ func _create_stats_row(season: String, club: String, m: int, g: int, a: int, t: 
 	hbox.add_child(col_s_save)
 	hbox.add_child(col_r)
 
-	return hbox
+	container.add_child(hbox)
+	return container
