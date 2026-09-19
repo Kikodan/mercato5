@@ -801,6 +801,7 @@ func _render_squad_view() -> void:
 
 func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var is_inspected = (p == inspected_player)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.12, 0.16, 0.26, 0.85) if is_inspected else Color(0.08, 0.11, 0.19, 0.6)

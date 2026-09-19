@@ -13,7 +13,7 @@ func _init() -> void:
 	await process_frame
 	
 	print("✓ MusicManager initialisé avec %d pistes" % mm.TRACK_PATHS.size())
-	assert(mm.TRACK_PATHS.size() == 3, "Il doit y avoir exactement 3 musiques")
+	assert(mm.TRACK_PATHS.size() == 7, "Il doit y avoir exactement 7 musiques")
 	for i in range(mm.TRACK_PATHS.size()):
 		print("  Piste %d: %s (%s)" % [i, mm.TRACK_TITLES[i], mm.TRACK_PATHS[i]])
 		
@@ -26,13 +26,14 @@ func _init() -> void:
 	assert(mm.current_track_index == 2, "next_track doit passer à la piste 2")
 	print("✓ Suivant -> piste 2 OK: ", mm.get_current_track_title())
 	
+	mm._load_and_play_track(6)
 	mm.next_track()
 	assert(mm.current_track_index == 0, "next_track doit boucler sur la piste 0")
-	print("✓ Suivant (boucle) -> piste 0 OK: ", mm.get_current_track_title())
+	print("✓ Suivant (boucle depuis 6) -> piste 0 OK: ", mm.get_current_track_title())
 	
 	mm.previous_track()
-	assert(mm.current_track_index == 2, "previous_track doit reculer à la piste 2")
-	print("✓ Précédent -> piste 2 OK: ", mm.get_current_track_title())
+	assert(mm.current_track_index == 6, "previous_track doit reculer à la piste 6")
+	print("✓ Précédent (boucle vers 6) -> piste 6 OK: ", mm.get_current_track_title())
 	
 	# Test 3: Contrôle du volume et muet
 	mm.set_volume(0.45)

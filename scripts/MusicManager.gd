@@ -6,13 +6,21 @@ signal volume_changed(new_volume: float)
 const TRACK_PATHS = [
 	"res://assets/music/track_1.mp3",
 	"res://assets/music/track_2.mp3",
-	"res://assets/music/track_3.mp3"
+	"res://assets/music/track_3.mp3",
+	"res://assets/music/track_4.mp3",
+	"res://assets/music/track_5.mp3",
+	"res://assets/music/track_6.mp3",
+	"res://assets/music/track_7.mp3"
 ]
 
 const TRACK_TITLES = [
 	"Mercato Groove (Piste 1)",
 	"Urban Futsal (Piste 2)",
-	"Matchday Flow (Piste 3)"
+	"Matchday Flow (Piste 3)",
+	"Golden Goal (Piste 4)",
+	"Night League (Piste 5)",
+	"Stadium Beat (Piste 6)",
+	"Final Whistle (Piste 7)"
 ]
 
 const SETTINGS_PATH = "user://audio_settings.json"

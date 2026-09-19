@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/background_mercato5.jpg" id="1_bg_img"]
 [ext_resource type="Script" path="res://scenes/DashboardController.gd" id="1_controller"]
@@ -7,6 +7,22 @@
 [ext_resource type="Script" path="res://scenes/PitchWidget.gd" id="4_pitch"]
 [ext_resource type="PackedScene" path="res://scenes/PlayerDetailModal.tscn" id="5_playerdetail"]
 [ext_resource type="PackedScene" path="res://scenes/PreMatchModal.tscn" id="6_prematch"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_card"]
+bg_color = Color(0.06, 0.09, 0.16, 0.85)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.26, 0.4, 0.5)
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 
 [node name="Dashboard" type="Control"]
 layout_mode = 3
@@ -110,13 +126,18 @@ anchors_preset = 15
 anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 48.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = -10.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 12
 
 [node name="SideNav" type="PanelContainer" parent="Body"]
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_card")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Body/SideNav"]
 layout_mode = 2
@@ -126,47 +147,57 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "⚽ Effectif & Tactique"
+alignment = 0
+text = "  ⚽ Effectif & Tactique"
 
 [node name="BtnTabMarket" type="Button" parent="Body/SideNav/VBoxContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "🔄 Mercato"
+alignment = 0
+text = "  🔄 Mercato"
 
 [node name="BtnTabStandings" type="Button" parent="Body/SideNav/VBoxContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "🏆 Classement"
+alignment = 0
+text = "  🏆 Classement"
 
 [node name="BtnTabEconomy" type="Button" parent="Body/SideNav/VBoxContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "💼 Économie"
+alignment = 0
+text = "  💼 Économie"
 
 [node name="BtnTabInbox" type="Button" parent="Body/SideNav/VBoxContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "📬 Messages"
+alignment = 0
+text = "  📬 Messages"
 
 [node name="MainContent" type="MarginContainer" parent="Body"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
 
 [node name="TabSquad" type="HBoxContainer" parent="Body/MainContent"]
 layout_mode = 2
-theme_override_constants/separation = 10
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
 
 [node name="PitchPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
-custom_minimum_size = Vector2(280, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_card")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabSquad/PitchPanel"]
 layout_mode = 2
@@ -192,8 +223,11 @@ size_flags_vertical = 3
 script = ExtResource("4_pitch")
 
 [node name="BenchPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_card")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabSquad/BenchPanel"]
 layout_mode = 2
@@ -225,8 +259,11 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
 [node name="TacticsPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
-custom_minimum_size = Vector2(300, 0)
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_card")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Body/MainContent/TabSquad/TacticsPanel"]
 layout_mode = 2
