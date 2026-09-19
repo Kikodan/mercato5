@@ -1,0 +1,426 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/PlayerDetailModal.gd" id="1_modal"]
+[ext_resource type="Script" path="res://scenes/PlayerFaceWidget.gd" id="2_face"]
+[ext_resource type="Script" path="res://scripts/ClubBadge.gd" id="3_badge"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+bg_color = Color(0.04, 0.06, 0.1, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.08, 0.11, 0.18, 0.98)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ovr"]
+bg_color = Color(0.14, 0.20, 0.32, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inner"]
+bg_color = Color(0.06, 0.08, 0.14, 0.75)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+
+[node name="PlayerDetailModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_modal")
+
+[node name="Overlay" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(880, 560)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="FaceWidget" type="Control" parent="CenterContainer/Panel/VBox/Header"]
+custom_minimum_size = Vector2(76, 76)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("2_face")
+
+[node name="InfoBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="HBoxName" type="HBoxContainer" parent="CenterContainer/Panel/VBox/Header/InfoBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LabelPlayerName" type="Label" parent="CenterContainer/Panel/VBox/Header/InfoBox/HBoxName"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "🇫🇷 Kylian Mbappé"
+
+[node name="LabelPlayerSub" type="Label" parent="CenterContainer/Panel/VBox/Header/InfoBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Attaquant (FWD) • 24a • Note 88 OVR"
+
+[node name="ClubBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox/Header"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="ClubBadge" type="Control" parent="CenterContainer/Panel/VBox/Header/ClubBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="LabelClubName" type="Label" parent="CenterContainer/Panel/VBox/Header/ClubBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "Paris RG (France - Div 1)"
+
+[node name="BtnClose" type="Button" parent="CenterContainer/Panel/VBox/Header"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 0
+text = "✕"
+
+[node name="SepHeader" type="HSeparator" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+
+[node name="BodySplit" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftCol" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OvrBadge" type="PanelContainer" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ovr")
+
+[node name="LabelOvr" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/OvrBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 24
+text = "85"
+horizontal_alignment = 1
+
+[node name="AttrGrid" type="GridContainer" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="LblSpeed" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Vitesse"
+
+[node name="ProgSpeed" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 20.0
+value = 14.0
+show_percentage = false
+
+[node name="ValSpeed" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "14"
+
+[node name="LblShooting" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Tir"
+
+[node name="ProgShooting" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 20.0
+value = 16.0
+show_percentage = false
+
+[node name="ValShooting" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "16"
+
+[node name="LblPassing" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Passe"
+
+[node name="ProgPassing" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 20.0
+value = 13.0
+show_percentage = false
+
+[node name="ValPassing" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "13"
+
+[node name="LblDefending" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Défense"
+
+[node name="ProgDefending" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 20.0
+value = 9.0
+show_percentage = false
+
+[node name="ValDefending" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "9"
+
+[node name="LblStamina" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Endurance"
+
+[node name="ProgStamina" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 20.0
+value = 15.0
+show_percentage = false
+
+[node name="ValStamina" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "15"
+
+[node name="LblFitness" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Forme"
+
+[node name="ProgFitness" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 100.0
+value = 95.0
+show_percentage = false
+
+[node name="ValFitness" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "95%"
+
+[node name="TraitsBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LabelTraitsTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/TraitsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Traits de personnalité :"
+
+[node name="LabelTraitPos" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/TraitsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.8, 0.45, 1)
+theme_override_font_sizes/font_size = 11
+text = "➕ Renard des surfaces"
+
+[node name="LabelTraitNeg" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/TraitsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.45, 0.45, 1)
+theme_override_font_sizes/font_size = 11
+text = "➖ Aucun"
+
+[node name="RightCol" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ValueBox" type="PanelContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/ValueBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="LabelMarketValue" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/ValueBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "💰 Valeur : 120 000 €"
+
+[node name="LabelValueBreakdown" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/ValueBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+text = "Base OVR: 70 000 € | Âge (x1.25) | Div 1 (x1.35) | Perf (x1.10) | Palmarès (x1.00)"
+
+[node name="ContractBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="LabelContractInfo" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/ContractBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "Salaire : 2 500 €/sem  |  Prétention : 2 800 €/sem  |  Contrat restant : 2 an(s)"
+
+[node name="PalmaresBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LabelPalmaresTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/PalmaresBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Palmarès & Trophées :"
+
+[node name="PalmaresList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/PalmaresBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StatsBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="LabelStatsTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Statistiques par Saison :"
+
+[node name="HeaderStats" type="HBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="H_S" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Saison"
+
+[node name="H_C" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Club"
+
+[node name="H_M" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Matchs"
+horizontal_alignment = 1
+
+[node name="H_G" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Buts"
+horizontal_alignment = 1
+
+[node name="H_A" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Passes"
+horizontal_alignment = 1
+
+[node name="H_T" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Tacles"
+horizontal_alignment = 1
+
+[node name="H_Saves" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Arrêts"
+horizontal_alignment = 1
+
+[node name="H_R" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/HeaderStats"]
+custom_minimum_size = Vector2(45, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "Note"
+horizontal_alignment = 1
+
+[node name="ScrollStats" type="ScrollContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatsList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/RightCol/StatsBox/ScrollStats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4

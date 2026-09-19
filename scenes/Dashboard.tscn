@@ -1,0 +1,736 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/background_mercato5.jpg" id="1_bg_img"]
+[ext_resource type="Script" path="res://scenes/DashboardController.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/MatchView.tscn" id="2_matchview"]
+[ext_resource type="Script" path="res://scripts/ClubBadge.gd" id="3_badge"]
+[ext_resource type="Script" path="res://scenes/PitchWidget.gd" id="4_pitch"]
+[ext_resource type="PackedScene" path="res://scenes/PlayerDetailModal.tscn" id="5_playerdetail"]
+[ext_resource type="PackedScene" path="res://scenes/PreMatchModal.tscn" id="6_prematch"]
+
+[node name="Dashboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controller")
+
+[node name="BackgroundImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_bg_img")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundDim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.06, 0.12, 0.25)
+
+[node name="TopBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 46.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="UserClubBadge" type="Control" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="ClubNameLabel" type="Label" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Club"
+
+[node name="VSeparator1" type="VSeparator" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Budget : 150 000 €"
+
+[node name="VSeparator2" type="VSeparator" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+
+[node name="WeekLabel" type="Label" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Journée 1 / 14"
+
+[node name="TacticLabel" type="Label" parent="TopBar/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.75, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "[Équilibré | Cryo]"
+
+[node name="BtnOptions" type="Button" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 12
+text = "⚙️ Options"
+
+[node name="BtnSave" type="Button" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💾 Sauvegarder"
+
+[node name="BtnMainMenu" type="Button" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🏠 Menu"
+
+[node name="BtnAdvance" type="Button" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Jouer la journée >"
+
+[node name="Body" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SideNav" type="PanelContainer" parent="Body"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Body/SideNav"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnTabSquad" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "⚽ Effectif & Tactique"
+
+[node name="BtnTabMarket" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🔄 Mercato"
+
+[node name="BtnTabStandings" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🏆 Classement"
+
+[node name="BtnTabEconomy" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "💼 Économie"
+
+[node name="BtnTabInbox" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "📬 Messages"
+
+[node name="MainContent" type="MarginContainer" parent="Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="TabSquad" type="HBoxContainer" parent="Body/MainContent"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PitchPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabSquad/PitchPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelPitchTitle" type="Label" parent="Body/MainContent/TabSquad/PitchPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Terrain (5 de départ)"
+horizontal_alignment = 1
+
+[node name="LabelPitchSub" type="Label" parent="Body/MainContent/TabSquad/PitchPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+text = "Cliquez sur un joueur pour le remplacer"
+horizontal_alignment = 1
+
+[node name="Pitch" type="Control" parent="Body/MainContent/TabSquad/PitchPanel/VBoxContainer"]
+custom_minimum_size = Vector2(260, 420)
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("4_pitch")
+
+[node name="BenchPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabSquad/BenchPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BenchHeader" type="HBoxContainer" parent="Body/MainContent/TabSquad/BenchPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelBenchTitle" type="Label" parent="Body/MainContent/TabSquad/BenchPanel/VBoxContainer/BenchHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Banc & Réserve"
+
+[node name="BtnAutoLineup" type="Button" parent="Body/MainContent/TabSquad/BenchPanel/VBoxContainer/BenchHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "⚡ Équipe Type"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Body/MainContent/TabSquad/BenchPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BenchList" type="VBoxContainer" parent="Body/MainContent/TabSquad/BenchPanel/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TacticsPanel" type="PanelContainer" parent="Body/MainContent/TabSquad"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Body/MainContent/TabSquad/TacticsPanel"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LabelTacticsTitle" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Consignes & Tactique"
+
+[node name="LabelStyle" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Style de jeu :"
+
+[node name="OptionTacticsStyle" type="OptionButton" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelStyleDesc" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="HSeparator1" type="HSeparator" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelTraining" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Entraînement de la semaine :"
+
+[node name="OptionTrainingFocus" type="OptionButton" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelTrainingDesc" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelInspectorTitle" type="Label" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Fiche Joueur"
+
+[node name="InspectorCard" type="PanelContainer" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InspectorContent" type="VBoxContainer" parent="Body/MainContent/TabSquad/TacticsPanel/ScrollContainer/VBoxContainer/InspectorCard"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TabMarket" type="VBoxContainer" parent="Body/MainContent"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MarketHeader" type="HBoxContainer" parent="Body/MainContent/TabMarket"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Body/MainContent/TabMarket/MarketHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Marché des transferts - Joueurs libres"
+
+[node name="LabelFilter" type="Label" parent="Body/MainContent/TabMarket/MarketHeader"]
+layout_mode = 2
+text = "Filtres :"
+
+[node name="OptMarketCountry" type="OptionButton" parent="Body/MainContent/TabMarket/MarketHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(130, 0)
+
+[node name="OptMarketPos" type="OptionButton" parent="Body/MainContent/TabMarket/MarketHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(130, 0)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Body/MainContent/TabMarket"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FreeAgentList" type="VBoxContainer" parent="Body/MainContent/TabMarket/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TabStandings" type="VBoxContainer" parent="Body/MainContent"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LeagueNavHeader" type="HBoxContainer" parent="Body/MainContent/TabStandings"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LabelWorld" type="Label" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🌍 Monde :"
+
+[node name="OptionCountry" type="OptionButton" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 0)
+
+[node name="LabelLeague" type="Label" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Ligue :"
+
+[node name="OptionLeague" type="OptionButton" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+custom_minimum_size = Vector2(190, 0)
+
+[node name="BtnEuropeanCup" type="Button" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 12
+text = "🏆 Coupe d'Europe"
+
+[node name="BtnMyLeague" type="Button" parent="Body/MainContent/TabStandings/LeagueNavHeader"]
+layout_mode = 2
+text = "⭐ Ma Ligue"
+
+[node name="StandingsSplit" type="HBoxContainer" parent="Body/MainContent/TabStandings"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="StandingsCol" type="VBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_constants/separation = 6
+
+[node name="LabelStandings" type="Label" parent="Body/MainContent/TabStandings/StandingsSplit/StandingsCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Classement officiel"
+
+[node name="StandingsTree" type="Tree" parent="Body/MainContent/TabStandings/StandingsSplit/StandingsCol"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ClubRosterPanel" type="PanelContainer" parent="Body/MainContent/TabStandings/StandingsSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ClubHeader" type="HBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ClubDetailBadge" type="Control" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/ClubHeader"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="ClubInfoBox" type="VBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/ClubHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelClubDetailName" type="Label" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/ClubHeader/ClubInfoBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Club"
+
+[node name="LabelClubDetailSub" type="Label" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/ClubHeader/ClubInfoBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+text = "Pays - Division"
+
+[node name="HSeparator" type="HSeparator" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelRosterTitle" type="Label" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Effectif de l'équipe :"
+
+[node name="RosterScroll" type="ScrollContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ClubRosterList" type="VBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/RosterScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+
+[node name="TabInbox" type="VBoxContainer" parent="Body/MainContent"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LabelInbox" type="Label" parent="Body/MainContent/TabInbox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Boîte de réception & Propositions"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Body/MainContent/TabInbox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InboxList" type="VBoxContainer" parent="Body/MainContent/TabInbox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="TabEconomy" type="ScrollContainer" parent="Body/MainContent"]
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="EconomyContent" type="VBoxContainer" parent="Body/MainContent/TabEconomy"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="MatchModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MatchView" parent="MatchModal" instance=ExtResource("2_matchview")]
+layout_mode = 1
+
+[node name="NotificationToast" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -260.0
+offset_top = 10.0
+offset_right = 260.0
+offset_bottom = 54.0
+grow_horizontal = 2
+
+[node name="LabelToast" type="Label" parent="NotificationToast"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Notification"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NegotiationModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="NegotiationModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.78)
+
+[node name="CenterContainer" type="CenterContainer" parent="NegotiationModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="NegotiationModal/CenterContainer"]
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LabelNegoTitle" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "💼 Négociation de Contrat & Transfert"
+horizontal_alignment = 1
+
+[node name="PlayerSummaryPanel" type="PanelContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NegoBadge" type="Control" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="VBox" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelNegoPlayerName" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Joueur"
+
+[node name="LabelNegoPlayerStats" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Poste | Valeur | Prétentions"
+
+[node name="HSeparator1" type="HSeparator" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="WageRow" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBox" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/WageRow"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/WageRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Salaire hebdomadaire proposé :"
+
+[node name="LabelWageVal" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/WageRow/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+text = "2 000 € / sem"
+
+[node name="SliderWage" type="HSlider" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/WageRow"]
+layout_mode = 2
+min_value = 300.0
+max_value = 25000.0
+step = 100.0
+value = 2000.0
+
+[node name="BonusRow" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBox" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/BonusRow"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/BonusRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Prime à la signature (paiement immédiat) :"
+
+[node name="LabelBonusVal" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/BonusRow/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+text = "10 000 €"
+
+[node name="SliderBonus" type="HSlider" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/BonusRow"]
+layout_mode = 2
+min_value = 0.0
+max_value = 100000.0
+step = 1000.0
+value = 10000.0
+
+[node name="YearsRow" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/YearsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Durée du contrat :"
+
+[node name="OptionContractYears" type="OptionButton" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/YearsRow"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="TransferFeeRow" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBox" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/TransferFeeRow"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/TransferFeeRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Indemnité de transfert au club vendeur :"
+
+[node name="LabelFeeVal" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/TransferFeeRow/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+text = "50 000 €"
+
+[node name="SliderFee" type="HSlider" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/TransferFeeRow"]
+layout_mode = 2
+min_value = 1000.0
+max_value = 500000.0
+step = 5000.0
+value = 50000.0
+
+[node name="HSeparator2" type="HSeparator" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="AgentReactionBox" type="PanelContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HBox" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LabelAgentIcon" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🤵"
+
+[node name="LabelAgentDialogue" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Mon client écoute votre proposition..."
+autowrap_mode = 2
+
+[node name="HBoxMood" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LabelMood" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox/HBoxMood"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Intérêt du joueur :"
+
+[node name="ProgressMood" type="ProgressBar" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox/HBoxMood"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 100.0
+value = 50.0
+show_percentage = false
+
+[node name="LabelMoodText" type="Label" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/AgentReactionBox/VBox/HBoxMood"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Hésitant"
+
+[node name="ActionButtons" type="HBoxContainer" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnProposeOffer" type="Button" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+modulate = Color(0.1, 0.75, 0.4, 1)
+text = "Proposer l'offre"
+
+[node name="BtnAcceptDemands" type="Button" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+modulate = Color(0.96, 0.75, 0.1, 1)
+text = "Accepter les exigences"
+
+[node name="BtnCancelNego" type="Button" parent="NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/ActionButtons"]
+layout_mode = 2
+modulate = Color(0.95, 0.3, 0.3, 1)
+text = "Abandonner"
+
+[node name="PlayerDetailModal" parent="." instance=ExtResource("5_playerdetail")]
+visible = false
+layout_mode = 1
+
+[node name="PreMatchModal" parent="." instance=ExtResource("6_prematch")]
+visible = false
+layout_mode = 1
+
+[connection signal="pressed" from="TopBar/HBoxContainer/BtnAdvance" to="." method="_on_btn_advance_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabSquad" to="." method="_on_btn_tab_squad_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabMarket" to="." method="_on_btn_tab_market_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabStandings" to="." method="_on_btn_tab_standings_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabEconomy" to="." method="_on_btn_tab_economy_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabInbox" to="." method="_on_btn_tab_inbox_pressed"]
+

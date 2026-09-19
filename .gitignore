@@ -1,0 +1,14 @@
+# Godot engine cache
+.godot/
+*.translation
+*.import
+.mono/
+
+# Temporary utilities and logs
+cloudflared.exe
+*.log
+*.bak
+
+# Operating System files
+.DS_Store
+Thumbs.db

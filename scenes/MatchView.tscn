@@ -1,0 +1,164 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/MatchViewController.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ClubBadge.gd" id="2_badge"]
+[ext_resource type="Script" path="res://scenes/MatchPitch2D.gd" id="3_pitch2d"]
+
+[node name="MatchView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controller")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.08, 0.14, 0.98)
+
+[node name="HeaderPanel" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 8.0
+offset_bottom = 85.0
+theme_override_constants/separation = 6
+
+[node name="TopBar" type="HBoxContainer" parent="HeaderPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="HomeBadge" type="Control" parent="HeaderPanel/TopBar"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+script = ExtResource("2_badge")
+
+[node name="LabelHomeClub" type="Label" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Domicile"
+
+[node name="LabelScore" type="Label" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.8, 0.08, 1)
+theme_override_font_sizes/font_size = 26
+text = "0 - 0"
+
+[node name="LabelAwayClub" type="Label" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Extérieur"
+
+[node name="AwayBadge" type="Control" parent="HeaderPanel/TopBar"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+script = ExtResource("2_badge")
+
+[node name="VSeparator" type="VSeparator" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+
+[node name="MatchClock" type="Label" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "00:00"
+
+[node name="Btn1x" type="Button" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "x1"
+
+[node name="Btn2x" type="Button" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "x2"
+
+[node name="Btn4x" type="Button" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "x4"
+
+[node name="BtnSkip" type="Button" parent="HeaderPanel/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Passer"
+
+[node name="PossessionBox" type="HBoxContainer" parent="HeaderPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="LabelHomePoss" type="Label" parent="HeaderPanel/PossessionBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "50%"
+
+[node name="PossessionBar" type="ProgressBar" parent="HeaderPanel/PossessionBox"]
+custom_minimum_size = Vector2(260, 6)
+layout_mode = 2
+size_flags_vertical = 4
+value = 50.0
+show_percentage = false
+
+[node name="LabelAwayPoss" type="Label" parent="HeaderPanel/PossessionBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "50%"
+
+[node name="CenterArea" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -265.0
+offset_bottom = 185.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="ActionBanner" type="Label" parent="CenterArea"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Coup d'envoi imminent"
+horizontal_alignment = 1
+
+[node name="PitchCenter" type="CenterContainer" parent="CenterArea"]
+layout_mode = 2
+
+[node name="Pitch2D" type="Control" parent="CenterArea/PitchCenter"]
+custom_minimum_size = Vector2(580, 340)
+layout_mode = 2
+script = ExtResource("3_pitch2d")
+
+[node name="BottomLog" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -160.0
+offset_right = -30.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="BottomLog"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="EventList" type="VBoxContainer" parent="BottomLog/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[connection signal="pressed" from="HeaderPanel/TopBar/Btn1x" to="." method="_on_speed_1x_pressed"]
+[connection signal="pressed" from="HeaderPanel/TopBar/Btn2x" to="." method="_on_speed_2x_pressed"]
+[connection signal="pressed" from="HeaderPanel/TopBar/Btn4x" to="." method="_on_speed_4x_pressed"]
+[connection signal="pressed" from="HeaderPanel/TopBar/BtnSkip" to="." method="_on_skip_pressed"]

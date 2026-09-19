@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="apple-mobile-web-app-title" content="Mercato 5">
+		<meta name="theme-color" content="#0f172a">
+		<link rel="manifest" href="manifest.json">
+		<link rel="apple-touch-icon" href="icon-192.png">
+		<title>Mercato 5 - Management Futsal</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-splash.show-image--false {
+	display: none;
+}
+
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+}
+
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+
+#orientation-overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: #090d16;
+	z-index: 99999999;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	color: #ffffff;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	text-align: center;
+	padding: 24px;
+	box-sizing: border-box;
+}
+
+@media screen and (orientation: portrait) {
+	#orientation-overlay {
+		display: flex !important;
+	}
+}
+
+.phone-rotate-anim {
+	width: 76px;
+	height: 76px;
+	margin-bottom: 24px;
+	animation: phoneSpin 2.5s ease-in-out infinite;
+}
+
+@keyframes phoneSpin {
+	0% { transform: rotate(0deg); }
+	40% { transform: rotate(-90deg); }
+	70% { transform: rotate(-90deg); }
+	100% { transform: rotate(0deg); }
+}
+		</style>
+		
+	</head>
+	<body>
+		<div id="orientation-overlay">
+			<svg class="phone-rotate-anim" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+				<line x1="12" y1="18" x2="12.01" y2="18"></line>
+			</svg>
+			<h2 style="font-size: 1.45rem; margin: 0 0 12px; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Mode Horizontal Requis</h2>
+			<p style="font-size: 1.05rem; color: #94a3b8; max-width: 320px; line-height: 1.5; margin: 0 0 24px;">
+				Veuillez faire pivoter votre smartphone à l'horizontale pour jouer à <strong>Mercato 5</strong>.
+			</p>
+			<div style="font-size: 0.85rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 18px; max-width: 320px; line-height: 1.4;">
+				💡 Si l'écran ne tourne pas, désactivez le <strong>Verrouillage de l'orientation</strong> dans le Centre de contrôle de l'iPhone.
+			</div>
+		</div>
+
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script>
+		// Orientation enforcement
+		function enforceLandscape() {
+			const overlay = document.getElementById('orientation-overlay');
+			if (!overlay) return;
+			const isPortrait = window.innerHeight > window.innerWidth;
+			overlay.style.display = isPortrait ? 'flex' : 'none';
+
+			if (screen.orientation && screen.orientation.lock) {
+				screen.orientation.lock('landscape').catch(function () {});
+			}
+		}
+
+		window.addEventListener('resize', enforceLandscape);
+		window.addEventListener('orientationchange', enforceLandscape);
+		window.addEventListener('DOMContentLoaded', enforceLandscape);
+		window.addEventListener('load', enforceLandscape);
+		document.addEventListener('touchstart', function () {
+			if (screen.orientation && screen.orientation.lock) {
+				screen.orientation.lock('landscape').catch(function () {});
+			}
+		}, { passive: true });
+
+		// Safari iOS local network polyfill
+		try {
+			if (!window.isSecureContext) {
+				Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true });
+			}
+		} catch (e) {}
+		try {
+			const AudioCtx = window.AudioContext || window.webkitAudioContext;
+			if (AudioCtx && !AudioCtx.prototype.audioWorklet) {
+				Object.defineProperty(AudioCtx.prototype, 'audioWorklet', {
+					get: function () {
+						return {
+							addModule: function () { return Promise.resolve(); }
+						};
+					}
+				});
+			}
+		} catch (e) {}
+		if (typeof window.AudioWorkletNode === 'undefined') {
+			window.AudioWorkletNode = function () {
+				return {
+					connect: function () {},
+					disconnect: function () {},
+					port: { postMessage: function () {}, onmessage: null }
+				};
+			};
+		}
+		</script>
+		<script src="index.js?v=12"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":13693916,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				// Reload if there was no error.
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
+}());
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,304 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/PreMatchModal.gd" id="1_modal"]
+[ext_resource type="Script" path="res://scenes/PlayerFaceWidget.gd" id="2_face"]
+[ext_resource type="Script" path="res://scripts/ClubBadge.gd" id="3_badge"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+bg_color = Color(0.04, 0.06, 0.1, 0.82)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.11, 0.18, 0.98)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_col"]
+bg_color = Color(0.06, 0.08, 0.14, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_kickoff"]
+bg_color = Color(0.16, 0.65, 0.42, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="PreMatchModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_modal")
+
+[node name="Overlay" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(960, 580)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="VBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LabelMatchdayTitle" type="Label" parent="CenterContainer/Panel/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.75, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "📋 BRIEFING D'AVANT-MATCH • JOURNÉE 1"
+horizontal_alignment = 1
+
+[node name="HBoxMatchup" type="HBoxContainer" parent="CenterContainer/Panel/VBox/Header"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="UserBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UserBadge" type="Control" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup/UserBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="LabelUserName" type="Label" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup/UserBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Mon Club"
+
+[node name="LabelVS" type="Label" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "VS"
+
+[node name="OppBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LabelOppName" type="Label" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup/OppBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Adversaire FC"
+
+[node name="OppBadge" type="Control" parent="CenterContainer/Panel/VBox/Header/HBoxMatchup/OppBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_badge")
+
+[node name="SepHeader" type="HSeparator" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+
+[node name="BodySplit" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="OppScoutingCol" type="PanelContainer" parent="CenterContainer/Panel/VBox/BodySplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_col")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleOpp" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔍 RAPPORT SUR L'ADVERSAIRE"
+
+[node name="StarCard" type="PanelContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox"]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StarFace" type="Control" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard/HBox"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("2_face")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="LabelStarName" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Joueur Clé : Nom"
+
+[node name="LabelStarStats" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+text = "Note 85 OVR • 4 buts"
+
+[node name="LabelStarDanger" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/StarCard/HBox/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "⚠️ Danger numéro 1"
+
+[node name="TacticBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox"]
+layout_mode = 2
+
+[node name="LabelOppTacticDesc" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/TacticBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Dispositif : Équilibré"
+
+[node name="LabelLineupTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "5 de départ adverse probable :"
+
+[node name="ScrollOppLineup" type="ScrollContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="OppLineupList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/OppScoutingCol/VBox/ScrollOppLineup"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="UserTacticsCol" type="PanelContainer" parent="CenterContainer/Panel/VBox/BodySplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_col")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleUser" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚙️ AJUSTEMENT TACTIQUE & EFFECTIF"
+
+[node name="TacticControls" type="HBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OptTactic" type="OptionButton" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/TacticControls"]
+custom_minimum_size = Vector2(170, 30)
+layout_mode = 2
+
+[node name="OptTraining" type="OptionButton" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/TacticControls"]
+custom_minimum_size = Vector2(210, 30)
+layout_mode = 2
+
+[node name="HeaderLineup" type="HBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+layout_mode = 2
+
+[node name="LabelTitulaireTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/HeaderLineup"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "5 de départ (Sélectionnez pour permuter) :"
+
+[node name="BtnAutoPick" type="Button" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/HeaderLineup"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "⚡ Équipe Type"
+
+[node name="ScrollUserLineup" type="ScrollContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="UserLineupList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/ScrollUserLineup"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="LabelBenchTitle" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Banc de touche :"
+
+[node name="ScrollBench" type="ScrollContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BenchList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/UserTacticsCol/VBox/ScrollBench"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="BottomBar" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnCancel" type="Button" parent="CenterContainer/Panel/VBox/BottomBar"]
+custom_minimum_size = Vector2(160, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "◀ Retour au Dashboard"
+
+[node name="Spacer" type="Control" parent="CenterContainer/Panel/VBox/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnQuickSim" type="Button" parent="CenterContainer/Panel/VBox/BottomBar"]
+custom_minimum_size = Vector2(180, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚡ Simulation Rapide"
+
+[node name="BtnKickoff" type="Button" parent="CenterContainer/Panel/VBox/BottomBar"]
+custom_minimum_size = Vector2(230, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_kickoff")
+text = "⚽ DONNER LE COUP D'ENVOI"

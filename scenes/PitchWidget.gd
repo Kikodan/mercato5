@@ -1,0 +1,146 @@
+class_name PitchWidget
+extends Control
+
+signal player_clicked(player: Player)
+signal player_right_clicked(player: Player)
+
+var starting_five: Array[Player] = []
+var selected_player: Player = null
+
+# Positions normalisées pour la formation 1-2-1 de foot à 5
+const FORMATION_POSITIONS = [
+	Vector2(0.5, 0.86),  # 0: Gardien
+	Vector2(0.5, 0.66),  # 1: Défenseur
+	Vector2(0.24, 0.44), # 2: Milieu Gauche
+	Vector2(0.76, 0.44), # 3: Milieu Droit
+	Vector2(0.5, 0.20)   # 4: Pivot / Attaquant
+]
+
+func set_starting_five(players: Array[Player], selected: Player = null) -> void:
+	starting_five = players
+	selected_player = selected
+	queue_redraw()
+
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		var clicked_idx = _get_slot_at_pos(event.position)
+		if clicked_idx != -1 and clicked_idx < starting_five.size():
+			if event.double_click or event.button_index == MOUSE_BUTTON_RIGHT:
+				player_right_clicked.emit(starting_five[clicked_idx])
+			elif event.button_index == MOUSE_BUTTON_LEFT:
+				player_clicked.emit(starting_five[clicked_idx])
+
+func _get_slot_at_pos(pos: Vector2) -> int:
+	var s = size
+	for i in FORMATION_POSITIONS.size():
+		var slot_center = FORMATION_POSITIONS[i] * s
+		if pos.distance_to(slot_center) <= 32.0:
+			return i
+	return -1
+
+func _draw() -> void:
+	var s = size
+	if s.x <= 20.0 or s.y <= 20.0:
+		return
+
+	# Fond pelouse synthétique
+	var field_rect = Rect2(Vector2.ZERO, s)
+	draw_rect(field_rect, Color("14532d"))
+
+	# Bandes de tonte
+	var num_stripes = 8
+	var stripe_h = s.y / float(num_stripes)
+	for i in num_stripes:
+		if i % 2 == 1:
+			draw_rect(Rect2(0, i * stripe_h, s.x, stripe_h), Color(1.0, 1.0, 1.0, 0.05))
+
+	# Ligne de touche / contour
+	var pad = 16.0
+	var inner_rect = Rect2(pad, pad, s.x - pad * 2.0, s.y - pad * 2.0)
+	var line_color = Color(1.0, 1.0, 1.0, 0.65)
+	var line_w = 2.5
+	draw_rect(inner_rect, line_color, false, line_w)
+
+	# Ligne médiane
+	var mid_y = s.y * 0.5
+	draw_line(Vector2(pad, mid_y), Vector2(s.x - pad, mid_y), line_color, line_w)
+
+	# Rond central
+	var center = Vector2(s.x * 0.5, mid_y)
+	draw_circle(center, 3.0, line_color)
+	draw_arc(center, minf(s.x, s.y) * 0.16, 0, TAU, 48, line_color, line_w)
+
+	# Surfaces de réparation
+	var goal_w = inner_rect.size.x * 0.5
+	draw_arc(Vector2(s.x * 0.5, pad), goal_w * 0.5, 0, PI, 32, line_color, line_w)
+	draw_arc(Vector2(s.x * 0.5, s.y - pad), goal_w * 0.5, PI, TAU, 32, line_color, line_w)
+
+	# Cages
+	var cage_w = inner_rect.size.x * 0.28
+	draw_rect(Rect2((s.x - cage_w) * 0.5, pad - 8.0, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
+	draw_rect(Rect2((s.x - cage_w) * 0.5, s.y - pad, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
+
+	# Jetons de joueurs
+	var default_font = ThemeDB.fallback_font
+	var font_size = 11
+
+	for i in FORMATION_POSITIONS.size():
+		var slot_pos = FORMATION_POSITIONS[i] * s
+		if i < starting_five.size():
+			var p = starting_five[i]
+			_draw_player_token(slot_pos, p, default_font, font_size)
+		else:
+			_draw_empty_slot(slot_pos, default_font, font_size)
+
+func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> void:
+	var r = 22.0
+	var is_selected = (p == selected_player)
+	var pos_color = Color("f59e0b")
+	match p.position:
+		Player.Position.DEF: pos_color = Color("38bdf8")
+		Player.Position.MID: pos_color = Color("10b981")
+		Player.Position.FWD: pos_color = Color("f43f5e")
+
+	# Anneau de sélection dorée
+	if is_selected:
+		draw_circle(pos, r + 7.0, Color(0.98, 0.8, 0.08, 0.35))
+		draw_arc(pos, r + 5.0, 0, TAU, 32, Color("facc15"), 3.5)
+
+	# Ombre portée
+	draw_circle(pos + Vector2(0, 3), r + 2.0, Color(0, 0, 0, 0.35))
+
+	# Cercle principal
+	draw_circle(pos, r, Color("0f172a"))
+	draw_arc(pos, r, 0, TAU, 32, Color("facc15") if is_selected else pos_color, 3.0)
+
+	# Abréviation du poste + OVR
+	var pos_str = ["G", "D", "M", "A"][p.position]
+	var text_top_size = font.get_string_size(pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
+	draw_string(font, pos + Vector2(-text_top_size.x * 0.5, -1), pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color("facc15") if is_selected else pos_color)
+
+	var text_ovr = str(p.get_overall())
+	var text_ovr_size = font.get_string_size(text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1)
+	draw_string(font, pos + Vector2(-text_ovr_size.x * 0.5, 12), text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1, Color.WHITE)
+
+	# Nom du joueur sous le pion
+	var name_box_w = 84.0
+	var name_box_h = 16.0
+	var name_rect = Rect2(pos.x - name_box_w * 0.5, pos.y + r + 3.0, name_box_w, name_box_h)
+	draw_rect(name_rect, Color(0.12, 0.16, 0.26, 0.95) if is_selected else Color(0.06, 0.09, 0.16, 0.9), true)
+	draw_rect(name_rect, Color("facc15") if is_selected else pos_color, false, 1.5 if is_selected else 1.0)
+
+	var display_name = p.full_name
+	if display_name.length() > 11:
+		display_name = display_name.substr(0, 10) + "."
+	var name_size = font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1)
+	draw_string(font, Vector2(pos.x - name_size.x * 0.5, pos.y + r + 15.0), display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1, Color("facc15") if is_selected else Color.WHITE)
+
+
+func _draw_empty_slot(pos: Vector2, font: Font, _font_size: int) -> void:
+	var r = 20.0
+	draw_circle(pos, r, Color(0.1, 0.15, 0.25, 0.5))
+	draw_arc(pos, r, 0, TAU, 32, Color(1.0, 1.0, 1.0, 0.3), 1.5)
+	var txt = "+"
+	var t_size = font.get_string_size(txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 14)
+	draw_string(font, pos + Vector2(-t_size.x * 0.5, 5), txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 14, Color(1.0, 1.0, 1.0, 0.5))

@@ -1,0 +1,347 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/background_mercato5.jpg" id="1_bg_img"]
+[ext_resource type="Script" path="res://scenes/MainMenuController.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ClubBadge.gd" id="2_badge"]
+[ext_resource type="Script" path="res://scenes/OptionsMenuModal.gd" id="4_options"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.06, 0.08, 0.14, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.1, 0.14, 0.22, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail"]
+bg_color = Color(0.09, 0.13, 0.22, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary"]
+bg_color = Color(0.18, 0.46, 0.82, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_action"]
+bg_color = Color(0.16, 0.65, 0.42, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controller")
+
+[node name="BackgroundImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_bg_img")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.12, 0.35)
+
+[node name="MainView" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="MainView"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -240.0
+offset_right = 220.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderBox" type="VBoxContainer" parent="MainView/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LabelTitle" type="Label" parent="MainView/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 36
+text = "⚽ MERCATO 5"
+horizontal_alignment = 1
+
+[node name="LabelSubtitle" type="Label" parent="MainView/VBox/HeaderBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.68, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "MANAGEMENT & TACTIQUE DE FOOTBALL EN SALLE"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="MainView/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="MenuButtons" type="VBoxContainer" parent="MainView/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnContinue" type="Button" parent="MainView/VBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_primary")
+text = "▶  CONTINUER LA PARTIE"
+
+[node name="ContinueInfoCard" type="PanelContainer" parent="MainView/VBox/MenuButtons"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="HBox" type="HBoxContainer" parent="MainView/VBox/MenuButtons/ContinueInfoCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SaveBadge" type="Control" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("2_badge")
+
+[node name="VBox" type="VBoxContainer" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelTitleSave" type="Label" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "SAUVEGARDE DISPONIBLE"
+
+[node name="LabelSaveSummary" type="Label" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Paris RG (France, Div 1) - J1 | Budget: 150 000 €"
+
+[node name="BtnNewGame" type="Button" parent="MainView/VBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "⭐  NOUVELLE PARTIE"
+
+[node name="BtnLoad" type="Button" parent="MainView/VBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "📁  CHARGER UNE SAUVEGARDE"
+
+[node name="BtnOptions" type="Button" parent="MainView/VBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "⚙️  OPTIONS & MUSIQUE"
+
+[node name="BtnQuit" type="Button" parent="MainView/VBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "❌  QUITTER LE JEU"
+
+[node name="Spacer2" type="Control" parent="MainView/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="LabelVersion" type="Label" parent="MainView/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 11
+text = "Mercato 5 • 5 Pays • 3 Divisions • Simulation & 2D Live Matchs"
+horizontal_alignment = 1
+
+[node name="ClubSelectView" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ClubSelectView"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="ClubSelectView/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BtnBackToMenu" type="Button" parent="ClubSelectView/VBox/Header"]
+custom_minimum_size = Vector2(140, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "◀ Retour Menu"
+
+[node name="Title" type="Label" parent="ClubSelectView/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "CHOISISSEZ VOTRE CLUB DE DÉPART"
+
+[node name="LabelCountry" type="Label" parent="ClubSelectView/VBox/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Pays :"
+
+[node name="OptCountry" type="OptionButton" parent="ClubSelectView/VBox/Header"]
+custom_minimum_size = Vector2(150, 32)
+layout_mode = 2
+
+[node name="LabelDiv" type="Label" parent="ClubSelectView/VBox/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Division :"
+
+[node name="OptDivision" type="OptionButton" parent="ClubSelectView/VBox/Header"]
+custom_minimum_size = Vector2(170, 32)
+layout_mode = 2
+
+[node name="Split" type="HBoxContainer" parent="ClubSelectView/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="ClubsListScroll" type="ScrollContainer" parent="ClubSelectView/VBox/Split"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ClubsList" type="VBoxContainer" parent="ClubSelectView/VBox/Split/ClubsListScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ClubDetailPanel" type="PanelContainer" parent="ClubSelectView/VBox/Split"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_detail")
+
+[node name="VBox" type="VBoxContainer" parent="ClubSelectView/VBox/Split/ClubDetailPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PreviewBadge" type="Control" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/Header"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("2_badge")
+
+[node name="Info" type="VBoxContainer" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="LabelClubName" type="Label" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/Header/Info"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Club Sélectionné"
+
+[node name="LabelClubSub" type="Label" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/Header/Info"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "France - Division 1"
+
+[node name="LabelClubBudget" type="Label" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/Header/Info"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.75, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "💰 Budget de départ : 150 000 €"
+
+[node name="Sep" type="HSeparator" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox"]
+layout_mode = 2
+
+[node name="LabelSquadTitle" type="Label" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Effectif du club & 5 Majeur (🟡 Titulaires) :"
+
+[node name="RosterScroll" type="ScrollContainer" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RosterList" type="VBoxContainer" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox/RosterScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="BtnStartWithClub" type="Button" parent="ClubSelectView/VBox/Split/ClubDetailPanel/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_action")
+text = "🚀 Prendre les rênes du club"
+
+[node name="OptionsMenuModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_options")
