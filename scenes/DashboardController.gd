@@ -772,12 +772,12 @@ func _render_squad_view() -> void:
 	# Consignes dynamiques
 	if selected_swap_player != null:
 		if player_club.starting_five.has(selected_swap_player):
-			label_pitch_sub.text = "⇄ %s sélectionné : Cliquez sur un remplaçant ci-contre ou un titulaire pour permuter" % selected_swap_player.full_name
+			label_pitch_sub.text = "⇄ %s sélectionné\nCliquez sur un remplaçant ou un titulaire" % selected_swap_player.full_name
 			label_pitch_sub.modulate = Color("facc15")
-			label_bench_title.text = "Cliquez sur '⇄ Remplacer' sur le joueur qui doit entrer :"
+			label_bench_title.text = "Choisir le joueur entrant :"
 			label_bench_title.modulate = Color("facc15")
 		else:
-			label_pitch_sub.text = "⇄ %s (banc) sélectionné : Cliquez sur le titulaire à sortir sur le terrain" % selected_swap_player.full_name
+			label_pitch_sub.text = "⇄ %s (banc) sélectionné\nCliquez sur le titulaire à sortir" % selected_swap_player.full_name
 			label_pitch_sub.modulate = Color("38bdf8")
 			label_bench_title.text = "Banc & Réserve"
 			label_bench_title.modulate = Color.WHITE
@@ -931,13 +931,17 @@ func _render_inspector(p: Player) -> void:
 	var title = Label.new()
 	var pos_names = ["Gardien", "Défenseur", "Milieu", "Attaquant"]
 	title.text = "%s %s - %s (%d ans)%s" % [p.get_flag_emoji(), p.full_name, pos_names[p.position], p.age, status_text]
-	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_font_size_override("font_size", 13)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector_content.add_child(title)
 
 	var val_lbl = Label.new()
 	val_lbl.text = "Val: %s € | Sal: %s €/sem | Contrat: %d an(s)" % [String.num_int64(p.market_value), String.num_int64(p.salary), p.contract_years]
 	val_lbl.modulate = Color("facc15")
-	val_lbl.add_theme_font_size_override("font_size", 13)
+	val_lbl.add_theme_font_size_override("font_size", 12)
+	val_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	val_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector_content.add_child(val_lbl)
 
 	var stats_grid = GridContainer.new()
@@ -980,11 +984,13 @@ func _render_inspector(p: Player) -> void:
 	trait_pos.text = "★ %s" % p.trait_positive
 	trait_pos.modulate = Color("10b981")
 	trait_pos.add_theme_font_size_override("font_size", 12)
+	trait_pos.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	trait_pos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var trait_neg = Label.new()
 	trait_neg.text = "⚠️ %s" % p.trait_negative
 	trait_neg.modulate = Color("f87171")
 	trait_neg.add_theme_font_size_override("font_size", 12)
+	trait_neg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	trait_neg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	traits_box.add_child(trait_pos)
 	traits_box.add_child(trait_neg)
@@ -1013,16 +1019,21 @@ func _render_inspector(p: Player) -> void:
 
 	var lbl_season_stats = Label.new()
 	if p.position == Player.Position.GK:
-		lbl_season_stats.text = "📊 Stats Saison : %d match(s) | %d arrêt(s) | Note: %s" % [cur_m, cur_s, cur_r_str]
+		lbl_season_stats.text = "📊 Stats : %d m | %d arrêts | Note: %s" % [cur_m, cur_s, cur_r_str]
 	else:
-		lbl_season_stats.text = "📊 Stats Saison : %d m | ⚽ %d but(s) | 🎯 %d pass. | 🛡️ %d tac. | Note: %s" % [cur_m, cur_g, cur_a, cur_t, cur_r_str]
-	lbl_season_stats.add_theme_font_size_override("font_size", 12)
+		lbl_season_stats.text = "📊 Stats : %d m | ⚽ %d buts | 🎯 %d pass. | 🛡️ %d tac. | Note: %s" % [cur_m, cur_g, cur_a, cur_t, cur_r_str]
+	lbl_season_stats.add_theme_font_size_override("font_size", 11)
 	lbl_season_stats.add_theme_color_override("font_color", Color("38bdf8"))
+	lbl_season_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl_season_stats.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stats_badge.add_child(lbl_season_stats)
 	inspector_content.add_child(stats_badge)
 
-	var btn_box = HBoxContainer.new()
-	btn_box.add_theme_constant_override("separation", 6)
+	var btn_vbox = VBoxContainer.new()
+	btn_vbox.add_theme_constant_override("separation", 4)
+
+	var row_actions = HBoxContainer.new()
+	row_actions.add_theme_constant_override("separation", 6)
 
 	if is_starter:
 		var btn_remove = Button.new()
@@ -1036,11 +1047,11 @@ func _render_inspector(p: Player) -> void:
 				selected_swap_player = null
 			_render_squad_view()
 		)
-		btn_box.add_child(btn_remove)
+		row_actions.add_child(btn_remove)
 	else:
 		if player_club.starting_five.size() < 5:
 			var btn_add = Button.new()
-			btn_add.text = "Aligner sur le terrain"
+			btn_add.text = "Aligner"
 			btn_add.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			btn_add.modulate = Color("10b981")
 			btn_add.add_theme_font_size_override("font_size", 12)
@@ -1050,7 +1061,7 @@ func _render_inspector(p: Player) -> void:
 					selected_swap_player = null
 				_render_squad_view()
 			)
-			btn_box.add_child(btn_add)
+			row_actions.add_child(btn_add)
 		else:
 			var btn_prep_swap = Button.new()
 			btn_prep_swap.text = "⇄ Remplacer"
@@ -1061,7 +1072,7 @@ func _render_inspector(p: Player) -> void:
 				selected_swap_player = p
 				_render_squad_view()
 			)
-			btn_box.add_child(btn_prep_swap)
+			row_actions.add_child(btn_prep_swap)
 
 	if player_club.squad.has(p):
 		var severance = p.salary * 4
@@ -1079,7 +1090,9 @@ func _render_inspector(p: Player) -> void:
 				_render_inspector(null)
 				_update_topbar()
 		)
-		btn_box.add_child(btn_release)
+		row_actions.add_child(btn_release)
+
+	btn_vbox.add_child(row_actions)
 
 	var btn_full_profile = Button.new()
 	btn_full_profile.text = "👤 Fiche Complète"
@@ -1089,9 +1102,9 @@ func _render_inspector(p: Player) -> void:
 	btn_full_profile.pressed.connect(func():
 		player_detail_modal.open_player(p, player_club)
 	)
-	btn_box.add_child(btn_full_profile)
+	btn_vbox.add_child(btn_full_profile)
 
-	inspector_content.add_child(btn_box)
+	inspector_content.add_child(btn_vbox)
 
 
 func _on_btn_european_cup_pressed() -> void:
