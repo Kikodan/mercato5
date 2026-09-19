@@ -30,7 +30,16 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/dpi/allow_hidpi=true
 window/handheld/orientation="sensor_landscape"
+
+[gui]
+
+theme/custom_font="res://assets/fonts/app_font.tres"
+theme/default_font_antialiasing=1
+theme/default_font_hinting=1
+theme/default_font_subpixel_positioning=1
+fonts/dynamic_fonts/use_oversampling=true
 
 [input_devices]
 
@@ -43,3 +52,5 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 renderer/rendering_method.web="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.0588235, 0.0901961, 0.164706, 1)
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
