@@ -818,6 +818,20 @@ func _on_btn_auto_lineup_pressed() -> void:
 		inspected_player = player_club.starting_five[0]
 	_render_squad_view()
 
+func _perform_swap(p1: Player, p2: Player) -> void:
+	if p1 == null or p2 == null or p1 == p2:
+		return
+	var idx1 = player_club.starting_five.find(p1)
+	var idx2 = player_club.starting_five.find(p2)
+	if idx1 != -1 and idx2 != -1:
+		var tmp = player_club.starting_five[idx1]
+		player_club.starting_five[idx1] = player_club.starting_five[idx2]
+		player_club.starting_five[idx2] = tmp
+	elif idx1 != -1 and idx2 == -1:
+		player_club.starting_five[idx1] = p2
+	elif idx1 == -1 and idx2 != -1:
+		player_club.starting_five[idx2] = p1
+
 func _on_pitch_player_clicked(p: Player) -> void:
 	inspected_player = p
 	_render_inspector(p)
@@ -828,20 +842,8 @@ func _on_pitch_player_clicked(p: Player) -> void:
 	elif selected_swap_player == p:
 		# Re-cliquer désélectionne
 		selected_swap_player = null
-	elif player_club.starting_five.has(selected_swap_player):
-		# Permutation de deux joueurs sur le terrain
-		var idx1 = player_club.starting_five.find(selected_swap_player)
-		var idx2 = player_club.starting_five.find(p)
-		if idx1 != -1 and idx2 != -1:
-			var tmp = player_club.starting_five[idx1]
-			player_club.starting_five[idx1] = player_club.starting_five[idx2]
-			player_club.starting_five[idx2] = tmp
-		selected_swap_player = null
 	else:
-		# selected_swap_player était un remplaçant du banc : substitution directe !
-		var idx = player_club.starting_five.find(p)
-		if idx != -1:
-			player_club.starting_five[idx] = selected_swap_player
+		_perform_swap(selected_swap_player, p)
 		selected_swap_player = null
 
 	_render_squad_view()
@@ -852,21 +854,21 @@ func _render_squad_view() -> void:
 	# Consignes dynamiques
 	if selected_swap_player != null:
 		if player_club.starting_five.has(selected_swap_player):
-			label_pitch_sub.text = "⇄ %s sélectionné\nCliquez sur un remplaçant ou un titulaire" % selected_swap_player.full_name
+			label_pitch_sub.text = "⇄ %s sélectionné\nCliquez sur un remplaçant ou un autre titulaire" % selected_swap_player.full_name
 			label_pitch_sub.modulate = Color("facc15")
-			label_bench_title.text = "Choisir le joueur entrant :"
+			label_bench_title.text = "Choisir le joueur avec qui permuter :"
 			label_bench_title.modulate = Color("facc15")
 		else:
 			label_pitch_sub.text = "⇄ %s (banc) sélectionné\nCliquez sur le titulaire à sortir" % selected_swap_player.full_name
 			label_pitch_sub.modulate = Color("38bdf8")
-			label_bench_title.text = "Banc & Réserve"
-			label_bench_title.modulate = Color.WHITE
+			label_bench_title.text = "Choisir le titulaire à remplacer :"
+			label_bench_title.modulate = Color("38bdf8")
 	else:
 		label_pitch_sub.text = "Cliquez sur un joueur pour le remplacer ou permuter"
 		label_pitch_sub.modulate = Color(0.7, 0.75, 0.85, 1.0)
-		label_bench_title.text = "Banc & Réserve (%d remplaçants • Effectif : %d/32)" % [
-			player_club.squad.size() - player_club.starting_five.size(),
-			player_club.squad.size()
+		label_bench_title.text = "Effectif du Club (%d joueurs • %d alignés)" % [
+			player_club.squad.size(),
+			player_club.starting_five.size()
 		]
 		label_bench_title.modulate = Color.WHITE
 
@@ -875,6 +877,19 @@ func _render_squad_view() -> void:
 	for c in bench_list.get_children():
 		c.queue_free()
 
+	# 1. SECTION : ALIGNÉS SUR LE TERRAIN (5 MAJEUR)
+	var starter_header = _create_section_header("🟢 ALIGNÉS SUR LE TERRAIN (5 MAJEUR)", Color("34d399"))
+	bench_list.add_child(starter_header)
+
+	for p in player_club.starting_five:
+		bench_list.add_child(_create_player_card(p, true))
+
+	# 2. LISERÉ DE SÉPARATION DÉMARQUANT LES TITULAIRES DU BANC
+	var bench_count = player_club.squad.size() - player_club.starting_five.size()
+	var divider = _create_lisere_divider("🪑 REMPLAÇANTS & RÉSERVE (%d)" % bench_count)
+	bench_list.add_child(divider)
+
+	# 3. SECTION : REMPLAÇANTS & RÉSERVE
 	for p in player_club.squad:
 		if not player_club.starting_five.has(p):
 			bench_list.add_child(_create_player_card(p, false))
@@ -884,15 +899,85 @@ func _render_squad_view() -> void:
 	if inspected_player != null:
 		_render_inspector(inspected_player)
 
-func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
+func _create_section_header(title_text: String, col: Color) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 8)
+	var lbl = Label.new()
+	lbl.text = title_text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", col)
+	hbox.add_child(lbl)
+	return hbox
+
+func _create_lisere_divider(title_text: String) -> Control:
+	var container = VBoxContainer.new()
+	container.add_theme_constant_override("separation", 5)
+	container.custom_minimum_size = Vector2(0, 32)
+
+	var line = HSeparator.new()
+	var line_style = StyleBoxLine.new()
+	line_style.color = Color("38bdf8")
+	line_style.thickness = 2
+	line.add_theme_stylebox_override("separator", line_style)
+	container.add_child(line)
+
+	var badge = PanelContainer.new()
+	var b_style = StyleBoxFlat.new()
+	b_style.bg_color = Color(0.08, 0.14, 0.24, 0.95)
+	b_style.border_color = Color("38bdf8")
+	b_style.border_width_left = 3
+	b_style.set_corner_radius_all(4)
+	b_style.content_margin_left = 8
+	b_style.content_margin_right = 8
+	b_style.content_margin_top = 2
+	b_style.content_margin_bottom = 2
+	badge.add_theme_stylebox_override("panel", b_style)
+
+	var lbl = Label.new()
+	lbl.text = title_text
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color("93c5fd"))
+	badge.add_child(lbl)
+	container.add_child(badge)
+
+	return container
+
+func _create_player_card(p: Player, is_starter: bool) -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var is_inspected = (p == inspected_player)
+	var is_selected_swap = (p == selected_swap_player)
 	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.16, 0.26, 0.85) if is_inspected else Color(0.08, 0.11, 0.19, 0.6)
-	if is_inspected:
+
+	if is_selected_swap:
+		sb.bg_color = Color(0.22, 0.28, 0.44, 0.95)
+		sb.border_color = Color("facc15")
+		sb.set_border_width_all(2)
+		sb.border_width_left = 6
+	elif is_inspected:
+		sb.bg_color = Color(0.12, 0.18, 0.30, 0.90)
 		sb.border_color = Color("38bdf8")
 		sb.set_border_width_all(1)
+		sb.border_width_left = 5 if is_starter else 1
+		if is_starter:
+			sb.border_color = Color("34d399")
+	elif is_starter:
+		# Joueur aligné sur le terrain : liseré gauche émeraude et fond spécifique
+		sb.bg_color = Color(0.06, 0.16, 0.13, 0.85)
+		sb.border_color = Color("10b981")
+		sb.border_width_left = 4
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+	else:
+		# Remplaçant banc
+		sb.bg_color = Color(0.08, 0.11, 0.19, 0.65)
+		sb.border_color = Color(0.2, 0.25, 0.35, 0.45)
+		sb.border_width_left = 2
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+
 	sb.set_corner_radius_all(5)
 	sb.content_margin_left = 8
 	sb.content_margin_right = 8
@@ -902,6 +987,14 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 6)
+
+	# Tag Aligneur / Remplaçant
+	if is_starter:
+		var starter_tag = Label.new()
+		starter_tag.text = "🟢"
+		starter_tag.tooltip_text = "Titulaire aligné sur le terrain"
+		starter_tag.add_theme_font_size_override("font_size", 10)
+		hbox.add_child(starter_tag)
 
 	var pos_tag = Label.new()
 	var pos_names = ["GK", "DEF", "MID", "FWD"]
@@ -939,19 +1032,8 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 	var btn_action = Button.new()
 	btn_action.add_theme_font_size_override("font_size", 12)
 	btn_action.custom_minimum_size = Vector2(28, 26)
-	if selected_swap_player != null and player_club.starting_five.has(selected_swap_player):
-		btn_action.text = "⇄"
-		btn_action.tooltip_text = "Faire entrer ce joueur à la place de %s" % selected_swap_player.full_name
-		btn_action.modulate = Color("facc15")
-		btn_action.pressed.connect(func():
-			var idx = player_club.starting_five.find(selected_swap_player)
-			if idx != -1:
-				player_club.starting_five[idx] = p
-			selected_swap_player = null
-			inspected_player = p
-			_render_squad_view()
-		)
-	elif selected_swap_player == p:
+
+	if selected_swap_player == p:
 		btn_action.text = "✕"
 		btn_action.tooltip_text = "Annuler la sélection"
 		btn_action.modulate = Color("f87171")
@@ -959,8 +1041,27 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 			selected_swap_player = null
 			_render_squad_view()
 		)
+	elif selected_swap_player != null:
+		btn_action.text = "⇄"
+		btn_action.tooltip_text = "Permuter avec %s" % selected_swap_player.full_name
+		btn_action.modulate = Color("facc15")
+		btn_action.pressed.connect(func():
+			_perform_swap(selected_swap_player, p)
+			selected_swap_player = null
+			inspected_player = p
+			_render_squad_view()
+		)
 	else:
-		if player_club.starting_five.size() < 5:
+		if is_starter:
+			btn_action.text = "⇄"
+			btn_action.tooltip_text = "Sélectionner ce titulaire pour le remplacer ou permuter"
+			btn_action.modulate = Color("34d399")
+			btn_action.pressed.connect(func():
+				selected_swap_player = p
+				inspected_player = p
+				_render_squad_view()
+			)
+		elif player_club.starting_five.size() < 5:
 			btn_action.text = "+"
 			btn_action.tooltip_text = "Aligner dans le 5 de départ"
 			btn_action.modulate = Color("10b981")
@@ -971,7 +1072,7 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 			)
 		else:
 			btn_action.text = "⇄"
-			btn_action.tooltip_text = "Remplacer un titulaire par ce joueur"
+			btn_action.tooltip_text = "Faire entrer ce joueur à la place d'un titulaire"
 			btn_action.modulate = Color("38bdf8")
 			btn_action.pressed.connect(func():
 				selected_swap_player = p
@@ -1544,159 +1645,195 @@ func _render_club_roster(c: Club) -> void:
 	roster_header.add_theme_color_override("font_color", Color("e2e8f0"))
 	club_roster_list.add_child(roster_header)
 
+	var starter_cards_count = 0
+	if not c.starting_five.is_empty():
+		var starter_lbl = Label.new()
+		starter_lbl.text = "🟢 ALIGNÉS SUR LE TERRAIN (5 MAJEUR) :"
+		starter_lbl.add_theme_font_size_override("font_size", 12)
+		starter_lbl.add_theme_color_override("font_color", Color("34d399"))
+		club_roster_list.add_child(starter_lbl)
+
+		for p in c.starting_five:
+			club_roster_list.add_child(_create_club_roster_card(p, c, true))
+			starter_cards_count += 1
+
+		var bench_cnt = c.squad.size() - c.starting_five.size()
+		if bench_cnt > 0:
+			club_roster_list.add_child(_create_lisere_divider("🪑 REMPLAÇANTS & RÉSERVE (%d)" % bench_cnt))
+
 	for p in c.squad:
-		var card = PanelContainer.new()
-		var p_style = StyleBoxFlat.new()
-		p_style.bg_color = Color(0.08, 0.11, 0.18, 0.9)
-		p_style.set_corner_radius_all(8)
-		p_style.border_width_left = 1
+		if not c.starting_five.has(p):
+			club_roster_list.add_child(_create_club_roster_card(p, c, false))
+
+func _create_club_roster_card(p: Player, c: Club, is_starter: bool) -> PanelContainer:
+	var card = PanelContainer.new()
+	var p_style = StyleBoxFlat.new()
+	if is_starter:
+		p_style.bg_color = Color(0.06, 0.16, 0.13, 0.9)
+		p_style.border_width_left = 4
+		p_style.border_color = Color("10b981")
 		p_style.border_width_top = 1
 		p_style.border_width_right = 1
 		p_style.border_width_bottom = 1
-		p_style.border_color = Color(0.18, 0.24, 0.35, 0.6)
-		p_style.content_margin_left = 10
-		p_style.content_margin_right = 10
-		p_style.content_margin_top = 6
-		p_style.content_margin_bottom = 6
-		card.add_theme_stylebox_override("panel", p_style)
+	else:
+		p_style.bg_color = Color(0.08, 0.11, 0.18, 0.9)
+		p_style.border_width_left = 2
+		p_style.border_color = Color(0.2, 0.25, 0.35, 0.5)
+		p_style.border_width_top = 1
+		p_style.border_width_right = 1
+		p_style.border_width_bottom = 1
 
-		var hbox = HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 10)
-		hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	p_style.set_corner_radius_all(8)
+	p_style.content_margin_left = 10
+	p_style.content_margin_right = 10
+	p_style.content_margin_top = 6
+	p_style.content_margin_bottom = 6
+	card.add_theme_stylebox_override("panel", p_style)
 
-		# 1. Badge Poste
-		var pos_panel = PanelContainer.new()
-		var pos_style = StyleBoxFlat.new()
-		pos_style.set_corner_radius_all(6)
-		pos_style.content_margin_left = 6
-		pos_style.content_margin_right = 6
-		pos_style.content_margin_top = 2
-		pos_style.content_margin_bottom = 2
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
-		var pos_text = "MIL"
-		var pos_color = Color("10b981")
-		match p.position:
-			Player.Position.GK:
-				pos_text = "GAR"
-				pos_color = Color("f59e0b")
-			Player.Position.DEF:
-				pos_text = "DEF"
-				pos_color = Color("38bdf8")
-			Player.Position.MID:
-				pos_text = "MIL"
-				pos_color = Color("10b981")
-			Player.Position.FWD:
-				pos_text = "ATT"
-				pos_color = Color("f43f5e")
+	if is_starter:
+		var starter_tag = Label.new()
+		starter_tag.text = "🟢"
+		starter_tag.tooltip_text = "Titulaire aligné sur le terrain"
+		starter_tag.add_theme_font_size_override("font_size", 10)
+		hbox.add_child(starter_tag)
 
-		pos_style.bg_color = Color(pos_color.r, pos_color.g, pos_color.b, 0.16)
-		pos_style.border_color = pos_color
-		pos_style.border_width_left = 1
-		pos_style.border_width_top = 1
-		pos_style.border_width_right = 1
-		pos_style.border_width_bottom = 1
-		pos_panel.add_theme_stylebox_override("panel", pos_style)
+	# 1. Badge Poste
+	var pos_panel = PanelContainer.new()
+	var pos_style = StyleBoxFlat.new()
+	pos_style.set_corner_radius_all(6)
+	pos_style.content_margin_left = 6
+	pos_style.content_margin_right = 6
+	pos_style.content_margin_top = 2
+	pos_style.content_margin_bottom = 2
 
-		var pos_tag = Label.new()
-		pos_tag.text = pos_text
-		pos_tag.add_theme_color_override("font_color", pos_color)
-		pos_tag.add_theme_font_size_override("font_size", 12)
-		pos_panel.add_child(pos_tag)
-		hbox.add_child(pos_panel)
+	var pos_text = "MIL"
+	var pos_color = Color("10b981")
+	match p.position:
+		Player.Position.GK:
+			pos_text = "GAR"
+			pos_color = Color("f59e0b")
+		Player.Position.DEF:
+			pos_text = "DEF"
+			pos_color = Color("38bdf8")
+		Player.Position.MID:
+			pos_text = "MIL"
+			pos_color = Color("10b981")
+		Player.Position.FWD:
+			pos_text = "ATT"
+			pos_color = Color("f43f5e")
 
-		# 2. Badge OVR
-		var ovr_panel = PanelContainer.new()
-		var ovr_style = StyleBoxFlat.new()
-		ovr_style.set_corner_radius_all(6)
-		ovr_style.bg_color = Color(0.14, 0.18, 0.26, 0.95)
-		ovr_style.content_margin_left = 6
-		ovr_style.content_margin_right = 6
-		ovr_style.content_margin_top = 2
-		ovr_style.content_margin_bottom = 2
-		ovr_panel.add_theme_stylebox_override("panel", ovr_style)
+	pos_style.bg_color = Color(pos_color.r, pos_color.g, pos_color.b, 0.16)
+	pos_style.border_color = pos_color
+	pos_style.border_width_left = 1
+	pos_style.border_width_top = 1
+	pos_style.border_width_right = 1
+	pos_style.border_width_bottom = 1
+	pos_panel.add_theme_stylebox_override("panel", pos_style)
 
-		var ovr_lbl = Label.new()
-		var ovr = p.get_overall()
-		ovr_lbl.text = "%d" % ovr
-		ovr_lbl.add_theme_font_size_override("font_size", 14)
-		if ovr >= 14:
-			ovr_lbl.add_theme_color_override("font_color", Color(0.98, 0.85, 0.3))
-		elif ovr >= 11:
-			ovr_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 0.95))
-		else:
-			ovr_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
-		ovr_panel.add_child(ovr_lbl)
-		hbox.add_child(ovr_panel)
+	var pos_tag = Label.new()
+	pos_tag.text = pos_text
+	pos_tag.add_theme_color_override("font_color", pos_color)
+	pos_tag.add_theme_font_size_override("font_size", 12)
+	pos_panel.add_child(pos_tag)
+	hbox.add_child(pos_panel)
 
-		# 3. Nom & Détail
-		var info_vbox = VBoxContainer.new()
-		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		info_vbox.add_theme_constant_override("separation", 1)
+	# 2. Badge OVR
+	var ovr_panel = PanelContainer.new()
+	var ovr_style = StyleBoxFlat.new()
+	ovr_style.set_corner_radius_all(6)
+	ovr_style.bg_color = Color(0.14, 0.18, 0.26, 0.95)
+	ovr_style.content_margin_left = 6
+	ovr_style.content_margin_right = 6
+	ovr_style.content_margin_top = 2
+	ovr_style.content_margin_bottom = 2
+	ovr_panel.add_theme_stylebox_override("panel", ovr_style)
 
-		var name_lbl = Label.new()
-		name_lbl.text = p.full_name
-		name_lbl.add_theme_font_size_override("font_size", 14)
-		name_lbl.add_theme_color_override("font_color", Color(0.96, 0.97, 0.99))
-		name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		info_vbox.add_child(name_lbl)
+	var ovr_lbl = Label.new()
+	var ovr = p.get_overall()
+	ovr_lbl.text = "%d" % ovr
+	ovr_lbl.add_theme_font_size_override("font_size", 14)
+	if ovr >= 14:
+		ovr_lbl.add_theme_color_override("font_color", Color(0.98, 0.85, 0.3))
+	elif ovr >= 11:
+		ovr_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 0.95))
+	else:
+		ovr_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+	ovr_panel.add_child(ovr_lbl)
+	hbox.add_child(ovr_panel)
 
-		var sub_lbl = Label.new()
-		sub_lbl.text = "%s • %d ans" % [p.nationality, p.age]
-		sub_lbl.add_theme_font_size_override("font_size", 12)
-		sub_lbl.add_theme_color_override("font_color", Color(0.65, 0.75, 0.88))
-		info_vbox.add_child(sub_lbl)
+	# 3. Nom & Détail
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.add_theme_constant_override("separation", 1)
 
-		hbox.add_child(info_vbox)
+	var name_lbl = Label.new()
+	name_lbl.text = p.full_name
+	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_color_override("font_color", Color(0.96, 0.97, 0.99))
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_vbox.add_child(name_lbl)
 
-		# 4. Valeur Marchande
-		var price_lbl = Label.new()
-		price_lbl.text = FormatUtils.format_money(p.market_value)
-		price_lbl.add_theme_color_override("font_color", Color(0.95, 0.82, 0.28))
-		price_lbl.add_theme_font_size_override("font_size", 13)
-		hbox.add_child(price_lbl)
+	var sub_lbl = Label.new()
+	sub_lbl.text = "%s • %d ans" % [p.nationality, p.age]
+	sub_lbl.add_theme_font_size_override("font_size", 12)
+	sub_lbl.add_theme_color_override("font_color", Color(0.65, 0.75, 0.88))
+	info_vbox.add_child(sub_lbl)
 
-		# 5. Bouton Fiche
-		var btn_fiche = Button.new()
-		btn_fiche.text = "👁️ Fiche"
-		btn_fiche.custom_minimum_size = Vector2(76, 32)
-		var f_style = StyleBoxFlat.new()
-		f_style.bg_color = Color(0.16, 0.23, 0.36)
-		f_style.set_corner_radius_all(6)
-		btn_fiche.add_theme_stylebox_override("normal", f_style)
-		var f_hov = f_style.duplicate()
-		f_hov.bg_color = Color(0.24, 0.35, 0.52)
-		btn_fiche.add_theme_stylebox_override("hover", f_hov)
-		btn_fiche.add_theme_font_size_override("font_size", 12)
-		btn_fiche.pressed.connect(func():
+	hbox.add_child(info_vbox)
+
+	# 4. Valeur Marchande
+	var price_lbl = Label.new()
+	price_lbl.text = FormatUtils.format_money(p.market_value)
+	price_lbl.add_theme_color_override("font_color", Color(0.95, 0.82, 0.28))
+	price_lbl.add_theme_font_size_override("font_size", 13)
+	hbox.add_child(price_lbl)
+
+	# 5. Bouton Fiche
+	var btn_fiche = Button.new()
+	btn_fiche.text = "👁️ Fiche"
+	btn_fiche.custom_minimum_size = Vector2(76, 32)
+	var f_style = StyleBoxFlat.new()
+	f_style.bg_color = Color(0.16, 0.23, 0.36)
+	f_style.set_corner_radius_all(6)
+	btn_fiche.add_theme_stylebox_override("normal", f_style)
+	var f_hov = f_style.duplicate()
+	f_hov.bg_color = Color(0.24, 0.35, 0.52)
+	btn_fiche.add_theme_stylebox_override("hover", f_hov)
+	btn_fiche.add_theme_font_size_override("font_size", 12)
+	btn_fiche.pressed.connect(func():
+		player_detail_modal.open_player(p, c)
+	)
+	hbox.add_child(btn_fiche)
+
+	if c != player_club:
+		var btn_buy = Button.new()
+		btn_buy.text = "Négocier"
+		btn_buy.custom_minimum_size = Vector2(80, 32)
+		var b_style = StyleBoxFlat.new()
+		b_style.bg_color = Color(0.12, 0.35, 0.55)
+		b_style.set_corner_radius_all(6)
+		btn_buy.add_theme_stylebox_override("normal", b_style)
+		var b_hov = b_style.duplicate()
+		b_hov.bg_color = Color(0.15, 0.45, 0.70)
+		btn_buy.add_theme_stylebox_override("hover", b_hov)
+		btn_buy.add_theme_font_size_override("font_size", 12)
+		btn_buy.pressed.connect(func():
+			open_club_transfer_negotiation(p, c)
+		)
+		hbox.add_child(btn_buy)
+
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			player_detail_modal.open_player(p, c)
-		)
-		hbox.add_child(btn_fiche)
+	)
 
-		if c != player_club:
-			var btn_buy = Button.new()
-			btn_buy.text = "Négocier"
-			btn_buy.custom_minimum_size = Vector2(80, 32)
-			var b_style = StyleBoxFlat.new()
-			b_style.bg_color = Color(0.12, 0.35, 0.55)
-			b_style.set_corner_radius_all(6)
-			btn_buy.add_theme_stylebox_override("normal", b_style)
-			var b_hov = b_style.duplicate()
-			b_hov.bg_color = Color(0.15, 0.45, 0.70)
-			btn_buy.add_theme_stylebox_override("hover", b_hov)
-			btn_buy.add_theme_font_size_override("font_size", 12)
-			btn_buy.pressed.connect(func():
-				open_club_transfer_negotiation(p, c)
-			)
-			hbox.add_child(btn_buy)
-
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		card.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-				player_detail_modal.open_player(p, c)
-		)
-
-		card.add_child(hbox)
-		club_roster_list.add_child(card)
+	card.add_child(hbox)
+	return card
 
 func _render_market_view() -> void:
 	var list = $Body/MainContent/TabMarket/ScrollContainer/FreeAgentList
