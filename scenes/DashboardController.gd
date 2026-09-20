@@ -10,6 +10,7 @@ const SeasonEndModal = preload("res://scenes/SeasonEndModal.gd")
 const TrophyModal = preload("res://scenes/TrophyModal.gd")
 const OptionsMenuModal = preload("res://scenes/OptionsMenuModal.gd")
 const HelpModal = preload("res://scenes/HelpModal.gd")
+const ClubTransferModal = preload("res://scenes/ClubTransferModal.gd")
 
 var player_club: Club
 var current_league: League
@@ -23,6 +24,7 @@ var season_end_modal: SeasonEndModal = null
 var trophy_modal: TrophyModal = null
 var options_modal: OptionsMenuModal = null
 var help_modal: HelpModal = null
+var club_transfer_modal: ClubTransferModal = null
 
 @onready var user_club_badge: ClubBadge = $TopBar/HBoxContainer/UserClubBadge
 @onready var label_club: Label = $TopBar/HBoxContainer/ClubNameLabel
@@ -37,12 +39,16 @@ var help_modal: HelpModal = null
 
 @onready var btn_tab_squad: Button = $Body/SideNav/VBoxContainer/BtnTabSquad
 @onready var btn_tab_market: Button = $Body/SideNav/VBoxContainer/BtnTabMarket
+@onready var btn_tab_formation: Button = $Body/SideNav/VBoxContainer/BtnTabFormation
 @onready var btn_tab_standings: Button = $Body/SideNav/VBoxContainer/BtnTabStandings
 @onready var btn_tab_economy: Button = $Body/SideNav/VBoxContainer/BtnTabEconomy
 @onready var btn_tab_inbox: Button = $Body/SideNav/VBoxContainer/BtnTabInbox
 
 @onready var tab_squad: Control = $Body/MainContent/TabSquad
 @onready var tab_market: Control = $Body/MainContent/TabMarket
+@onready var tab_formation: Control = $Body/MainContent/TabFormation
+@onready var youth_list: VBoxContainer = $Body/MainContent/TabFormation/ScrollFormation/YouthList
+@onready var btn_scout_youth: Button = $Body/MainContent/TabFormation/FormationHeader/BtnScoutYouth
 @onready var tab_standings: Control = $Body/MainContent/TabStandings
 @onready var tab_economy: Control = $Body/MainContent/TabEconomy
 @onready var economy_content: VBoxContainer = $Body/MainContent/TabEconomy/EconomyContent
@@ -127,6 +133,9 @@ func _ready() -> void:
 	add_child(help_modal)
 	if btn_help:
 		btn_help.pressed.connect(func(): help_modal.open_modal())
+	club_transfer_modal = ClubTransferModal.new()
+	add_child(club_transfer_modal)
+	club_transfer_modal.transfer_agreed.connect(_on_club_transfer_agreed)
 	_init_game_world()
 	_init_tactics_ui()
 	_init_world_browser_ui()
@@ -335,6 +344,7 @@ func _update_inbox_badge() -> void:
 func _show_tab(target: Control) -> void:
 	tab_squad.visible = (target == tab_squad)
 	tab_market.visible = (target == tab_market)
+	tab_formation.visible = (target == tab_formation)
 	tab_standings.visible = (target == tab_standings)
 	tab_economy.visible = (target == tab_economy)
 	tab_inbox.visible = (target == tab_inbox)
@@ -346,6 +356,10 @@ func _on_btn_tab_squad_pressed() -> void:
 func _on_btn_tab_market_pressed() -> void:
 	_render_market_view()
 	_show_tab(tab_market)
+
+func _on_btn_tab_formation_pressed() -> void:
+	_render_formation_view()
+	_show_tab(tab_formation)
 
 func _on_btn_tab_standings_pressed() -> void:
 	_render_standings_view()
@@ -794,8 +808,13 @@ func _render_squad_view() -> void:
 	else:
 		label_pitch_sub.text = "Cliquez sur un joueur pour le remplacer ou permuter"
 		label_pitch_sub.modulate = Color(0.7, 0.75, 0.85, 1.0)
-		label_bench_title.text = "Banc & Réserve (%d remplaçants)" % (player_club.squad.size() - player_club.starting_five.size())
+		label_bench_title.text = "Banc & Réserve (%d remplaçants • Effectif : %d/32)" % [
+			player_club.squad.size() - player_club.starting_five.size(),
+			player_club.squad.size()
+		]
 		label_bench_title.modulate = Color.WHITE
+
+	btn_tab_squad.text = "  ⚽ Effectif (%d/32)" % player_club.squad.size()
 
 	for c in bench_list.get_children():
 		c.queue_free()
@@ -1607,7 +1626,7 @@ func _render_club_roster(c: Club) -> void:
 			btn_buy.add_theme_stylebox_override("hover", b_hov)
 			btn_buy.add_theme_font_size_override("font_size", 12)
 			btn_buy.pressed.connect(func():
-				open_negotiation(p, c)
+				open_club_transfer_negotiation(p, c)
 			)
 			hbox.add_child(btn_buy)
 
@@ -2256,6 +2275,11 @@ func _finalize_league_matchday() -> void:
 			if c != player_club:
 				c.get_finances().process_weekly_cycle(c, 0)
 
+	# Évolution hebdomadaire de la formation
+	for l in all_leagues:
+		for c in l.clubs:
+			c.process_weekly_youth_evolution()
+
 	market.process_ai_squad_management(all_clubs, player_club)
 	market.trigger_ai_market_activity(player_club, all_clubs)
 	SaveManager.save_game(all_leagues, market, player_club, current_league, current_season)
@@ -2277,6 +2301,8 @@ func _finalize_european_matchday() -> void:
 	for l in all_leagues:
 		for c in l.clubs:
 			c.recover_fitness()
+			c.process_weekly_youth_evolution()
+
 
 	if active_european_cup.current_phase >= 6 and active_european_cup.winner != null:
 		var champ = active_european_cup.winner
@@ -2416,7 +2442,19 @@ func _init_negotiation_ui() -> void:
 		current_nego_seller = null
 	)
 
-func open_negotiation(p: Player, seller: Club = null) -> void:
+func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
+	if seller == null or seller == player_club:
+		open_negotiation(p, null, 0)
+		return
+	club_transfer_modal.open_modal(player_club, seller, p, market)
+
+func _on_club_transfer_agreed(p: Player, seller: Club, agreed_fee: int) -> void:
+	show_toast("🤝 Accord de transfert conclu avec %s pour %s € ! Place aux négociations salariales..." % [
+		seller.club_name, String.num_int64(agreed_fee)
+	])
+	open_negotiation(p, seller, agreed_fee)
+
+func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> void:
 	if p == null:
 		return
 	current_nego_player = p
@@ -2480,12 +2518,14 @@ func open_negotiation(p: Player, seller: Club = null) -> void:
 
 	if seller != null:
 		transfer_fee_row.visible = true
-		slider_fee.min_value = max(1000, int(p.market_value * 0.4))
-		slider_fee.max_value = max(10000, int(p.market_value * 2.5))
-		slider_fee.step = 1000
-		slider_fee.value = p.market_value
+		slider_fee.editable = false
+		slider_fee.min_value = 0
+		slider_fee.max_value = max(10000, agreed_fee * 2)
+		slider_fee.value = agreed_fee
+		label_fee_val.text = "%s € (Accord club validé)" % String.num_int64(agreed_fee)
 	else:
 		transfer_fee_row.visible = false
+		slider_fee.editable = true
 
 	_update_negotiation_feedback()
 	negotiation_modal.visible = true
@@ -2496,12 +2536,9 @@ func _update_negotiation_feedback() -> void:
 	var p = current_nego_player
 	var proposed_wage: int = int(slider_wage.value)
 	var proposed_bonus: int = int(slider_bonus.value)
-	var proposed_fee: int = int(slider_fee.value) if current_nego_seller != null else 0
 
 	label_wage_val.text = "%s € / sem" % String.num_int64(proposed_wage)
 	label_bonus_val.text = "%s €" % String.num_int64(proposed_bonus)
-	if current_nego_seller != null:
-		label_fee_val.text = "%s €" % String.num_int64(proposed_fee)
 
 	var wage_ratio: float = float(proposed_wage) / float(max(1, p.wage_demand))
 	var expected_bonus: float = float(p.market_value) * 0.10
@@ -2509,8 +2546,8 @@ func _update_negotiation_feedback() -> void:
 
 	var score: float = 0.0
 	if current_nego_seller != null:
-		var fee_ratio: float = float(proposed_fee) / float(max(1000.0, float(p.market_value)))
-		score = (wage_ratio * 0.45 + bonus_ratio * 0.15 + fee_ratio * 0.40) * 100.0
+		# L'indemnité club étant déjà acceptée, le joueur évalue son salaire et prime
+		score = (wage_ratio * 0.70 + bonus_ratio * 0.30) * 100.0
 	else:
 		score = (wage_ratio * 0.65 + bonus_ratio * 0.35) * 100.0
 
@@ -2581,10 +2618,160 @@ func _on_btn_accept_demands_pressed() -> void:
 		return
 	slider_wage.value = current_nego_player.wage_demand
 	slider_bonus.value = max(1000, int(current_nego_player.market_value * 0.12))
-	if current_nego_seller != null:
-		slider_fee.value = int(current_nego_player.market_value * 1.15)
 	_update_negotiation_feedback()
 	_on_btn_propose_offer_pressed()
+
+# ==================== CENTRE DE FORMATION & JEUNES ====================
+
+func _render_formation_view() -> void:
+	if player_club == null:
+		return
+	player_club.init_youth_academy_if_empty()
+	for c in youth_list.get_children():
+		c.queue_free()
+
+	if player_club.youth_academy.is_empty():
+		var empty_lbl = Label.new()
+		empty_lbl.text = "Aucun jeune espoir dans le centre de formation pour le moment.\nUtilisez le bouton ci-dessus pour lancer une détection !"
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.modulate = Color("94a3b8")
+		empty_lbl.add_theme_font_size_override("font_size", 14)
+		youth_list.add_child(empty_lbl)
+		return
+
+	for p in player_club.youth_academy:
+		var card = _create_youth_prospect_card(p)
+		youth_list.add_child(card)
+
+func _create_youth_prospect_card(p: Player) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.20, 0.9)
+	sb.set_corner_radius_all(10)
+	sb.border_width_left = 3
+	sb.border_color = Color("38bdf8")
+	sb.content_margin_left = 14
+	sb.content_margin_right = 14
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 10
+	panel.add_theme_stylebox_override("panel", sb)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 14)
+
+	# Visage
+	var fw = PlayerFaceWidget.new()
+	fw.custom_minimum_size = Vector2(56, 56)
+	fw.setup_player(p, player_club.primary_color, player_club.secondary_color)
+	hbox.add_child(fw)
+
+	# Info
+	var vbox_info = VBoxContainer.new()
+	vbox_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox_info.add_theme_constant_override("separation", 3)
+
+	var name_lbl = Label.new()
+	name_lbl.text = "%s %s" % [p.get_flag_emoji(), p.full_name]
+	name_lbl.add_theme_font_size_override("font_size", 15)
+	vbox_info.add_child(name_lbl)
+
+	var pos_names = ["Gardien (GK)", "Défenseur (DEF)", "Milieu (MID)", "Attaquant (FWD)"]
+	var sub_lbl = Label.new()
+	sub_lbl.text = "%s • %d ans • Actuel : %d OVR" % [pos_names[p.position], p.age, p.get_overall()]
+	sub_lbl.modulate = Color("94a3b8")
+	sub_lbl.add_theme_font_size_override("font_size", 12)
+	vbox_info.add_child(sub_lbl)
+
+	var stats_lbl = Label.new()
+	if p.position == Player.Position.GK:
+		stats_lbl.text = "RÉF: %d | DEF: %d | PAS: %d | END: %d" % [p.reflexes, p.defending, p.passing, p.stamina]
+	else:
+		stats_lbl.text = "VIT: %d | TIR: %d | PAS: %d | DÉF: %d | DRI: %d" % [p.speed, p.shooting, p.passing, p.defending, p.dribbling]
+	stats_lbl.modulate = Color("38bdf8")
+	stats_lbl.add_theme_font_size_override("font_size", 11)
+	vbox_info.add_child(stats_lbl)
+	hbox.add_child(vbox_info)
+
+	# Potentiel Box
+	var pot_box = VBoxContainer.new()
+	pot_box.custom_minimum_size = Vector2(160, 0)
+	pot_box.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var pot_title = Label.new()
+	pot_title.text = "⭐ Potentiel estimé :"
+	pot_title.add_theme_font_size_override("font_size", 11)
+	pot_title.modulate = Color("facc15")
+	pot_box.add_child(pot_title)
+
+	var pot_val = Label.new()
+	pot_val.text = "%d - %d OVR" % [p.potential_min, p.potential_max]
+	pot_val.add_theme_font_size_override("font_size", 16)
+	pot_val.modulate = Color("facc15")
+	pot_box.add_child(pot_val)
+
+	var pot_bar = ProgressBar.new()
+	pot_bar.custom_minimum_size = Vector2(130, 8)
+	pot_bar.min_value = 50.0
+	pot_bar.max_value = 100.0
+	pot_bar.value = float((p.potential_min + p.potential_max) / 2)
+	pot_bar.show_percentage = false
+	pot_box.add_child(pot_bar)
+	hbox.add_child(pot_box)
+
+	# Action buttons
+	var act_vbox = VBoxContainer.new()
+	act_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	act_vbox.add_theme_constant_override("separation", 6)
+
+	var btn_promote = Button.new()
+	btn_promote.text = "🎓 Promouvoir Pro"
+	btn_promote.custom_minimum_size = Vector2(140, 28)
+	btn_promote.add_theme_font_size_override("font_size", 11)
+	btn_promote.modulate = Color("10b981")
+	btn_promote.pressed.connect(func():
+		if player_club.squad.size() >= TransferMarket.MAX_SQUAD_SIZE:
+			show_toast("Effectif plein (%d/32) : libérez d'abord un joueur." % player_club.squad.size(), true)
+			return
+		if player_club.promote_youth_to_senior(p):
+			show_toast("🎓 %s a été promu dans l'équipe première avec un contrat de 3 ans !" % p.full_name)
+			_render_formation_view()
+			_render_squad_view()
+			_update_topbar()
+	)
+	act_vbox.add_child(btn_promote)
+
+	var btn_fiche = Button.new()
+	btn_fiche.text = "👁️ Fiche Joueur"
+	btn_fiche.custom_minimum_size = Vector2(140, 26)
+	btn_fiche.add_theme_font_size_override("font_size", 11)
+	btn_fiche.pressed.connect(func():
+		player_detail_modal.open_player(p, player_club)
+	)
+	act_vbox.add_child(btn_fiche)
+
+	hbox.add_child(act_vbox)
+	panel.add_child(hbox)
+	return panel
+
+func _on_btn_scout_youth_pressed() -> void:
+	if player_club == null:
+		return
+	var cost = 15_000
+	if player_club.budget < cost:
+		show_toast("Budget insuffisant (15 000 € requis pour la détection).", true)
+		return
+	if player_club.youth_academy.size() >= 8:
+		show_toast("Le centre de formation est plein (limite de 8 jeunes espoirs).", true)
+		return
+	var scouted = player_club.scout_new_youth_prospect(cost)
+	if scouted != null:
+		show_toast("🔍 Détection réussie ! %s (%d ans, OVR %d, Pot. %d-%d) a rejoint votre centre !" % [
+			scouted.full_name, scouted.age, scouted.get_overall(), scouted.potential_min, scouted.potential_max
+		])
+		_update_topbar()
+		_render_formation_view()
+
 
 
 

@@ -19,6 +19,9 @@ const PlayerFaceWidget = preload("res://scenes/PlayerFaceWidget.gd")
 @onready var prog_shooting: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgShooting
 @onready var prog_passing: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgPassing
 @onready var prog_defending: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgDefending
+@onready var lbl_attr_extra: Label = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/LblExtra
+@onready var prog_extra: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgExtra
+@onready var lbl_val_extra: Label = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ValExtra
 @onready var prog_stamina: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgStamina
 @onready var prog_fitness: ProgressBar = $CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid/ProgFitness
 
@@ -65,7 +68,12 @@ func open_player(p: Player, c: Club = null) -> void:
 	# Nom & En-tête
 	var pos_names = ["Gardien (GK)", "Défenseur (DEF)", "Milieu (MID)", "Attaquant (FWD)"]
 	lbl_player_name.text = "%s %s" % [p.get_flag_emoji(), p.full_name]
-	lbl_player_sub.text = "%s • %da • Note %d OVR" % [pos_names[p.position], p.age, p.get_overall()]
+	if p.is_youth_prospect or p.age <= 19:
+		lbl_player_sub.text = "%s • %da • Note %d OVR (Potentiel %d-%d ⭐)" % [
+			pos_names[p.position], p.age, p.get_overall(), p.potential_min, p.potential_max
+		]
+	else:
+		lbl_player_sub.text = "%s • %da • Note %d OVR" % [pos_names[p.position], p.age, p.get_overall()]
 
 	# Club
 	if c != null:
@@ -87,6 +95,14 @@ func open_player(p: Player, c: Club = null) -> void:
 	_set_attr(prog_passing, lbl_val_passing, p.passing)
 	_set_attr(prog_defending, lbl_val_defending, p.defending)
 	_set_attr(prog_stamina, lbl_val_stamina, p.stamina)
+
+	if p.position == Player.Position.GK:
+		lbl_attr_extra.text = "Réflexes"
+		_set_attr(prog_extra, lbl_val_extra, p.reflexes)
+	else:
+		lbl_attr_extra.text = "Dribble"
+		_set_attr(prog_extra, lbl_val_extra, p.dribbling)
+
 
 	var fit_pct = int(p.fitness * 100)
 	prog_fitness.value = fit_pct
@@ -166,16 +182,18 @@ func open_player(p: Player, c: Club = null) -> void:
 		stats_history_container.add_child(row)
 
 func _set_attr(prog: ProgressBar, lbl: Label, val: int) -> void:
+	prog.max_value = 100.0
 	prog.value = val
 	lbl.text = str(val)
-	if val >= 15:
+	if val >= 80:
 		lbl.modulate = Color("34d399")
-	elif val >= 11:
+	elif val >= 70:
 		lbl.modulate = Color("38bdf8")
-	elif val >= 8:
+	elif val >= 55:
 		lbl.modulate = Color("facc15")
 	else:
 		lbl.modulate = Color("f87171")
+
 
 func _create_stats_row(season: String, club: String, m: int, g: int, a: int, t: int, s: int, r: float, is_current: bool) -> Control:
 	var container = PanelContainer.new()

@@ -26,18 +26,25 @@ func get_flag_emoji() -> String:
 
 
 
-@export_range(1, 20) var speed: int = 10
-@export_range(1, 20) var shooting: int = 10
-@export_range(1, 20) var passing: int = 10
-@export_range(1, 20) var defending: int = 10
-@export_range(1, 20) var stamina: int = 10
+@export_range(20, 99) var speed: int = 65
+@export_range(20, 99) var shooting: int = 60
+@export_range(20, 99) var passing: int = 65
+@export_range(20, 99) var defending: int = 60
+@export_range(20, 99) var dribbling: int = 65
+@export_range(20, 99) var stamina: int = 70
+@export_range(20, 99) var reflexes: int = 60
+
+# Système de potentiel et centre de formation
+@export var potential_min: int = 65
+@export var potential_max: int = 80
+@export var is_youth_prospect: bool = false
 
 @export var trait_positive: String = "Aucun"
 @export var trait_negative: String = "Aucun"
 
-@export var market_value: int = 50_000
-@export var salary: int = 2_000
-@export var wage_demand: int = 2_000
+@export var market_value: int = 80_000
+@export var salary: int = 2_500
+@export var wage_demand: int = 2_500
 @export var contract_years: int = 2
 @export var greed: float = 1.0
 @export_range(0.0, 1.0) var fitness: float = 1.0
@@ -68,14 +75,14 @@ func get_flag_emoji() -> String:
 func get_overall() -> int:
 	match position:
 		Position.GK:
-			return int(defending * 0.5 + passing * 0.2 + stamina * 0.3)
+			return int(reflexes * 0.50 + defending * 0.20 + passing * 0.15 + stamina * 0.15)
 		Position.DEF:
-			return int(defending * 0.45 + speed * 0.25 + passing * 0.15 + stamina * 0.15)
+			return int(defending * 0.40 + stamina * 0.25 + speed * 0.15 + passing * 0.10 + dribbling * 0.10)
 		Position.MID:
-			return int(passing * 0.35 + stamina * 0.25 + speed * 0.2 + shooting * 0.2)
+			return int(passing * 0.35 + dribbling * 0.25 + stamina * 0.15 + shooting * 0.15 + defending * 0.10)
 		Position.FWD:
-			return int(shooting * 0.45 + speed * 0.3 + passing * 0.15 + stamina * 0.1)
-	return 10
+			return int(shooting * 0.40 + speed * 0.25 + dribbling * 0.20 + passing * 0.10 + stamina * 0.05)
+	return 60
 
 func get_average_rating() -> float:
 	var m: int = stats_current_season.get("matches", 0)

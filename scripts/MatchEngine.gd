@@ -108,8 +108,8 @@ static func _resolve_phase(minute: int, atk: Club, def_c: Club, rep: MatchReport
 	var fat_atk = attacker.fitness if minute <= 20 else attacker.fitness * (0.6 if attacker.trait_negative == "Fumeur" else 0.85)
 	var fat_def = defender.fitness if minute <= 20 else defender.fitness * 0.85
 
-	var atk_power = (attacker.speed + attacker.passing) * 0.5 * fat_atk
-	var def_power = (defender.speed + defender.defending) * 0.5 * fat_def
+	var atk_power = (attacker.speed + attacker.passing + attacker.dribbling) * 0.333 * fat_atk
+	var def_power = (defender.speed + defender.defending + defender.stamina) * 0.333 * fat_def
 
 	if atk.tactical_style == 1:
 		atk_power *= 1.15
@@ -143,11 +143,11 @@ static func _resolve_phase(minute: int, atk: Club, def_c: Club, rep: MatchReport
 			})
 		return
 
-	var shot_bonus = 2.0 if atk.training_focus == 1 else 0.0
-	var def_bonus = 2.0 if def_c.training_focus == 2 else 0.0
+	var shot_bonus = 8.0 if atk.training_focus == 1 else 0.0
+	var def_bonus = 8.0 if def_c.training_focus == 2 else 0.0
 
-	var shot_rating = float(attacker.shooting) + shot_bonus + (4.0 if attacker.trait_positive == "Renard des surfaces" else 0.0)
-	var save_rating = float(keeper.defending if keeper else 5) + def_bonus + (4.0 if keeper and keeper.trait_positive == "Mur" else 0.0)
+	var shot_rating = float(attacker.shooting) + shot_bonus + (12.0 if attacker.trait_positive == "Renard des surfaces" else 0.0)
+	var save_rating = float((keeper.reflexes * 0.7 + keeper.defending * 0.3) if keeper else 55.0) + def_bonus + (12.0 if keeper and keeper.trait_positive == "Mur" else 0.0)
 
 	# Tir cadré (vers le but)
 	if atk == rep.home_club:

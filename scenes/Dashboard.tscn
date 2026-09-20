@@ -163,6 +163,13 @@ theme_override_font_sizes/font_size = 14
 alignment = 0
 text = "  🔄 Mercato"
 
+[node name="BtnTabFormation" type="Button" parent="Body/SideNav/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+alignment = 0
+text = "  🎓 Formation"
+
 [node name="BtnTabStandings" type="Button" parent="Body/SideNav/VBoxContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -509,6 +516,48 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
+[node name="TabFormation" type="VBoxContainer" parent="Body/MainContent"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FormationHeader" type="HBoxContainer" parent="Body/MainContent/TabFormation"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderInfo" type="VBoxContainer" parent="Body/MainContent/TabFormation/FormationHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelFormationTitle" type="Label" parent="Body/MainContent/TabFormation/FormationHeader/HeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 18
+text = "🎓 Centre de Formation & Détection des Jeunes"
+
+[node name="LabelFormationSub" type="Label" parent="Body/MainContent/TabFormation/FormationHeader/HeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+text = "Observez le potentiel de vos pépites (15-18 ans) évoluer chaque semaine et intégrez-les à l'équipe pro."
+
+[node name="BtnScoutYouth" type="Button" parent="Body/MainContent/TabFormation/FormationHeader"]
+custom_minimum_size = Vector2(230, 38)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 13
+text = "🔍 Détecter un Talent (15 000 €)"
+
+[node name="ScrollFormation" type="ScrollContainer" parent="Body/MainContent/TabFormation"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="YouthList" type="VBoxContainer" parent="Body/MainContent/TabFormation/ScrollFormation"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
 [node name="MatchModal" type="Control" parent="."]
 visible = false
 layout_mode = 1
@@ -776,7 +825,10 @@ layout_mode = 1
 [connection signal="pressed" from="TopBar/HBoxContainer/BtnAdvance" to="." method="_on_btn_advance_pressed"]
 [connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabSquad" to="." method="_on_btn_tab_squad_pressed"]
 [connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabMarket" to="." method="_on_btn_tab_market_pressed"]
+[connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabFormation" to="." method="_on_btn_tab_formation_pressed"]
 [connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabStandings" to="." method="_on_btn_tab_standings_pressed"]
 [connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabEconomy" to="." method="_on_btn_tab_economy_pressed"]
 [connection signal="pressed" from="Body/SideNav/VBoxContainer/BtnTabInbox" to="." method="_on_btn_tab_inbox_pressed"]
+[connection signal="pressed" from="Body/MainContent/TabFormation/FormationHeader/BtnScoutYouth" to="." method="_on_btn_scout_youth_pressed"]
+
 

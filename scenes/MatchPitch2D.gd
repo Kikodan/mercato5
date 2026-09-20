@@ -14,10 +14,13 @@ var current_anim_tween: Tween = null
 var simulation_speed: float = 1.0
 
 # Effets visuels
+const PlayerFaceWidget = preload("res://scenes/PlayerFaceWidget.gd")
+
 var fx_type: String = "" # "goal", "save", "tackle", "foul"
 var fx_pos: Vector2 = Vector2.ZERO
 var fx_timer: float = 0.0
 var fx_text: String = ""
+var fx_player: Player = null
 
 # Formations 1-2-1 normalisées
 const BASE_HOME_FORMATION = [
@@ -181,7 +184,7 @@ func play_event_animation(evt: Dictionary) -> void:
 			)
 			current_anim_tween.tween_interval(step_time)
 			current_anim_tween.tween_callback(func():
-				_trigger_fx("tackle", tackle_spot * size, "⚔️ TACLE !")
+				_trigger_fx("tackle", tackle_spot * size, "⚔️ TACLE !", evt.get("defender"))
 				ball_target = tackle_spot + Vector2(-0.14 * dir, (0.2 if randf() < 0.5 else -0.2))
 			)
 			current_anim_tween.tween_interval(step_time)
@@ -196,7 +199,7 @@ func play_event_animation(evt: Dictionary) -> void:
 			)
 			current_anim_tween.tween_interval(step_time)
 			current_anim_tween.tween_callback(func():
-				_trigger_fx("foul", foul_spot * size, "🟨 FAUTE !")
+				_trigger_fx("foul", foul_spot * size, "🟨 FAUTE !", evt.get("defender"))
 			)
 			current_anim_tween.tween_interval(step_time * 1.2)
 			current_anim_tween.tween_callback(func(): _reset_team_targets())
@@ -214,7 +217,7 @@ func play_event_animation(evt: Dictionary) -> void:
 			)
 			current_anim_tween.tween_interval(step_time * 0.8)
 			current_anim_tween.tween_callback(func():
-				_trigger_fx("save", goal_target * size, "🧤 PARADE !")
+				_trigger_fx("save", goal_target * size, "🧤 PARADE !", evt.get("keeper"))
 				ball_target = goal_target + Vector2(-0.15 * dir, (0.2 if randf() < 0.5 else -0.2))
 			)
 			current_anim_tween.tween_interval(step_time)
@@ -232,7 +235,7 @@ func play_event_animation(evt: Dictionary) -> void:
 			)
 			current_anim_tween.tween_interval(step_time * 0.7)
 			current_anim_tween.tween_callback(func():
-				_trigger_fx("goal", goal_target * size, "⚽ BUUUT !!!")
+				_trigger_fx("goal", goal_target * size, "⚽ BUUUT !!!", evt.get("attacker"))
 				if atk_dict: atk_dict["target"] = shot_spot + Vector2(-0.08 * dir, 0.0)
 			)
 			current_anim_tween.tween_interval(step_time * 1.5)
@@ -241,10 +244,11 @@ func play_event_animation(evt: Dictionary) -> void:
 				_reset_team_targets()
 			)
 
-func _trigger_fx(type: String, pos: Vector2, text: String) -> void:
+func _trigger_fx(type: String, pos: Vector2, text: String, p: Player = null) -> void:
 	fx_type = type
 	fx_pos = pos
 	fx_text = text
+	fx_player = p
 	fx_timer = 0.9
 
 func _reset_team_targets() -> void:
@@ -263,30 +267,31 @@ func _find_player_dict(p: Player, in_home: bool) -> Dictionary:
 
 func _find_gk_dict(in_home: bool) -> Dictionary:
 	var team = home_players if in_home else away_players
-	return team[0]
+	return team[0] if not team.is_empty() else {}
 
 func clamp_field(v: Vector2) -> Vector2:
-	return Vector2(clampf(v.x, 0.05, 0.95), clampf(v.y, 0.1, 0.9))
+	return Vector2(clampf(v.x, 0.04, 0.96), clampf(v.y, 0.12, 0.88))
 
 # ==================== RENDU GRAPHIQUE DU TERRAIN ====================
 
 func _draw() -> void:
 	var s = size
-	if s.x <= 20.0 or s.y <= 20.0:
+	if s.x <= 10 or s.y <= 10:
 		return
 
-	# 1. Pelouse synthétique dégradée avec bandes de tonte
-	draw_rect(Rect2(Vector2.ZERO, s), Color("15803d"))
-	var num_stripes = 10
-	var stripe_w = s.x / float(num_stripes)
-	for i in num_stripes:
-		if i % 2 == 1:
-			draw_rect(Rect2(i * stripe_w, 0, stripe_w, s.y), Color(1.0, 1.0, 1.0, 0.04))
+	# 1. Pelouse verte synthétique avec bandes alternées
+	var pitch_rect = Rect2(Vector2.ZERO, s)
+	draw_rect(pitch_rect, Color("14532d"))
 
-	# 2. Lignes blanches officielles
-	var pad = 12.0
-	var pitch_rect = Rect2(pad, pad, s.x - pad * 2.0, s.y - pad * 2.0)
-	var line_col = Color(1.0, 1.0, 1.0, 0.75)
+	var stripes = 10
+	var w = s.x / float(stripes)
+	for i in stripes:
+		if i % 2 == 1:
+			draw_rect(Rect2(i * w, 0, w, s.y), Color(1, 1, 1, 0.04))
+
+	# 2. Lignes du terrain de futsal (blanches translucides)
+	var pad = 16.0
+	var line_col = Color(1, 1, 1, 0.6)
 	var line_w = 2.0
 	draw_rect(pitch_rect, line_col, false, line_w)
 
@@ -321,14 +326,14 @@ func _draw() -> void:
 	var h_sec = home_club.secondary_color if home_club else Color("38bdf8")
 	for hp in home_players:
 		var p_render = hp.get("render_pos", hp["pos"]) * s
-		_draw_match_player(p_render, h_col, h_sec, hp["num"], true)
+		_draw_match_player(p_render, h_col, h_sec, hp.get("player"), hp["num"], true)
 
 	# 5. Joueurs Extérieur (Away)
 	var a_col = away_club.primary_color if away_club else Color("b91c1c")
 	var a_sec = away_club.secondary_color if away_club else Color("facc15")
 	for ap in away_players:
 		var p_render = ap.get("render_pos", ap["pos"]) * s
-		_draw_match_player(p_render, a_col, a_sec, ap["num"], false)
+		_draw_match_player(p_render, a_col, a_sec, ap.get("player"), ap["num"], false)
 
 	# 6. Le Ballon
 	var bp = ball_pos * s
@@ -341,21 +346,38 @@ func _draw() -> void:
 	if fx_timer > 0.0:
 		_draw_fx(s)
 
-func _draw_match_player(pos: Vector2, prim: Color, sec: Color, num: String, is_home: bool) -> void:
-	var r = 13.0
+func _draw_match_player(pos: Vector2, prim: Color, sec: Color, player: Player, num: String, is_home: bool) -> void:
+	var r = 14.0
 	# Ombre portée dynamique
 	draw_circle(pos + Vector2(1, 3), r * 0.95, Color(0, 0, 0, 0.35))
-	draw_circle(pos, r, prim)
-	draw_arc(pos, r, 0, TAU, 24, sec, 2.0)
+	draw_circle(pos, r, Color("0f172a"))
 
+	# Visage miniature
+	if player != null:
+		var face_id = player.face_data.get("face_id", -1)
+		if face_id == -1:
+			face_id = abs(hash(player.full_name)) % PlayerFaceWidget.TOTAL_FACES
+		var tex = PlayerFaceWidget.get_face_texture(face_id)
+		if tex != null:
+			var d = (r - 0.5) * 2.0
+			draw_texture_rect(tex, Rect2(pos.x - r + 0.5, pos.y - r + 0.5, d, d), false)
+
+	# Anneau de contour club
+	draw_arc(pos, r - 0.5, 0, TAU, 24, prim, 2.2)
+
+	# Pastille Note / Numéro
+	var badge_c = pos + Vector2(r * 0.72, -r * 0.72)
+	draw_circle(badge_c, 6.5, Color("0f172a"))
+	draw_arc(badge_c, 6.5, 0, TAU, 16, sec, 1.2)
 	var font = ThemeDB.fallback_font
-	var font_size = 9
-	var t_size = font.get_string_size(num, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
-	draw_string(font, pos + Vector2(-t_size.x * 0.5, 4), num, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color.WHITE)
+	var val_str = str(player.get_overall()) if player != null else num
+	var font_size = 7
+	var t_size = font.get_string_size(val_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
+	draw_string(font, badge_c + Vector2(-t_size.x * 0.5, 2.5), val_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color.WHITE)
 
 func _draw_fx(s: Vector2) -> void:
 	var font = ThemeDB.fallback_font
-	var font_size = 15
+	var font_size = 14
 	var text_col = Color("facc15")
 
 	match fx_type:
@@ -373,11 +395,24 @@ func _draw_fx(s: Vector2) -> void:
 			text_col = Color("f87171")
 
 	if fx_text != "":
-		var t_pos = fx_pos + Vector2(-40, -18)
-		t_pos.x = clampf(t_pos.x, 20.0, s.x - 100.0)
-		t_pos.y = clampf(t_pos.y, 25.0, s.y - 15.0)
+		var banner_w = 144.0
+		var banner_h = 26.0
+		var t_pos = fx_pos + Vector2(-banner_w * 0.5, -24)
+		t_pos.x = clampf(t_pos.x, 10.0, s.x - banner_w - 10.0)
+		t_pos.y = clampf(t_pos.y, 10.0, s.y - banner_h - 10.0)
 
-		var bg_rect = Rect2(t_pos - Vector2(6, 14), Vector2(100, 20))
-		draw_rect(bg_rect, Color(0.06, 0.09, 0.16, 0.85), true)
+		var bg_rect = Rect2(t_pos, Vector2(banner_w, banner_h))
+		draw_rect(bg_rect, Color(0.06, 0.09, 0.16, 0.92), true)
 		draw_rect(bg_rect, text_col, false, 1.5)
-		draw_string(font, t_pos, fx_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_col)
+
+		var text_offset_x = 8.0
+		if fx_player != null:
+			var f_id = fx_player.face_data.get("face_id", abs(hash(fx_player.full_name)) % PlayerFaceWidget.TOTAL_FACES)
+			var tex = PlayerFaceWidget.get_face_texture(f_id)
+			if tex != null:
+				var f_rect = Rect2(t_pos.x + 3.0, t_pos.y + 3.0, 20.0, 20.0)
+				draw_texture_rect(tex, f_rect, false)
+				draw_rect(f_rect, text_col, false, 1.0)
+				text_offset_x = 28.0
+
+		draw_string(font, Vector2(t_pos.x + text_offset_x, t_pos.y + 18.0), fx_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_col)

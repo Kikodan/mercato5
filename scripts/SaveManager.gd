@@ -184,7 +184,12 @@ static func _serialize_player(p: Player) -> Dictionary:
 		"sho": p.shooting,
 		"pas": p.passing,
 		"def": p.defending,
+		"drib": p.dribbling,
 		"sta": p.stamina,
+		"ref": p.reflexes,
+		"pot_min": p.potential_min,
+		"pot_max": p.potential_max,
+		"is_youth": p.is_youth_prospect,
 		"fit": p.fitness,
 		"val": p.market_value,
 		"sal": p.salary,
@@ -206,11 +211,16 @@ static func _deserialize_player(d: Dictionary) -> Player:
 	p.nationality = d.get("nat", "France")
 	p.age = d.get("age", 22)
 	p.position = d.get("pos", 2)
-	p.speed = d.get("spd", 10)
-	p.shooting = d.get("sho", 10)
-	p.passing = d.get("pas", 10)
-	p.defending = d.get("def", 10)
-	p.stamina = d.get("sta", 10)
+	p.speed = d.get("spd", 65)
+	p.shooting = d.get("sho", 60)
+	p.passing = d.get("pas", 65)
+	p.defending = d.get("def", 60)
+	p.dribbling = d.get("drib", 65)
+	p.stamina = d.get("sta", 70)
+	p.reflexes = d.get("ref", 60)
+	p.potential_min = d.get("pot_min", 65)
+	p.potential_max = d.get("pot_max", 80)
+	p.is_youth_prospect = d.get("is_youth", false)
 	p.fitness = d.get("fit", 1.0)
 	p.consecutive_starts = int(d.get("c_starts", 0))
 	p.market_value = d.get("val", 50_000)
@@ -238,12 +248,31 @@ static func _deserialize_player(d: Dictionary) -> Player:
 	p.palmares.clear()
 	for palm in d.get("palmares", []):
 		p.palmares.append(str(palm))
+
+	# Migration automatique si sauvegarde sur ancienne échelle (1-20)
+	if p.speed <= 20 and p.shooting <= 20 and p.defending <= 20:
+		var conv = func(val: int): return clampi(int(val * 3.8 + 24), 35, 95)
+		p.speed = conv.call(p.speed)
+		p.shooting = conv.call(p.shooting)
+		p.passing = conv.call(p.passing)
+		p.defending = conv.call(p.defending)
+		p.stamina = conv.call(p.stamina)
+		p.dribbling = p.passing
+		p.reflexes = p.defending if p.position == Player.Position.GK else 45
+		var actual_ovr = p.get_overall()
+		p.potential_min = clampi(actual_ovr - 2, 50, 92)
+		p.potential_max = clampi(p.potential_min + 10, p.potential_min, 99)
+
 	return p
 
 static func _serialize_club(c: Club) -> Dictionary:
 	var squad_arr: Array = []
 	for p in c.squad:
 		squad_arr.append(_serialize_player(p))
+
+	var youth_arr: Array = []
+	for p in c.youth_academy:
+		youth_arr.append(_serialize_player(p))
 
 	var starters: Array = []
 	for p in c.starting_five:
@@ -265,6 +294,7 @@ static func _serialize_club(c: Club) -> Dictionary:
 		"finances": c.get_finances().to_dict(),
 		"recent_form": c.recent_form,
 		"squad": squad_arr,
+		"youth_academy": youth_arr,
 		"starters": starters
 	}
 
@@ -295,6 +325,11 @@ static func _deserialize_club(d: Dictionary) -> Club:
 		c.squad.append(p)
 		if starters_names.has(p.full_name):
 			c.starting_five.append(p)
+
+	c.youth_academy.clear()
+	for y_data in d.get("youth_academy", []):
+		c.youth_academy.append(_deserialize_player(y_data))
+	c.init_youth_academy_if_empty()
 
 	if c.starting_five.is_empty():
 		c.auto_pick_lineup()

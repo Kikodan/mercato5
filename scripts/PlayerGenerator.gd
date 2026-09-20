@@ -75,7 +75,7 @@ const LAST_NAMES_BY_POS = {
 		],
 		"Espagne": [
 			"Casillas", "De Gea", "Simón", "Raya", "Reina", "Valdés", "Zubizarreta", "Cañizares", "Kepa", "Palop",
-			"Diego López", "Asenjo", "Arconada", "Buyo", "Remiro", "Pacheco", "Soria", "Guaita", "Moyà", "Molina",
+			"López", "Asenjo", "Arconada", "Buyo", "Remiro", "Pacheco", "Soria", "Guaita", "Moyà", "Molina",
 			"Ochotorena", "Sadurní", "Ramallets", "Abbiati", "Herrerín", "Sergi", "Valles", "Gazzaniga", "Dmitrovic", "Soriano"
 		],
 		"Italie": [
@@ -89,8 +89,8 @@ const LAST_NAMES_BY_POS = {
 			"Corrigan", "Bonetti", "Stepney", "Swindin", "Kirkland", "Wright", "Pressman", "Walker", "Steele", "Heaton"
 		],
 		"Portugal": [
-			"Diogo Costa", "Patrício", "José Sá", "Vítor Baía", "Ricardo", "Eduardo", "Beto", "Manuel Bento", "Quim", "Anthony Lopes",
-			"Hilário", "Rui Silva", "Maximiano", "Bruno Varela", "Damas", "Silvino", "Costinha", "Moreira", "Kieszek", "Marafona"
+			"Costa", "Patrício", "Sá", "Baía", "Ricardo", "Eduardo", "Beto", "Bento", "Quim", "Lopes",
+			"Hilário", "Silva", "Maximiano", "Varela", "Damas", "Silvino", "Costinha", "Moreira", "Kieszek", "Marafona"
 		],
 		"Allemagne": [
 			"Neuer", "Kahn", "ter Stegen", "Maier", "Lehmann", "Trapp", "Leno", "Baumann", "Köpke", "Schumacher",
@@ -98,9 +98,9 @@ const LAST_NAMES_BY_POS = {
 			"Reck", "Immel", "Kleff", "Tilkowski", "Fährmann", "Schwolow", "Zentner", "Blaswich", "Dahmen", "Atubolu"
 		],
 		"Brésil": [
-			"Alisson", "Ederson", "Dida", "Júlio César", "Taffarel", "Rogério Ceni", "Marcos", "Bento", "Lucas Perri", "Neto",
-			"Weverton", "Diego Alves", "Helton", "Leão", "Manga", "Gilmar", "Castilho", "Waldir Peres", "Carlos", "Zetti",
-			"Danrlei", "Velloso", "Doni", "Gabriel Vasconcelos", "Everson", "Santos", "Grohe", "Jailson", "Cássio", "Fábio"
+			"Alisson", "Ederson", "Dida", "César", "Taffarel", "Ceni", "Marcos", "Bento", "Perri", "Neto",
+			"Weverton", "Alves", "Helton", "Leão", "Manga", "Gilmar", "Castilho", "Peres", "Carlos", "Zetti",
+			"Danrlei", "Velloso", "Doni", "Vasconcelos", "Everson", "Santos", "Grohe", "Jailson", "Cássio", "Fábio"
 		],
 		"Belgique": [
 			"Courtois", "Preud'homme", "Pfaff", "Casteels", "Mignolet", "Sels", "Proto", "Bailly", "De Vlieger", "Vandereycken",
@@ -111,150 +111,150 @@ const LAST_NAMES_BY_POS = {
 			"Noppert", "Jongbloed", "Van Beveren", "Schrijvers", "Menzo", "Hiele", "Westerveld", "Boschker", "Zoet", "Pasveer"
 		],
 		"Global": [
-			"Yashin", "Schmeichel", "Oblak", "Keylor Navas", "Chilavert", "Higuita", "Cech", "Sommer", "Bounou", "Dibu Martínez",
-			"Muslera", "Ochoa", "Handanovic", "Szczesny", "Dudek", "Goycochea", "Sergio Romero", "Livakovic", "Onana", "Édouard Mendy",
-			"Kobel", "Lunin", "Trubin", "David Ospina", "Claudio Bravo", "Jorge Campos", "Thomas N'Kono", "Vincent Enyeama"
+			"Yashin", "Schmeichel", "Oblak", "Navas", "Chilavert", "Higuita", "Cech", "Sommer", "Bounou", "Martínez",
+			"Muslera", "Ochoa", "Handanovic", "Szczesny", "Dudek", "Goycochea", "Romero", "Livakovic", "Onana", "Mendy",
+			"Kobel", "Lunin", "Trubin", "Ospina", "Bravo", "Campos", "N'Kono", "Enyeama"
 		]
 	},
 	Player.Position.DEF: {
 		"France": [
-			"Thuram", "Desailly", "Blanc", "Varane", "Koundé", "Upamecano", "Saliba", "Theo Hernández", "Lucas Hernández", "Pavard",
-			"Sagnol", "Lizarazu", "Abidal", "Evra", "Umtiti", "Kimpembe", "Konaté", "Ferland Mendy", "Digne", "Gallas",
+			"Thuram", "Desailly", "Blanc", "Varane", "Koundé", "Upamecano", "Saliba", "Hernández", "Pavard",
+			"Sagnol", "Lizarazu", "Abidal", "Evra", "Umtiti", "Kimpembe", "Konaté", "Mendy", "Digne", "Gallas",
 			"Sagna", "Clichy", "Mexès", "Leboeuf", "Amoros", "Bossis", "Trésor", "Battiston", "Sakho", "Zouma",
 			"Disasi", "Badiashile", "Todibo", "Kalulu", "Gusto", "Lukeba", "Simakan", "Clauss", "Sidibé", "Debuchy"
 		],
 		"Espagne": [
-			"Sergio Ramos", "Puyol", "Piqué", "Hierro", "Carvajal", "Jordi Alba", "Laporte", "Le Normand", "Cucurella", "Grimaldo",
-			"Azpilicueta", "Nacho", "Arbeloa", "Capdevila", "Míchel Salgado", "Marchena", "Albiol", "Juanfran", "Bartra", "Pau Torres",
-			"Pedro Porro", "Balde", "Gayà", "Íñigo Martínez", "Vivian", "Camacho", "Gordillo", "Manolo Sanchís", "Miguel Ángel Nadal", "Abelardo"
+			"Ramos", "Puyol", "Piqué", "Hierro", "Carvajal", "Alba", "Laporte", "Le Normand", "Cucurella", "Grimaldo",
+			"Azpilicueta", "Nacho", "Arbeloa", "Capdevila", "Salgado", "Marchena", "Albiol", "Juanfran", "Bartra", "Torres",
+			"Porro", "Balde", "Gayà", "Martínez", "Vivian", "Camacho", "Gordillo", "Sanchís", "Nadal", "Abelardo"
 		],
 		"Italie": [
-			"Maldini", "Baresi", "Cannavaro", "Nesta", "Chiellini", "Bonucci", "Scirea", "Bergomi", "Costacurta", "Ciro Ferrara",
-			"Zambrotta", "Panucci", "Materazzi", "Barzagli", "Bastoni", "Dimarco", "Calafiori", "Di Lorenzo", "Acerbi", "Gianluca Mancini",
-			"Darmian", "Spinazzola", "Pessotto", "Mauro Tassotti", "Claudio Gentile", "Cabrini", "Vierchowod", "Burgnich", "Facchetti", "Grosso"
+			"Maldini", "Baresi", "Cannavaro", "Nesta", "Chiellini", "Bonucci", "Scirea", "Bergomi", "Costacurta", "Ferrara",
+			"Zambrotta", "Panucci", "Materazzi", "Barzagli", "Bastoni", "Dimarco", "Calafiori", "Di Lorenzo", "Acerbi", "Mancini",
+			"Darmian", "Spinazzola", "Pessotto", "Tassotti", "Gentile", "Cabrini", "Vierchowod", "Burgnich", "Facchetti", "Grosso"
 		],
 		"Angleterre": [
-			"Rio Ferdinand", "John Terry", "Sol Campbell", "Bobby Moore", "Kyle Walker", "John Stones", "Harry Maguire", "Alexander-Arnold", "Luke Shaw", "Trippier",
-			"Ashley Cole", "Gary Neville", "Tony Adams", "Martin Keown", "Jamie Carragher", "Gary Cahill", "Gareth Southgate", "Ledley King", "Marc Guéhi", "Ezri Konsa",
-			"Joe Gomez", "Reece James", "Ben Chilwell", "Dan Burn", "Lewis Dunk", "Chris Smalling", "Phil Jones", "Phil Jagielka", "Joleon Lescott", "Leighton Baines"
+			"Ferdinand", "Terry", "Campbell", "Moore", "Walker", "Stones", "Maguire", "Alexander-Arnold", "Shaw", "Trippier",
+			"Cole", "Neville", "Adams", "Keown", "Carragher", "Cahill", "Southgate", "King", "Guéhi", "Konsa",
+			"Gomez", "James", "Chilwell", "Burn", "Dunk", "Smalling", "Jones", "Jagielka", "Lescott", "Baines"
 		],
 		"Portugal": [
-			"Pepe", "Rúben Dias", "Ricardo Carvalho", "Bruno Alves", "Cancelo", "Nuno Mendes", "Dalot", "Raphaël Guerreiro", "José Fonte", "Nélson Semedo",
-			"Danilo Pereira", "Gonçalo Inácio", "António Silva", "Fernando Couto", "Secretário", "Paulo Ferreira", "Bosingwa", "Fábio Coentrão", "Miguel", "Jorge Andrade"
+			"Pepe", "Dias", "Carvalho", "Alves", "Cancelo", "Mendes", "Dalot", "Guerreiro", "Fonte", "Semedo",
+			"Pereira", "Inácio", "Silva", "Couto", "Secretário", "Ferreira", "Bosingwa", "Coentrão", "Miguel", "Andrade"
 		],
 		"Allemagne": [
-			"Beckenbauer", "Jürgen Kohler", "Matthias Sammer", "Mats Hummels", "Antonio Rüdiger", "Jérôme Boateng", "Philipp Lahm", "Paul Breitner", "Joshua Kimmich", "Jonathan Tah",
-			"Nico Schlotterbeck", "David Raum", "Robin Gosens", "Per Mertesacker", "Arne Friedrich", "Christoph Metzelder", "Jens Nowotny", "Thomas Helmer", "Guido Buchwald", "Klaus Augenthaler"
+			"Beckenbauer", "Kohler", "Sammer", "Hummels", "Rüdiger", "Boateng", "Lahm", "Breitner", "Kimmich", "Tah",
+			"Schlotterbeck", "Raum", "Gosens", "Mertesacker", "Friedrich", "Metzelder", "Nowotny", "Helmer", "Buchwald", "Augenthaler"
 		],
 		"Brésil": [
-			"Cafu", "Roberto Carlos", "Thiago Silva", "Marquinhos", "Lúcio", "Juan", "Dani Alves", "Marcelo", "Maicon", "Aldair",
-			"Léo Júnior", "Carlos Alberto", "Gabriel Magalhães", "Bremer", "Éder Militão", "Danilo", "Alex Sandro", "David Luiz", "Miranda", "Roque Júnior"
+			"Cafu", "Carlos", "Silva", "Marquinhos", "Lúcio", "Juan", "Alves", "Marcelo", "Maicon", "Aldair",
+			"Júnior", "Alberto", "Magalhães", "Bremer", "Militão", "Danilo", "Sandro", "Luiz", "Miranda", "Roque"
 		],
 		"Belgique": [
-			"Vincent Kompany", "Jan Vertonghen", "Toby Alderweireld", "Daniel Van Buyten", "Thomas Vermaelen", "Thomas Meunier", "Timothy Castagne", "Arthur Theate", "Wout Faes", "Zeno Debast",
-			"Philippe Albert", "Michel Renquin", "Walter Meeuws", "Eric Gerets", "Dedryck Boyata", "Christian Kabasele", "Sebastiaan Bornauw", "Koni De Winter", "Maxim De Cuyper", "Björn Engels"
+			"Kompany", "Vertonghen", "Alderweireld", "Van Buyten", "Vermaelen", "Meunier", "Castagne", "Theate", "Faes", "Debast",
+			"Albert", "Renquin", "Meeuws", "Gerets", "Boyata", "Kabasele", "Bornauw", "De Winter", "De Cuyper", "Engels"
 		],
 		"Pays-Bas": [
-			"Virgil van Dijk", "Ronald Koeman", "Matthijs de Ligt", "Jaap Stam", "Stefan de Vrij", "Nathan Aké", "Denzel Dumfries", "Daley Blind", "Van Bronckhorst", "Frank de Boer",
-			"Michael Reiziger", "Ruud Krol", "Jan Paul van Hecke", "Jurriën Timber", "Lutsharel Geertruida", "Sven Botman", "Micky van de Ven", "John Heitinga", "Joris Mathijsen", "Khalid Boulahrouz"
+			"van Dijk", "Koeman", "de Ligt", "Stam", "de Vrij", "Aké", "Dumfries", "Blind", "Van Bronckhorst", "de Boer",
+			"Reiziger", "Krol", "van Hecke", "Timber", "Geertruida", "Botman", "van de Ven", "Heitinga", "Mathijsen", "Boulahrouz"
 		],
 		"Global": [
-			"Diego Godín", "Diego Lugano", "Javier Zanetti", "Roberto Ayala", "Daniel Passarella", "Cristian Romero", "Nicolás Otamendi", "Lisandro Martínez", "Kalidou Koulibaly", "Edmond Tapsoba",
-			"David Alaba", "Nemanja Vidic", "Milan Skriniar", "Josko Gvardiol", "Stefan Savic", "Simon Kjaer", "Nayef Aguerd", "Achraf Hakimi", "Paolo Montero", "Juan Pablo Sorín"
+			"Godín", "Lugano", "Zanetti", "Ayala", "Passarella", "Romero", "Otamendi", "Martínez", "Koulibaly", "Tapsoba",
+			"Alaba", "Vidic", "Skriniar", "Gvardiol", "Savic", "Kjaer", "Aguerd", "Hakimi", "Montero", "Sorín"
 		]
 	},
 	Player.Position.MID: {
 		"France": [
 			"Zidane", "Platini", "Vieira", "Kanté", "Pogba", "Makelele", "Camavinga", "Tchouaméni", "Rabiot", "Matuidi",
-			"Deschamps", "Pirès", "Tigana", "Giresse", "Luis Fernandez", "Emmanuel Petit", "Alou Diarra", "Toulalan", "Cabaye", "Moussa Sissoko",
-			"Youssouf Fofana", "Zaïre-Emery", "Guendouzi", "Gourcuff", "Nasri", "Payet", "Valbuena", "Rothen", "Micoud", "Pedretti"
+			"Deschamps", "Pirès", "Tigana", "Giresse", "Fernandez", "Petit", "Diarra", "Toulalan", "Cabaye", "Sissoko",
+			"Fofana", "Zaïre-Emery", "Guendouzi", "Gourcuff", "Nasri", "Payet", "Valbuena", "Rothen", "Micoud", "Pedretti"
 		],
 		"Espagne": [
-			"Xavi", "Iniesta", "Busquets", "Rodri", "Xabi Alonso", "Cesc Fàbregas", "David Silva", "Santi Cazorla", "Pedri", "Gavi",
-			"Koke", "Thiago Alcântara", "Isco", "Juan Mata", "Pep Guardiola", "Luis Enrique", "Marcos Senna", "Mikel Arteta", "Mikel Merino", "Fabián Ruiz",
-			"Martín Zubimendi", "Dani Olmo", "Álex Baena", "Carlos Soler", "Dani Ceballos", "Míchel", "José Mari Bakero", "Julen Guerrero", "Juan Carlos Valerón", "Iván de la Peña"
+			"Xavi", "Iniesta", "Busquets", "Rodri", "Alonso", "Fàbregas", "Silva", "Cazorla", "Pedri", "Gavi",
+			"Koke", "Alcântara", "Isco", "Mata", "Guardiola", "Enrique", "Senna", "Arteta", "Merino", "Ruiz",
+			"Zubimendi", "Olmo", "Baena", "Soler", "Ceballos", "Míchel", "Bakero", "Guerrero", "Valerón", "de la Peña"
 		],
 		"Italie": [
-			"Andrea Pirlo", "Gennaro Gattuso", "Daniele De Rossi", "Nicolò Barella", "Marco Verratti", "Marco Tardelli", "Carlo Ancelotti", "Demetrio Albertini", "Claudio Marchisio", "Jorginho",
-			"Lorenzo Pellegrini", "Sandro Tonali", "Manuel Locatelli", "Davide Frattesi", "Giuseppe Giannini", "Roberto Donadoni", "Romeo Benetti", "Giancarlo Antognoni", "Damiano Tommasi", "Simone Perrotta"
+			"Pirlo", "Gattuso", "De Rossi", "Barella", "Verratti", "Tardelli", "Ancelotti", "Albertini", "Marchisio", "Jorginho",
+			"Pellegrini", "Tonali", "Locatelli", "Frattesi", "Giannini", "Donadoni", "Benetti", "Antognoni", "Tommasi", "Perrotta"
 		],
 		"Angleterre": [
-			"Steven Gerrard", "Frank Lampard", "Paul Scholes", "David Beckham", "Jude Bellingham", "Declan Rice", "Phil Foden", "Paul Gascoigne", "Bryan Robson", "Glenn Hoddle",
-			"Jordan Henderson", "Michael Carrick", "Gareth Barry", "James Milner", "Jack Wilshere", "Paul Ince", "David Platt", "Chris Waddle", "Kobbie Mainoo", "James Maddison"
+			"Gerrard", "Lampard", "Scholes", "Beckham", "Bellingham", "Rice", "Foden", "Gascoigne", "Robson", "Hoddle",
+			"Henderson", "Carrick", "Barry", "Milner", "Wilshere", "Ince", "Platt", "Waddle", "Mainoo", "Maddison"
 		],
 		"Portugal": [
-			"Deco", "Rui Costa", "Bernardo Silva", "Bruno Fernandes", "João Moutinho", "Luís Figo", "Paulo Sousa", "Tiago Mendes", "Maniche", "Costinha",
-			"Vitinha", "João Palhinha", "Rúben Neves", "Otávio", "Renato Sanches", "Matheus Nunes", "João Neves", "William Carvalho", "Adrien Silva", "Miguel Veloso"
+			"Deco", "Costa", "Silva", "Fernandes", "Moutinho", "Figo", "Sousa", "Mendes", "Maniche", "Costinha",
+			"Vitinha", "Palhinha", "Neves", "Otávio", "Sanches", "Nunes", "Carvalho", "Veloso"
 		],
 		"Allemagne": [
-			"Toni Kroos", "Lothar Matthäus", "Bastian Schweinsteiger", "Michael Ballack", "Mesut Özil", "Ilkay Gündogan", "Florian Wirtz", "Jamal Musiala", "Sami Khedira", "Stefan Effenberg",
-			"Pierre Littbarski", "Wolfgang Overath", "Günter Netzer", "Andreas Möller", "Thomas Hässler", "Torsten Frings", "Dietmar Hamann", "Leon Goretzka", "Robert Andrich", "Aleksandar Pavlovic"
+			"Kroos", "Matthäus", "Schweinsteiger", "Ballack", "Özil", "Gündogan", "Wirtz", "Musiala", "Khedira", "Effenberg",
+			"Littbarski", "Overath", "Netzer", "Möller", "Hässler", "Frings", "Hamann", "Goretzka", "Andrich", "Pavlovic"
 		],
 		"Brésil": [
-			"Ronaldinho", "Kaká", "Zico", "Sócrates", "Falcão", "Casemiro", "Dunga", "Rivaldo", "Juninho Pernambucano", "Gilberto Silva",
-			"Fernandinho", "Fabinho", "Lucas Paquetá", "Bruno Guimarães", "Douglas Luiz", "Zé Roberto", "Émerson", "Toninho Cerezo", "Gérson", "Diego Ribas"
+			"Ronaldinho", "Kaká", "Zico", "Sócrates", "Falcão", "Casemiro", "Dunga", "Rivaldo", "Pernambucano", "Silva",
+			"Fernandinho", "Fabinho", "Paquetá", "Guimarães", "Luiz", "Roberto", "Émerson", "Cerezo", "Gérson", "Ribas"
 		],
 		"Belgique": [
-			"Kevin De Bruyne", "Eden Hazard", "Youri Tielemans", "Axel Witsel", "Marouane Fellaini", "Mousa Dembélé", "Enzo Scifo", "Franky Van der Elst", "Jan Ceulemans", "Orel Mangala",
-			"Amadou Onana", "Arthur Vermeeren", "Dennis Praet", "Steven Defour", "Ludo Coeck", "René Vandereycken", "Frank Vercauteren", "Radja Nainggolan", "Nacer Chadli", "Leander Dendoncker"
+			"De Bruyne", "Hazard", "Tielemans", "Witsel", "Fellaini", "Dembélé", "Scifo", "Van der Elst", "Ceulemans", "Mangala",
+			"Onana", "Vermeeren", "Praet", "Defour", "Coeck", "Vandereycken", "Vercauteren", "Nainggolan", "Chadli", "Dendoncker"
 		],
 		"Pays-Bas": [
-			"Johan Cruyff", "Ruud Gullit", "Frank Rijkaard", "Wesley Sneijder", "Frenkie de Jong", "Edgar Davids", "Clarence Seedorf", "Mark van Bommel", "Johan Neeskens", "Teun Koopmeiners",
-			"Tijjani Reijnders", "Jerdy Schouten", "Georginio Wijnaldum", "Kevin Strootman", "Donny van de Beek", "Xavi Simons", "Ryan Gravenberch", "Willem van Hanegem", "Aron Winter", "Philip Cocu"
+			"Cruyff", "Gullit", "Rijkaard", "Sneijder", "de Jong", "Davids", "Seedorf", "van Bommel", "Neeskens", "Koopmeiners",
+			"Reijnders", "Schouten", "Wijnaldum", "Strootman", "van de Beek", "Simons", "Gravenberch", "van Hanegem", "Winter", "Cocu"
 		],
 		"Global": [
-			"Luka Modric", "Ivan Rakitic", "Zvonimir Boban", "Robert Prosinecki", "Pavel Nedved", "Marek Hamsik", "Giorgian de Arrascaeta", "Federico Valverde", "Rodrigo Bentancur", "Alexis Mac Allister",
-			"Rodrigo De Paul", "Enzo Fernández", "Fernando Redondo", "Diego Simeone", "Juan Román Riquelme", "Juan Sebastián Verón", "Michael Essien", "Yaya Touré", "Thomas Partey", "Mohammed Kudus"
+			"Modric", "Rakitic", "Boban", "Prosinecki", "Nedved", "Hamsik", "de Arrascaeta", "Valverde", "Bentancur", "Mac Allister",
+			"De Paul", "Fernández", "Redondo", "Simeone", "Riquelme", "Verón", "Essien", "Touré", "Partey", "Kudus"
 		]
 	},
 	Player.Position.FWD: {
 		"France": [
-			"Kylian Mbappé", "Thierry Henry", "Karim Benzema", "Antoine Griezmann", "Éric Cantona", "Jean-Pierre Papin", "David Trezeguet", "Just Fontaine", "Raymond Kopa", "Olivier Giroud",
-			"Ousmane Dembélé", "Bradley Barcola", "Kingsley Coman", "Hatem Ben Arfa", "Djibril Cissé", "Sylvain Wiltord", "Christophe Dugarry", "Nicolas Anelka", "Sidney Govou", "David Ginola",
-			"Dominique Rocheteau", "Alexandre Lacazette", "Wissam Ben Yedder", "Marcus Thuram", "Randal Kolo Muani", "Christopher Nkunku", "André-Pierre Gignac", "Florian Thauvin", "Anthony Martial", "Martin Terrier"
+			"Mbappé", "Henry", "Benzema", "Griezmann", "Cantona", "Papin", "Trezeguet", "Fontaine", "Kopa", "Giroud",
+			"Dembélé", "Barcola", "Coman", "Ben Arfa", "Cissé", "Wiltord", "Dugarry", "Anelka", "Govou", "Ginola",
+			"Rocheteau", "Lacazette", "Ben Yedder", "Thuram", "Kolo Muani", "Nkunku", "Gignac", "Thauvin", "Martial", "Terrier"
 		],
 		"Espagne": [
-			"Raúl González", "David Villa", "Fernando Torres", "Álvaro Morata", "Emilio Butragueño", "Fernando Morientes", "Lamine Yamal", "Nico Williams", "Ferran Torres", "Mikel Oyarzabal",
-			"Iago Aspas", "Pedro Rodríguez", "Fernando Llorente", "Álvaro Negredo", "Roberto Soldado", "Julio Salinas", "Santillana", "Paco Gento", "Amancio Amaro", "Diego Costa",
-			"Gerard Moreno", "Joselu", "Telmo Zarra", "Alfredo Di Stéfano", "Ferenc Puskás", "Quini", "Diego Tristán", "Iker Muniain", "Samu Omorodion", "Ayoze Pérez"
+			"González", "Villa", "Torres", "Morata", "Butragueño", "Morientes", "Yamal", "Williams", "Oyarzabal",
+			"Aspas", "Rodríguez", "Llorente", "Negredo", "Soldado", "Salinas", "Santillana", "Gento", "Amaro", "Costa",
+			"Moreno", "Joselu", "Zarra", "Di Stéfano", "Puskás", "Quini", "Tristán", "Muniain", "Omorodion", "Pérez"
 		],
 		"Italie": [
-			"Roberto Baggio", "Alessandro Del Piero", "Francesco Totti", "Paolo Rossi", "Gigi Riva", "Christian Vieri", "Filippo Inzaghi", "Luca Toni", "Gianluca Vialli", "Roberto Mancini",
-			"Federico Chiesa", "Ciro Immobile", "Gianluca Scamacca", "Mateo Retegui", "Alberto Gilardino", "Mario Balotelli", "Antonio Di Natale", "Giuseppe Signori", "Gianfranco Zola", "Salvatore Schillaci",
-			"Roberto Boninsegna", "Sandro Mazzola", "Giacomo Raspadori", "Moise Kean", "Giuseppe Meazza", "Silvio Piola", "Roberto Bettega", "Francesco Graziani", "Roberto Pruzzo", "Alessandro Altobelli"
+			"Baggio", "Del Piero", "Totti", "Rossi", "Riva", "Vieri", "Inzaghi", "Toni", "Vialli", "Mancini",
+			"Chiesa", "Immobile", "Scamacca", "Retegui", "Gilardino", "Balotelli", "Di Natale", "Signori", "Zola", "Schillaci",
+			"Boninsegna", "Mazzola", "Raspadori", "Kean", "Meazza", "Piola", "Bettega", "Graziani", "Pruzzo", "Altobelli"
 		],
 		"Angleterre": [
-			"Harry Kane", "Alan Shearer", "Wayne Rooney", "Michael Owen", "Gary Lineker", "Bobby Charlton", "Bukayo Saka", "Raheem Sterling", "Marcus Rashford", "Ollie Watkins",
-			"Ivan Toney", "Robbie Fowler", "Ian Wright", "Andy Cole", "Teddy Sheringham", "Les Ferdinand", "Jermain Defoe", "Emile Heskey", "Peter Crouch", "Daniel Sturridge",
-			"Jamie Vardy", "Jimmy Greaves", "Geoff Hurst", "Cole Palmer", "Anthony Gordon", "Dixie Dean", "Nat Lofthouse", "Tom Finney", "Kevin Keegan", "Dominic Solanke"
+			"Kane", "Shearer", "Rooney", "Owen", "Lineker", "Charlton", "Saka", "Sterling", "Rashford", "Watkins",
+			"Toney", "Fowler", "Wright", "Cole", "Sheringham", "Ferdinand", "Defoe", "Heskey", "Crouch", "Sturridge",
+			"Vardy", "Greaves", "Hurst", "Palmer", "Gordon", "Dean", "Lofthouse", "Finney", "Keegan", "Solanke"
 		],
 		"Portugal": [
-			"Cristiano Ronaldo", "Eusébio", "Pedro Pauleta", "Nani", "Rafael Leão", "Diogo Jota", "João Félix", "Nuno Gomes", "Paulo Futre", "Simão Sabrosa",
-			"Ricardo Quaresma", "Gonçalo Ramos", "Pedro Neto", "Francisco Conceição", "Hugo Almeida", "Hélder Postiga", "Liédson", "Fernando Peyroteo", "Matateu", "José Águas",
-			"Rui Jordão", "Fernando Gomes", "André Silva", "Gonçalo Guedes", "Fábio Silva", "Silvestre Varela", "Éder", "Domingos Paciência", "Dani Carvalho", "Bruma"
+			"Ronaldo", "Eusébio", "Pauleta", "Nani", "Leão", "Jota", "Félix", "Gomes", "Futre", "Sabrosa",
+			"Quaresma", "Ramos", "Neto", "Conceição", "Almeida", "Postiga", "Liédson", "Peyroteo", "Matateu", "Águas",
+			"Jordão", "Silva", "Guedes", "Varela", "Éder", "Paciência", "Carvalho", "Bruma"
 		],
 		"Allemagne": [
-			"Gerd Müller", "Miroslav Klose", "Karl-Heinz Rummenigge", "Jürgen Klinsmann", "Rudi Völler", "Uwe Seeler", "Kai Havertz", "Niclas Füllkrug", "Serge Gnabry", "Leroy Sané",
-			"Mario Gomez", "Oliver Bierhoff", "Lukas Podolski", "André Schürrle", "Timo Werner", "Stefan Kießling", "Kevin Kuranyi", "Oliver Neuville", "Klaus Fischer", "Jupp Heynckes",
-			"Fritz Walter", "Helmut Rahn", "Bernd Hölzenbein", "Karl-Heinz Riedle", "Ulf Kirsten", "Fredi Bobic", "Gerald Asamoah", "Deniz Undav", "Maximilian Beier", "Youssoufa Moukoko"
+			"Müller", "Klose", "Rummenigge", "Klinsmann", "Völler", "Seeler", "Havertz", "Füllkrug", "Gnabry", "Sané",
+			"Gomez", "Bierhoff", "Podolski", "Schürrle", "Werner", "Kießling", "Kuranyi", "Neuville", "Fischer", "Heynckes",
+			"Walter", "Rahn", "Hölzenbein", "Riedle", "Kirsten", "Bobic", "Asamoah", "Undav", "Beier", "Moukoko"
 		],
 		"Brésil": [
-			"Pelé", "Ronaldo Fenômeno", "Romário", "Neymar Jr", "Vinícius Júnior", "Rodrygo", "Rivaldo", "Bebeto", "Careca", "Jairzinho",
-			"Garrincha", "Adriano Imperador", "Robinho", "Gabriel Jesus", "Richarlison", "Endrick", "Raphinha", "Hulk", "Fred", "Luís Fabiano",
-			"Leônidas da Silva", "Ademir de Menezes", "Vavá", "Mário Zagallo", "Tostão", "Reinaldo", "Edmundo", "Márcio Amoroso", "Giovane Élber", "Roberto Firmino"
+			"Pelé", "Ronaldo", "Romário", "Neymar", "Vinícius", "Rodrygo", "Rivaldo", "Bebeto", "Careca", "Jairzinho",
+			"Garrincha", "Adriano", "Robinho", "Jesus", "Richarlison", "Endrick", "Raphinha", "Hulk", "Fred", "Fabiano",
+			"da Silva", "de Menezes", "Vavá", "Zagallo", "Tostão", "Reinaldo", "Edmundo", "Amoroso", "Élber", "Firmino"
 		],
 		"Belgique": [
-			"Romelu Lukaku", "Eden Hazard", "Dries Mertens", "Luc Nilis", "Marc Degryse", "Jérémy Doku", "Loïs Openda", "Leandro Trossard", "Michy Batshuayi", "Christian Benteke",
-			"Divock Origi", "Johan Bakayoko", "Alexis Saelemaekers", "Kevin Mirallas", "Paul Van Himst", "Raoul Lambert", "Erwin Vandenbergh", "Nico Claesen", "Josip Weber", "Mbo Mpenza"
+			"Lukaku", "Hazard", "Mertens", "Nilis", "Degryse", "Doku", "Openda", "Trossard", "Batshuayi", "Benteke",
+			"Origi", "Bakayoko", "Saelemaekers", "Mirallas", "Van Himst", "Lambert", "Vandenbergh", "Claesen", "Weber", "Mpenza"
 		],
 		"Pays-Bas": [
-			"Marco van Basten", "Ruud van Nistelrooy", "Dennis Bergkamp", "Arjen Robben", "Robin van Persie", "Patrick Kluivert", "Memphis Depay", "Cody Gakpo", "Klaas-Jan Huntelaar", "Roy Makaay",
-			"Jimmy Floyd Hasselbaink", "Donyell Malen", "Wout Weghorst", "Joshua Zirkzee", "Piet Keizer", "Rob Rensenbrink", "Johnny Rep", "Willy van der Kuijlen", "Wim Kieft", "John Bosman"
+			"van Basten", "van Nistelrooy", "Bergkamp", "Robben", "van Persie", "Kluivert", "Depay", "Gakpo", "Huntelaar", "Makaay",
+			"Hasselbaink", "Malen", "Weghorst", "Zirkzee", "Keizer", "Rensenbrink", "Rep", "van der Kuijlen", "Kieft", "Bosman"
 		],
 		"Global": [
-			"Lionel Messi", "Diego Maradona", "Luis Suárez", "Edinson Cavani", "Diego Forlán", "Robert Lewandowski", "Erling Haaland", "Zlatan Ibrahimovic", "Samuel Eto'o", "Didier Drogba",
-			"Mohamed Salah", "Sadio Mané", "Victor Osimhen", "Andriy Shevchenko", "Davor Suker", "Hristo Stoichkov", "George Weah", "Son Heung-min", "Julián Álvarez", "Lautaro Martínez",
-			"Hernán Crespo", "Gabriel Batistuta", "Mario Kempes", "Ángel Di María", "Carlos Tévez", "Sergio Agüero", "Gonzalo Higuaín", "Enzo Francescoli", "Marcelo Salas", "Iván Zamorano"
+			"Messi", "Maradona", "Suárez", "Cavani", "Forlán", "Lewandowski", "Haaland", "Ibrahimovic", "Eto'o", "Drogba",
+			"Salah", "Mané", "Osimhen", "Shevchenko", "Suker", "Stoichkov", "Weah", "Son", "Álvarez", "Martínez",
+			"Crespo", "Batistuta", "Kempes", "Di María", "Tévez", "Agüero", "Higuaín", "Francescoli", "Salas", "Zamorano"
 		]
 	}
 }
@@ -328,22 +328,58 @@ static func create_random_player(country: String, pos: Player.Position, base_rat
 	p.full_name = generate_unique_name(country, pos)
 	p.age = randi_range(18, 34)
 
-	var r = func(): return clampi(base_rating + randi_range(-3, 3), 1, 20)
-	p.speed = r.call()
-	p.shooting = r.call()
-	p.passing = r.call()
-	p.defending = r.call()
-	p.stamina = r.call()
+	# Conversion échelle 20-99 : si base_rating est donné sur l'ancienne échelle (1-20), on convertit
+	var target_ovr: int = base_rating
+	if target_ovr <= 20:
+		target_ovr = clampi(int(target_ovr * 3.8 + 24), 48, 92)
+
+	var r = func(offset: int = 0):
+		return clampi(target_ovr + offset + randi_range(-6, 6), 25, 99)
 
 	match pos:
 		Player.Position.GK:
-			p.defending = clampi(p.defending + 4, 1, 20)
-		Player.Position.FWD:
-			p.shooting = clampi(p.shooting + 4, 1, 20)
+			p.reflexes = r.call(10)
+			p.defending = r.call(2)
+			p.passing = r.call(-5)
+			p.stamina = r.call(-2)
+			p.speed = r.call(-12)
+			p.shooting = clampi(r.call(-30), 20, 50)
+			p.dribbling = clampi(r.call(-25), 20, 55)
 		Player.Position.DEF:
-			p.defending = clampi(p.defending + 3, 1, 20)
+			p.defending = r.call(10)
+			p.stamina = r.call(5)
+			p.speed = r.call(0)
+			p.passing = r.call(-2)
+			p.dribbling = r.call(-5)
+			p.shooting = clampi(r.call(-18), 20, 65)
+			p.reflexes = clampi(r.call(-25), 20, 50)
 		Player.Position.MID:
-			p.passing = clampi(p.passing + 3, 1, 20)
+			p.passing = r.call(8)
+			p.dribbling = r.call(6)
+			p.stamina = r.call(4)
+			p.shooting = r.call(2)
+			p.speed = r.call(0)
+			p.defending = r.call(0)
+			p.reflexes = clampi(r.call(-25), 20, 50)
+		Player.Position.FWD:
+			p.shooting = r.call(10)
+			p.speed = r.call(6)
+			p.dribbling = r.call(6)
+			p.passing = r.call(-2)
+			p.stamina = r.call(0)
+			p.defending = clampi(r.call(-18), 20, 60)
+			p.reflexes = clampi(r.call(-25), 20, 50)
+
+	var actual_ovr = p.get_overall()
+	if p.age <= 21:
+		p.potential_min = clampi(actual_ovr + randi_range(2, 6), 55, 94)
+		p.potential_max = clampi(p.potential_min + randi_range(6, 14), p.potential_min, 99)
+	elif p.age <= 25:
+		p.potential_min = clampi(actual_ovr - randi_range(1, 3), 50, 92)
+		p.potential_max = clampi(actual_ovr + randi_range(3, 8), p.potential_min, 95)
+	else:
+		p.potential_min = clampi(actual_ovr - randi_range(2, 5), 45, 90)
+		p.potential_max = clampi(actual_ovr + randi_range(0, 3), p.potential_min, 90)
 
 	if randf() > 0.5:
 		p.trait_positive = POSITIVE_TRAITS.pick_random()
@@ -357,6 +393,70 @@ static func create_random_player(country: String, pos: Player.Position, base_rat
 
 	p.recalculate_value(1)
 	return p
+
+static func create_youth_prospect(country: String, pos: Player.Position = Player.Position.MID) -> Player:
+	var p = Player.new()
+	p.nationality = country
+	p.position = pos
+	p.full_name = generate_unique_name(country, pos)
+	p.age = randi_range(15, 18)
+	p.is_youth_prospect = true
+
+	# Note de départ de jeune pépite : 54 à 70
+	var base_ovr = randi_range(54, 70)
+	var r = func(offset: int = 0):
+		return clampi(base_ovr + offset + randi_range(-5, 5), 35, 88)
+
+	match pos:
+		Player.Position.GK:
+			p.reflexes = r.call(8)
+			p.defending = r.call(0)
+			p.passing = r.call(-6)
+			p.stamina = r.call(-3)
+			p.speed = r.call(-10)
+			p.shooting = clampi(r.call(-25), 20, 45)
+			p.dribbling = clampi(r.call(-20), 20, 50)
+		Player.Position.DEF:
+			p.defending = r.call(8)
+			p.stamina = r.call(4)
+			p.speed = r.call(0)
+			p.passing = r.call(-4)
+			p.dribbling = r.call(-5)
+			p.shooting = clampi(r.call(-18), 20, 55)
+			p.reflexes = clampi(r.call(-20), 20, 45)
+		Player.Position.MID:
+			p.passing = r.call(6)
+			p.dribbling = r.call(6)
+			p.stamina = r.call(2)
+			p.shooting = r.call(0)
+			p.speed = r.call(0)
+			p.defending = r.call(-2)
+			p.reflexes = clampi(r.call(-20), 20, 45)
+		Player.Position.FWD:
+			p.shooting = r.call(8)
+			p.speed = r.call(6)
+			p.dribbling = r.call(5)
+			p.passing = r.call(-3)
+			p.stamina = r.call(0)
+			p.defending = clampi(r.call(-18), 20, 50)
+			p.reflexes = clampi(r.call(-20), 20, 45)
+
+	# Haut potentiel pour le centre de formation
+	var actual_ovr = p.get_overall()
+	p.potential_min = clampi(actual_ovr + randi_range(8, 14), 70, 88)
+	p.potential_max = clampi(p.potential_min + randi_range(6, 15), p.potential_min, 99)
+
+	if randf() > 0.4:
+		p.trait_positive = POSITIVE_TRAITS.pick_random()
+	if randf() > 0.6:
+		p.trait_negative = NEGATIVE_TRAITS.pick_random()
+
+	p.face_data = {
+		"face_id": randi_range(0, 195)
+	}
+	p.recalculate_value(1)
+	return p
+
 
 static func _pick_skin_tone(country: String) -> int:
 	match country:

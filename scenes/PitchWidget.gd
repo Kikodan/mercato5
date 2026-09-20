@@ -93,8 +93,10 @@ func _draw() -> void:
 		else:
 			_draw_empty_slot(slot_pos, default_font, font_size)
 
+const PlayerFaceWidget = preload("res://scenes/PlayerFaceWidget.gd")
+
 func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> void:
-	var r = 22.0
+	var r = 24.0
 	var is_selected = (p == selected_player)
 	var pos_color = Color("f59e0b")
 	match p.position:
@@ -105,26 +107,45 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 	# Anneau de sélection dorée
 	if is_selected:
 		draw_circle(pos, r + 7.0, Color(0.98, 0.8, 0.08, 0.35))
-		draw_arc(pos, r + 5.0, 0, TAU, 32, Color("facc15"), 3.5)
+		draw_arc(pos, r + 5.0, 0, TAU, 36, Color("facc15"), 3.0)
 
 	# Ombre portée
-	draw_circle(pos + Vector2(0, 3), r + 2.0, Color(0, 0, 0, 0.35))
+	draw_circle(pos + Vector2(0, 3), r + 2.0, Color(0, 0, 0, 0.40))
 
-	# Cercle principal
+	# Cercle de fond
 	draw_circle(pos, r, Color("0f172a"))
-	draw_arc(pos, r, 0, TAU, 32, Color("facc15") if is_selected else pos_color, 3.0)
 
-	# Abréviation du poste + OVR
+	# Visage du joueur
+	var face_id = p.face_data.get("face_id", -1)
+	if face_id == -1:
+		face_id = abs(hash(p.full_name)) % PlayerFaceWidget.TOTAL_FACES
+	var tex = PlayerFaceWidget.get_face_texture(face_id)
+	if tex != null:
+		var d = (r - 1.0) * 2.0
+		var dest_rect = Rect2(pos.x - r + 1.0, pos.y - r + 1.0, d, d)
+		draw_texture_rect(tex, dest_rect, false)
+
+	# Anneau extérieur du jeton
+	draw_arc(pos, r - 0.5, 0, TAU, 36, Color("facc15") if is_selected else pos_color, 2.5)
+
+	# Pastille Poste (Haut Gauche)
+	var pos_badge_c = pos + Vector2(-r * 0.72, -r * 0.72)
+	draw_circle(pos_badge_c, 8.5, pos_color)
+	draw_arc(pos_badge_c, 8.5, 0, TAU, 16, Color.WHITE, 1.0)
 	var pos_str = ["G", "D", "M", "A"][p.position]
-	var text_top_size = font.get_string_size(pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
-	draw_string(font, pos + Vector2(-text_top_size.x * 0.5, -1), pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color("facc15") if is_selected else pos_color)
+	var p_size = font.get_string_size(pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, 9)
+	draw_string(font, pos_badge_c + Vector2(-p_size.x * 0.5, 3.5), pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, 9, Color.WHITE)
 
+	# Pastille Note OVR (Haut Droite)
+	var ovr_badge_c = pos + Vector2(r * 0.72, -r * 0.72)
+	draw_circle(ovr_badge_c, 9.5, Color("0f172a"))
+	draw_arc(ovr_badge_c, 9.5, 0, TAU, 16, Color("facc15"), 1.2)
 	var text_ovr = str(p.get_overall())
-	var text_ovr_size = font.get_string_size(text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1)
-	draw_string(font, pos + Vector2(-text_ovr_size.x * 0.5, 12), text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size + 1, Color.WHITE)
+	var ovr_size = font.get_string_size(text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 10)
+	draw_string(font, ovr_badge_c + Vector2(-ovr_size.x * 0.5, 3.5), text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 10, Color("facc15"))
 
 	# Nom du joueur sous le pion
-	var name_box_w = 84.0
+	var name_box_w = 88.0
 	var name_box_h = 16.0
 	var name_rect = Rect2(pos.x - name_box_w * 0.5, pos.y + r + 3.0, name_box_w, name_box_h)
 	draw_rect(name_rect, Color(0.12, 0.16, 0.26, 0.95) if is_selected else Color(0.06, 0.09, 0.16, 0.9), true)
@@ -138,6 +159,7 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 		display_name = display_name.substr(0, 10) + "."
 	var name_size = font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1)
 	draw_string(font, Vector2(pos.x - name_size.x * 0.5, pos.y + r + 15.0), display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1, Color("facc15") if is_selected else Color.WHITE)
+
 
 
 func _draw_empty_slot(pos: Vector2, font: Font, _font_size: int) -> void:

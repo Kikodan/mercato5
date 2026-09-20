@@ -19,6 +19,7 @@ const ClubFinances = preload("res://scripts/ClubFinances.gd")
 @export var reputation: int = 50
 @export var squad: Array[Player] = []
 @export var starting_five: Array[Player] = []
+@export var youth_academy: Array[Player] = []
 @export var palmares: Array[String] = []
 @export var recent_form: Array[Dictionary] = []
 
@@ -95,4 +96,59 @@ func recover_fitness() -> void:
 			if training_focus == 0:
 				bench_boost += 0.10
 			p.fitness = clampf(p.fitness + bench_boost, 0.35, 1.0)
+
+func init_youth_academy_if_empty() -> void:
+	if youth_academy.is_empty():
+		var positions = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.FWD]
+		for i in range(4):
+			var pos = positions[i % positions.size()]
+			var prospect = PlayerGenerator.create_youth_prospect(country, pos)
+			youth_academy.append(prospect)
+
+func process_weekly_youth_evolution() -> void:
+	init_youth_academy_if_empty()
+	for p in youth_academy:
+		# 60% de chance de progression hebdomadaire
+		if randf() < 0.60:
+			var stat_choice = randi_range(0, 5)
+			match stat_choice:
+				0: p.speed = mini(99, p.speed + randi_range(1, 2))
+				1: p.shooting = mini(99, p.shooting + randi_range(1, 2))
+				2: p.passing = mini(99, p.passing + randi_range(1, 2))
+				3: p.defending = mini(99, p.defending + randi_range(1, 2))
+				4: p.dribbling = mini(99, p.dribbling + randi_range(1, 2))
+				5:
+					if p.position == Player.Position.GK:
+						p.reflexes = mini(99, p.reflexes + randi_range(1, 2))
+					else:
+						p.stamina = mini(99, p.stamina + randi_range(1, 2))
+			# Le potentiel se précise (la fourchette se resserre vers le haut)
+			p.potential_min = clampi(p.potential_min + 1, p.get_overall(), p.potential_max)
+			p.potential_max = clampi(p.potential_max + (1 if randf() > 0.65 else 0), p.potential_min, 99)
+			p.recalculate_value(division)
+
+func promote_youth_to_senior(p: Player) -> bool:
+	if not youth_academy.has(p):
+		return false
+	if squad.size() >= 32:
+		return false
+	youth_academy.erase(p)
+	p.is_youth_prospect = false
+	p.contract_years = 3
+	p.salary = 1_500
+	p.wage_demand = 1_500
+	p.recalculate_value(division)
+	squad.append(p)
+	return true
+
+func scout_new_youth_prospect(cost: int = 15_000) -> Player:
+	if budget < cost:
+		return null
+	if youth_academy.size() >= 8:
+		return null
+	budget -= cost
+	var rand_pos = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.FWD].pick_random()
+	var new_prospect = PlayerGenerator.create_youth_prospect(country, rand_pos)
+	youth_academy.append(new_prospect)
+	return new_prospect
 

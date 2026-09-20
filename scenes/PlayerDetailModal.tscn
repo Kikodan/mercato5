@@ -168,14 +168,14 @@ text = "Vitesse"
 custom_minimum_size = Vector2(130, 10)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 20.0
-value = 14.0
+max_value = 100.0
+value = 75.0
 show_percentage = false
 
 [node name="ValSpeed" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "14"
+text = "75"
 
 [node name="LblShooting" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
@@ -186,14 +186,14 @@ text = "Tir"
 custom_minimum_size = Vector2(130, 10)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 20.0
-value = 16.0
+max_value = 100.0
+value = 70.0
 show_percentage = false
 
 [node name="ValShooting" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "16"
+text = "70"
 
 [node name="LblPassing" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
@@ -204,14 +204,14 @@ text = "Passe"
 custom_minimum_size = Vector2(130, 10)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 20.0
-value = 13.0
+max_value = 100.0
+value = 72.0
 show_percentage = false
 
 [node name="ValPassing" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "13"
+text = "72"
 
 [node name="LblDefending" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
@@ -222,32 +222,50 @@ text = "Défense"
 custom_minimum_size = Vector2(130, 10)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 20.0
-value = 9.0
+max_value = 100.0
+value = 65.0
 show_percentage = false
 
 [node name="ValDefending" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "9"
+text = "65"
+
+[node name="LblExtra" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Dribble"
+
+[node name="ProgExtra" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+custom_minimum_size = Vector2(130, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 100.0
+value = 70.0
+show_percentage = false
+
+[node name="ValExtra" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "70"
 
 [node name="LblStamina" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "Endurance"
+text = "Physique"
 
 [node name="ProgStamina" type="ProgressBar" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 custom_minimum_size = Vector2(130, 10)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 20.0
-value = 15.0
+max_value = 100.0
+value = 75.0
 show_percentage = false
 
 [node name="ValStamina" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "15"
+text = "75"
 
 [node name="LblFitness" type="Label" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol/AttrGrid"]
 layout_mode = 2
@@ -266,6 +284,7 @@ show_percentage = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 text = "95%"
+
 
 [node name="TraitsBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/BodySplit/LeftCol"]
 layout_mode = 2
