@@ -56,27 +56,27 @@ static func create_default_for_division(division: int, club_name: String = ""):
 			f.ticket_price = 22
 			f.arena_capacity = randi_range(3500, 5500)
 			f.primary_sponsor_name = ["Fly Airlines", "CryptoBank", "TechGlobal", "Red Bull Energy", "Rolex Chrono"].pick_random()
-			f.primary_sponsor_weekly = randi_range(22000, 32000)
+			f.primary_sponsor_weekly = randi_range(25000, 36000)
 			f.primary_sponsor_bonus_win = randi_range(3500, 6000)
 			f.primary_sponsor_weeks_left = 14
 			
 			f.arena_sponsor_name = ["Orange Connect", "Decathlon Arena", "TotalEnergies Dome", "Groupama Stadium"].pick_random()
-			f.arena_sponsor_weekly = randi_range(11000, 16000)
+			f.arena_sponsor_weekly = randi_range(13000, 19000)
 			f.arena_sponsor_bonus_win = randi_range(2000, 3500)
 			f.arena_sponsor_weeks_left = 14
 			
 			f.kit_sponsor_name = ["Nike Football", "Adidas Performance", "Puma King", "Under Armour"].pick_random()
-			f.kit_sponsor_weekly = randi_range(9000, 14000)
+			f.kit_sponsor_weekly = randi_range(11000, 16000)
 			f.kit_sponsor_bonus_win = randi_range(1500, 2500)
 			f.kit_sponsor_weeks_left = 14
 			
 			f.board_ads_name = ["Régie Pub LED Europe", "Affichage MediaSport", "JCDecaux Futsal"].pick_random()
-			f.board_ads_weekly = randi_range(7000, 11000)
+			f.board_ads_weekly = randi_range(9000, 13000)
 			f.board_ads_bonus_win = randi_range(800, 1500)
 			f.board_ads_weeks_left = 14
 			
-			f.weekly_tv_rights = randi_range(14000, 22000)
-			f.weekly_maintenance = randi_range(3500, 5500)
+			f.weekly_tv_rights = randi_range(16000, 24000)
+			f.weekly_maintenance = randi_range(3500, 5000)
 
 		2:
 			f.ticket_price = 16

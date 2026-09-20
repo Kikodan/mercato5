@@ -1213,6 +1213,9 @@ func _render_standings_view() -> void:
 	if viewed_league == null:
 		viewed_league = current_league
 
+	if label_standings_title == null:
+		return
+
 	var flag = viewed_league.get_country_flag()
 	if viewed_league.is_playoffs_finished():
 		label_standings_title.text = "%s %s - %s [CHAMPION : %s]" % [
@@ -1980,7 +1983,8 @@ func _render_inbox_view() -> void:
 		list.add_child(panel)
 
 func _update_topbar() -> void:
-	user_club_badge.shape = player_club.badge_shape
+	if player_club == null or user_club_badge == null:
+		return
 	user_club_badge.symbol = player_club.badge_symbol
 	user_club_badge.primary_color = player_club.primary_color
 	user_club_badge.secondary_color = player_club.secondary_color
@@ -1995,10 +1999,17 @@ func _update_topbar() -> void:
 
 	var total_days = current_league.schedule.size()
 	if current_league.current_matchday_index < total_days:
+		btn_advance.modulate = Color(1, 1, 1)
 		label_week.text = "Saison %d • J%d/%d (5 buts)" % [current_season, current_league.current_matchday_index + 1, total_days]
 		btn_advance.text = "⚡ Avant-Match (J%d) ▶" % [current_league.current_matchday_index + 1]
 		btn_advance.disabled = false
+	elif _can_simulate_to_season_end():
+		btn_advance.modulate = Color("c084fc")
+		label_week.text = "Saison %d • Non qualifié en phase finale" % current_season
+		btn_advance.text = "⏩ Simuler jusqu'à la Fin de Saison ▶"
+		btn_advance.disabled = false
 	elif not current_league.is_playoffs_finished():
+		btn_advance.modulate = Color(1, 1, 1)
 		if not current_league.has_playoffs_started():
 			label_week.text = "Saison %d • Playoffs Top 3" % current_season
 			btn_advance.text = "🏆 Lancer les Playoffs ▶"
@@ -2022,6 +2033,7 @@ func _update_topbar() -> void:
 				btn_advance.text = "👁️ Assister GRANDE FINALE ▶"
 			btn_advance.disabled = false
 	else:
+		btn_advance.modulate = Color(1, 1, 1)
 		var champ_name = current_league.playoff_champion.club_name if current_league.playoff_champion else "Champion"
 		if active_european_cup == null:
 			label_week.text = "Champion : %s !" % champ_name
@@ -2040,6 +2052,90 @@ func _update_topbar() -> void:
 			label_week.text = "Champion : %s | Europe : %s" % [champ_name, win_name]
 			btn_advance.text = "🏁 Bilan & Nouvelle Saison ▶"
 			btn_advance.disabled = false
+
+func _is_user_in_playoffs() -> bool:
+	if current_league == null or player_club == null:
+		return false
+	if current_league.is_playoffs_finished():
+		return false
+	var standings = current_league.get_sorted_standings()
+	var top3 = standings.slice(0, mini(3, standings.size()))
+	if not top3.has(player_club):
+		return false
+	if not current_league.has_playoffs_started():
+		return true
+	if current_league.playoff_phase == 1:
+		if top3.size() > 0 and top3[0] == player_club:
+			return true
+		return (current_league.playoff_semi_home == player_club or current_league.playoff_semi_away == player_club)
+	elif current_league.playoff_phase == 2:
+		return (current_league.playoff_final_home == player_club or current_league.playoff_final_away == player_club)
+	return false
+
+func _is_user_in_european_cup() -> bool:
+	if player_club == null or current_league == null:
+		return false
+	if player_club.division != 1:
+		return false
+	if active_european_cup == null:
+		var standings = current_league.get_sorted_standings()
+		var top2 = standings.slice(0, mini(2, standings.size()))
+		return top2.has(player_club)
+	else:
+		if active_european_cup.current_phase >= 6:
+			return false
+		if not active_european_cup.qualified_clubs.has(player_club):
+			return false
+		if active_european_cup.current_phase < 4:
+			return true
+		elif active_european_cup.current_phase == 4:
+			return (active_european_cup.semi_final_1.has(player_club) or active_european_cup.semi_final_2.has(player_club))
+		elif active_european_cup.current_phase == 5:
+			return active_european_cup.finalists.has(player_club)
+		return false
+
+func _can_simulate_to_season_end() -> bool:
+	if current_league == null or player_club == null:
+		return false
+	if current_league.current_matchday_index < current_league.schedule.size():
+		return false
+	if current_league.is_playoffs_finished() and (active_european_cup != null and active_european_cup.current_phase >= 6):
+		return false
+	return (not _is_user_in_playoffs()) and (not _is_user_in_european_cup())
+
+func _simulate_to_season_end() -> void:
+	# 1. Simuler tous les playoffs restants dans toutes les ligues
+	for l in all_leagues:
+		if not l.has_playoffs_started():
+			l.init_playoffs()
+		while not l.is_playoffs_finished():
+			l.simulate_ai_playoff_step()
+
+	# 2. Simuler toute la Coupe d'Europe
+	if active_european_cup == null:
+		active_european_cup = EuropeanCup.new()
+		active_european_cup.init_cup(all_leagues)
+
+	if active_european_cup != null:
+		while active_european_cup.current_phase < 6:
+			var fixtures = active_european_cup.get_current_fixtures()
+			for pair in fixtures:
+				if pair.size() >= 2:
+					var rep = MatchEngine.simulate_match(pair[0], pair[1], 5)
+					active_european_cup.record_match(pair[0], pair[1], rep.home_score, rep.away_score)
+			active_european_cup.advance_phase()
+
+	# 3. Récupération et maintenance financière / formation
+	for l in all_leagues:
+		for c in l.clubs:
+			c.recover_fitness()
+			c.process_weekly_youth_evolution()
+			c.get_finances().process_weekly_cycle(c, 0)
+
+	show_toast("⏩ Fin de saison simulée ! Tous les playoffs et la Coupe d'Europe sont terminés.")
+	_update_topbar()
+	_render_standings_view()
+	_trigger_season_transition()
 
 func _style_advance_button() -> void:
 	if btn_advance == null:
@@ -2086,6 +2182,11 @@ func _on_btn_advance_pressed() -> void:
 	if not player_club.is_lineup_valid():
 		player_club.auto_pick_lineup()
 		_render_squad_view()
+
+	# Cas 0 : Non qualifié pour les phases finales (ou éliminé) -> Simulation directe jusqu'à la fin de saison
+	if _can_simulate_to_season_end():
+		_simulate_to_season_end()
+		return
 
 	# Cas 1 : Championnat régulier (5 buts gagnants)
 	if current_league.current_matchday_index < current_league.schedule.size():
@@ -2452,7 +2553,8 @@ func _on_trophy_acknowledged() -> void:
 
 func _trigger_season_transition() -> void:
 	var report = SeasonManager.execute_season_transition(all_leagues, market, player_club, active_european_cup, current_season)
-	season_end_modal.setup(report, player_club)
+	if season_end_modal:
+		season_end_modal.setup(report, player_club)
 
 func _on_new_season_started() -> void:
 	current_season += 1
@@ -2483,6 +2585,9 @@ func _on_new_season_started() -> void:
 func show_toast(msg: String, is_error: bool = false) -> void:
 	if toast_tween and toast_tween.is_valid():
 		toast_tween.kill()
+
+	if notification_toast == null or label_toast == null:
+		return
 
 	var toast_sb = StyleBoxFlat.new()
 	toast_sb.bg_color = Color("0f172a")
