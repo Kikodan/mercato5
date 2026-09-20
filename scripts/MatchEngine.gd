@@ -258,11 +258,32 @@ static func _get_fitness(lineup: Array[Player]) -> float:
 	return sum / float(lineup.size())
 
 static func _apply_fatigue(club: Club) -> void:
-	for p in club.starting_five:
-		var drain = 0.07 if p.trait_positive == "Poumon" else 0.15
-		if club.tactical_style == 1:
-			drain += 0.04
-		elif club.tactical_style == 2:
-			drain = maxf(0.04, drain - 0.03)
-		p.fitness = max(0.4, p.fitness - drain)
+	for p in club.squad:
+		if club.starting_five.has(p):
+			p.consecutive_starts += 1
+			var base_drain: float = 0.18
+			var stamina_mod: float = (20 - p.stamina) * 0.005
+			var style_mod: float = 0.0
+			if club.tactical_style == 1: # Attaque Totale : pressing intense
+				style_mod = 0.08
+			elif club.tactical_style == 2: # Contre-Attaque : bloc bas économe
+				style_mod = -0.04
+
+			var consec_mod: float = (p.consecutive_starts - 1) * 0.035
+			var trait_mod: float = 0.0
+			if p.trait_positive == "Poumon":
+				trait_mod -= 0.06
+			elif p.trait_positive == "Mental d'acier":
+				trait_mod -= 0.02
+			if p.trait_negative == "Fumeur":
+				trait_mod += 0.06
+			elif p.trait_negative == "Fragile":
+				trait_mod += 0.05
+			elif p.trait_negative == "Paresseux":
+				trait_mod += 0.03
+
+			var total_drain: float = clampf(base_drain + stamina_mod + style_mod + consec_mod + trait_mod, 0.10, 0.42)
+			p.fitness = clampf(p.fitness - total_drain, 0.35, 1.0)
+		else:
+			p.consecutive_starts = 0
 

@@ -280,9 +280,11 @@ static func generate_unique_name(country: String, pos: Player.Position = Player.
 	if last_list.is_empty():
 		last_list = pos_dict.get("Global", pos_dict["France"])
 	
-	# Tentative directe prénom + nom célèbre de cette position
+	# Tentative directe NOM CÉLÈBRE (majuscule) + prénom
 	for attempt in 150:
-		var candidate = "%s %s" % [first_list.pick_random(), last_list.pick_random()]
+		var last_name = last_list.pick_random()
+		var first_name = first_list.pick_random()
+		var candidate = "%s %s" % [last_name.to_upper(), first_name]
 		if not registered_names.has(candidate):
 			registered_names[candidate] = true
 			return candidate
@@ -291,13 +293,17 @@ static func generate_unique_name(country: String, pos: Player.Position = Player.
 	var global_list: Array = pos_dict.get("Global", [])
 	if not global_list.is_empty():
 		for attempt in 100:
-			var candidate = "%s %s" % [first_list.pick_random(), global_list.pick_random()]
+			var last_name = global_list.pick_random()
+			var first_name = first_list.pick_random()
+			var candidate = "%s %s" % [last_name.to_upper(), first_name]
 			if not registered_names.has(candidate):
 				registered_names[candidate] = true
 				return candidate
 
 	# Variantes avec suffixe pour garantir un nom unique tout en restant cohérent
-	var base_candidate = "%s %s" % [first_list.pick_random(), last_list.pick_random()]
+	var last_picked = last_list.pick_random() if not last_list.is_empty() else "JOUEUR"
+	var first_picked = first_list.pick_random()
+	var base_candidate = "%s %s" % [last_picked.to_upper(), first_picked]
 	var suffixes = ["Jr.", "II", "III", "IV", "de Souza", "Filho", "Neto"]
 	for s in suffixes:
 		var suffixed = "%s %s" % [base_candidate, s]
@@ -313,7 +319,7 @@ static func generate_unique_name(country: String, pos: Player.Position = Player.
 			return numbered
 		counter += 1
 
-	return "Joueur %s" % str(pos)
+	return "JOUEUR %s" % str(pos)
 
 static func create_random_player(country: String, pos: Player.Position, base_rating: int) -> Player:
 	var p = Player.new()

@@ -131,6 +131,9 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 	draw_rect(name_rect, Color("facc15") if is_selected else pos_color, false, 1.5 if is_selected else 1.0)
 
 	var display_name = p.full_name
+	var parts = p.full_name.split(" ")
+	if parts.size() > 0 and not parts[0].is_empty():
+		display_name = parts[0]
 	if display_name.length() > 11:
 		display_name = display_name.substr(0, 10) + "."
 	var name_size = font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1)

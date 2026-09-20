@@ -95,10 +95,16 @@ theme_override_colors/font_color = Color(0.38, 0.75, 0.98, 1)
 theme_override_font_sizes/font_size = 12
 text = "[Équilibré | Cryo]"
 
-[node name="BtnOptions" type="Button" parent="TopBar/HBoxContainer"]
+[node name="BtnHelp" type="Button" parent="TopBar/HBoxContainer"]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 12
+text = "❓ Aide"
+
+[node name="BtnOptions" type="Button" parent="TopBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "⚙️ Options"
 
@@ -466,6 +472,7 @@ text = "Effectif de l'équipe :"
 [node name="RosterScroll" type="ScrollContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="ClubRosterList" type="VBoxContainer" parent="Body/MainContent/TabStandings/StandingsSplit/ClubRosterPanel/VBoxContainer/RosterScroll"]
 layout_mode = 2
@@ -758,11 +765,11 @@ layout_mode = 2
 modulate = Color(0.95, 0.3, 0.3, 1)
 text = "Abandonner"
 
-[node name="PlayerDetailModal" parent="." instance=ExtResource("5_playerdetail")]
+[node name="PreMatchModal" parent="." instance=ExtResource("6_prematch")]
 visible = false
 layout_mode = 1
 
-[node name="PreMatchModal" parent="." instance=ExtResource("6_prematch")]
+[node name="PlayerDetailModal" parent="." instance=ExtResource("5_playerdetail")]
 visible = false
 layout_mode = 1
 

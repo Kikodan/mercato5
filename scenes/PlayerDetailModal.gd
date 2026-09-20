@@ -54,6 +54,8 @@ func open_player(p: Player, c: Club = null) -> void:
 	current_player = p
 	current_club = c
 	visible = true
+	move_to_front()
+	z_index = 50
 
 	# Visage
 	var p_col = c.primary_color if c != null else Color("334155")

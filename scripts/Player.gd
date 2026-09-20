@@ -41,6 +41,7 @@ func get_flag_emoji() -> String:
 @export var contract_years: int = 2
 @export var greed: float = 1.0
 @export_range(0.0, 1.0) var fitness: float = 1.0
+@export var consecutive_starts: int = 0
 
 # Visage officiel issu des planches de portraits
 @export var face_data: Dictionary = {

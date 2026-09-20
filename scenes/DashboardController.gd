@@ -9,6 +9,7 @@ const SeasonManager = preload("res://scripts/SeasonManager.gd")
 const SeasonEndModal = preload("res://scenes/SeasonEndModal.gd")
 const TrophyModal = preload("res://scenes/TrophyModal.gd")
 const OptionsMenuModal = preload("res://scenes/OptionsMenuModal.gd")
+const HelpModal = preload("res://scenes/HelpModal.gd")
 
 var player_club: Club
 var current_league: League
@@ -21,12 +22,14 @@ var current_season: int = 1
 var season_end_modal: SeasonEndModal = null
 var trophy_modal: TrophyModal = null
 var options_modal: OptionsMenuModal = null
+var help_modal: HelpModal = null
 
 @onready var user_club_badge: ClubBadge = $TopBar/HBoxContainer/UserClubBadge
 @onready var label_club: Label = $TopBar/HBoxContainer/ClubNameLabel
 @onready var label_budget: Label = $TopBar/HBoxContainer/BudgetLabel
 @onready var label_week: Label = $TopBar/HBoxContainer/WeekLabel
 @onready var tactic_label: Label = $TopBar/HBoxContainer/TacticLabel
+@onready var btn_help: Button = $TopBar/HBoxContainer/BtnHelp
 @onready var btn_options: Button = $TopBar/HBoxContainer/BtnOptions
 @onready var btn_save: Button = $TopBar/HBoxContainer/BtnSave
 @onready var btn_main_menu: Button = $TopBar/HBoxContainer/BtnMainMenu
@@ -120,6 +123,10 @@ func _ready() -> void:
 	add_child(options_modal)
 	if btn_options:
 		btn_options.pressed.connect(func(): options_modal.open_modal())
+	help_modal = HelpModal.new()
+	add_child(help_modal)
+	if btn_help:
+		btn_help.pressed.connect(func(): help_modal.open_modal())
 	_init_game_world()
 	_init_tactics_ui()
 	_init_world_browser_ui()
@@ -856,8 +863,10 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 
 	var btn_action = Button.new()
 	btn_action.add_theme_font_size_override("font_size", 12)
+	btn_action.custom_minimum_size = Vector2(28, 26)
 	if selected_swap_player != null and player_club.starting_five.has(selected_swap_player):
-		btn_action.text = "⇄ Entrer"
+		btn_action.text = "⇄"
+		btn_action.tooltip_text = "Faire entrer ce joueur à la place de %s" % selected_swap_player.full_name
 		btn_action.modulate = Color("facc15")
 		btn_action.pressed.connect(func():
 			var idx = player_club.starting_five.find(selected_swap_player)
@@ -868,7 +877,8 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 			_render_squad_view()
 		)
 	elif selected_swap_player == p:
-		btn_action.text = "Annuler"
+		btn_action.text = "✕"
+		btn_action.tooltip_text = "Annuler la sélection"
 		btn_action.modulate = Color("f87171")
 		btn_action.pressed.connect(func():
 			selected_swap_player = null
@@ -876,7 +886,8 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 		)
 	else:
 		if player_club.starting_five.size() < 5:
-			btn_action.text = "+ Aligner"
+			btn_action.text = "+"
+			btn_action.tooltip_text = "Aligner dans le 5 de départ"
 			btn_action.modulate = Color("10b981")
 			btn_action.pressed.connect(func():
 				player_club.starting_five.append(p)
@@ -884,7 +895,8 @@ func _create_player_card(p: Player, _is_starter: bool) -> PanelContainer:
 				_render_squad_view()
 			)
 		else:
-			btn_action.text = "⇄ Remplacer"
+			btn_action.text = "⇄"
+			btn_action.tooltip_text = "Remplacer un titulaire par ce joueur"
 			btn_action.modulate = Color("38bdf8")
 			btn_action.pressed.connect(func():
 				selected_swap_player = p
@@ -1405,6 +1417,12 @@ func _render_club_roster(c: Club) -> void:
 		for i in range(count - 1, -1, -1):
 			var m = c.recent_form[i]
 			var res = m.get("result", "-")
+			var sf = m.get("score_for", 0)
+			var sa = m.get("score_against", 0)
+			var opp = m.get("opponent", "")
+			var is_h = m.get("is_home", true)
+			var loc = "Dom." if is_h else "Ext."
+
 			var badge = PanelContainer.new()
 			var b_style = StyleBoxFlat.new()
 			b_style.set_corner_radius_all(6)
@@ -1412,18 +1430,22 @@ func _render_club_roster(c: Club) -> void:
 			b_style.content_margin_right = 8
 			b_style.content_margin_top = 3
 			b_style.content_margin_bottom = 3
+			badge.tooltip_text = "%s : %d-%d contre %s (%s)" % [
+				"Victoire" if res == "V" else "Défaite",
+				sf, sa, opp, loc
+			]
 
 			var lbl = Label.new()
 			lbl.add_theme_font_size_override("font_size", 11)
 			if res == "V":
 				b_style.bg_color = Color(0.06, 0.35, 0.18, 0.9)
 				b_style.border_color = Color("10b981")
-				lbl.text = "V %d-%d vs %s" % [m.get("score_for", 0), m.get("score_against", 0), m.get("opponent", "")]
+				lbl.text = "V %d-%d" % [sf, sa]
 				lbl.add_theme_color_override("font_color", Color("34d399"))
 			else:
 				b_style.bg_color = Color(0.35, 0.08, 0.1, 0.9)
 				b_style.border_color = Color("ef4444")
-				lbl.text = "D %d-%d vs %s" % [m.get("score_for", 0), m.get("score_against", 0), m.get("opponent", "")]
+				lbl.text = "D %d-%d" % [sf, sa]
 				lbl.add_theme_color_override("font_color", Color("f87171"))
 
 			b_style.border_width_left = 1

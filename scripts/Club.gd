@@ -79,14 +79,20 @@ func auto_pick_lineup() -> void:
 
 func recover_fitness() -> void:
 	for p in squad:
-		var boost: float = 0.15
-		if not starting_five.has(p):
-			boost += 0.20
-		if p.trait_positive == "Poumon":
-			boost += 0.05
-		if p.trait_negative == "Fragile":
-			boost -= 0.05
-		if training_focus == 0: # Tactics.TrainingFocus.RECOVERY
-			boost += 0.10
-		p.fitness = clampf(p.fitness + boost, 0.4, 1.0)
+		if starting_five.has(p):
+			# Titulaire ayant joué : récupération mesurée (oblige à faire tourner !)
+			var boost: float = 0.10
+			if training_focus == 0: # Tactics.TrainingFocus.RECOVERY (Cryo)
+				boost += 0.06
+			if p.trait_positive == "Poumon":
+				boost += 0.03
+			if p.trait_negative == "Fragile":
+				boost -= 0.03
+			p.fitness = clampf(p.fitness + boost, 0.35, 1.0)
+		else:
+			# Remplaçant au repos : récupération rapide pour le prochain match
+			var bench_boost: float = 0.35
+			if training_focus == 0:
+				bench_boost += 0.10
+			p.fitness = clampf(p.fitness + bench_boost, 0.35, 1.0)
 
