@@ -105,7 +105,7 @@ func _on_btn_new_game_pressed() -> void:
 
 func _init_club_selection_filters() -> void:
 	opt_country.clear()
-	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre"]
+	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Allemagne"]
 	for c in countries:
 		var fl = "🌍"
 		match c:
@@ -114,6 +114,7 @@ func _init_club_selection_filters() -> void:
 			"Italie": fl = "🇮🇹"
 			"Portugal": fl = "🇵🇹"
 			"Angleterre": fl = "🇬🇧"
+			"Allemagne": fl = "🇩🇪"
 		opt_country.add_item("%s %s" % [fl, c])
 
 	opt_division.clear()
@@ -138,7 +139,7 @@ func _update_clubs_list() -> void:
 	for child in club_list_container.get_children():
 		child.queue_free()
 
-	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre"]
+	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Allemagne"]
 	var selected_country = countries[clamp(opt_country.selected, 0, countries.size() - 1)]
 	var target_div = clamp(opt_division.selected + 1, 1, 3)
 

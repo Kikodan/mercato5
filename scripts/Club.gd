@@ -20,6 +20,26 @@ const ClubFinances = preload("res://scripts/ClubFinances.gd")
 @export var squad: Array[Player] = []
 @export var starting_five: Array[Player] = []
 @export var palmares: Array[String] = []
+@export var recent_form: Array[Dictionary] = []
+
+func add_match_result(res: String, score_for: int, score_against: int, opponent: String, is_home: bool) -> void:
+	recent_form.push_front({
+		"result": res,
+		"score_for": score_for,
+		"score_against": score_against,
+		"opponent": opponent,
+		"is_home": is_home
+	})
+	if recent_form.size() > 10:
+		recent_form.pop_back()
+
+func get_form_string(max_matches: int = 5) -> String:
+	var count = mini(recent_form.size(), max_matches)
+	var parts: Array[String] = []
+	# Left to right from oldest to newest among the last count matches
+	for i in range(count - 1, -1, -1):
+		parts.append(recent_form[i].get("result", "-"))
+	return " ".join(parts)
 
 var finances = null
 

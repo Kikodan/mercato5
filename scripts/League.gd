@@ -72,8 +72,12 @@ func record_playoff_semi(home_goals: int, away_goals: int) -> Club:
 	playoff_semi_score = [home_goals, away_goals]
 	if home_goals > away_goals:
 		playoff_semi_winner = playoff_semi_home
+		playoff_semi_home.add_match_result("V", home_goals, away_goals, playoff_semi_away.club_name, true)
+		playoff_semi_away.add_match_result("D", away_goals, home_goals, playoff_semi_home.club_name, false)
 	else:
 		playoff_semi_winner = playoff_semi_away
+		playoff_semi_home.add_match_result("D", home_goals, away_goals, playoff_semi_away.club_name, true)
+		playoff_semi_away.add_match_result("V", away_goals, home_goals, playoff_semi_home.club_name, false)
 	playoff_final_away = playoff_semi_winner
 	playoff_phase = 2
 	return playoff_semi_winner
@@ -82,8 +86,12 @@ func record_playoff_final(home_goals: int, away_goals: int) -> Club:
 	playoff_final_score = [home_goals, away_goals]
 	if home_goals > away_goals:
 		playoff_champion = playoff_final_home
+		playoff_final_home.add_match_result("V", home_goals, away_goals, playoff_final_away.club_name, true)
+		playoff_final_away.add_match_result("D", away_goals, home_goals, playoff_final_home.club_name, false)
 	else:
 		playoff_champion = playoff_final_away
+		playoff_final_home.add_match_result("D", home_goals, away_goals, playoff_final_away.club_name, true)
+		playoff_final_away.add_match_result("V", away_goals, home_goals, playoff_final_home.club_name, false)
 	playoff_phase = 3
 
 	# Ajouter le titre au palmarès du club champion et de ses joueurs
@@ -152,10 +160,14 @@ func record_match_result(home: Club, away: Club, h_goals: int, a_goals: int) -> 
 		h["pts"] += 3
 		h["w"] += 1
 		a["l"] += 1
+		home.add_match_result("V", h_goals, a_goals, away.club_name, true)
+		away.add_match_result("D", a_goals, h_goals, home.club_name, false)
 	else:
 		a["pts"] += 3
 		a["w"] += 1
 		h["l"] += 1
+		home.add_match_result("D", h_goals, a_goals, away.club_name, true)
+		away.add_match_result("V", a_goals, h_goals, home.club_name, false)
 
 func get_sorted_standings() -> Array[Club]:
 	var sorted: Array[Club] = clubs.duplicate()

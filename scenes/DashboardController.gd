@@ -133,6 +133,7 @@ func _ready() -> void:
 	btn_european_cup.pressed.connect(_on_btn_european_cup_pressed)
 	pre_match_modal.kickoff_requested.connect(_on_pre_match_kickoff)
 	pre_match_modal.player_detail_requested.connect(func(p, c): player_detail_modal.open_player(p, c))
+	_style_advance_button()
 	_update_topbar()
 	_update_inbox_badge()
 	_render_squad_view()
@@ -241,6 +242,7 @@ func _init_world_browser_ui() -> void:
 			"Italie": code = "ITA"
 			"Portugal": code = "POR"
 			"Angleterre": code = "ENG"
+			"Allemagne": code = "ALL"
 		opt_country.add_item("[%s] %s" % [code, c])
 
 	_update_leagues_dropdown_for_country(countries[0])
@@ -291,7 +293,7 @@ func _on_league_dropdown_selected(idx: int) -> void:
 func _init_market_ui() -> void:
 	opt_market_country.clear()
 	opt_market_country.add_item("Tous les pays")
-	var m_countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Brésil", "Belgique", "Pays-Bas"]
+	var m_countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Allemagne", "Brésil", "Belgique", "Pays-Bas"]
 	for c in m_countries:
 		var code = "INT"
 		match c:
@@ -300,6 +302,7 @@ func _init_market_ui() -> void:
 			"Italie": code = "ITA"
 			"Portugal": code = "POR"
 			"Angleterre": code = "ENG"
+			"Allemagne": code = "ALL"
 			"Brésil": code = "BRE"
 			"Belgique": code = "BEL"
 			"Pays-Bas": code = "P-B"
@@ -1144,20 +1147,23 @@ func _render_standings_view() -> void:
 	standings_tree.clear()
 	var root = standings_tree.create_item()
 	standings_tree.hide_root = true
-	standings_tree.columns = 6
+	standings_tree.columns = 7
 	standings_tree.set_column_title(0, "Club")
 	standings_tree.set_column_title(1, "Pts")
 	standings_tree.set_column_title(2, "J")
 	standings_tree.set_column_title(3, "V")
 	standings_tree.set_column_title(4, "D")
 	standings_tree.set_column_title(5, "Diff")
+	standings_tree.set_column_title(6, "Forme")
 	standings_tree.set_column_titles_visible(true)
 
 	standings_tree.set_column_expand(0, true)
-	standings_tree.set_column_custom_minimum_width(0, 130)
+	standings_tree.set_column_custom_minimum_width(0, 115)
 	for col in range(1, 6):
 		standings_tree.set_column_expand(col, false)
-		standings_tree.set_column_custom_minimum_width(col, 36)
+		standings_tree.set_column_custom_minimum_width(col, 32)
+	standings_tree.set_column_expand(6, false)
+	standings_tree.set_column_custom_minimum_width(6, 65)
 
 	if viewed_league.is_playoffs_active():
 		var po_banner = standings_tree.create_item(root)
@@ -1197,6 +1203,8 @@ func _render_standings_view() -> void:
 		row.set_text(3, str(d["w"]))
 		row.set_text(4, str(d["l"]))
 		row.set_text(5, "%+d" % d["gd"])
+		var f_str = c.get_form_string(5)
+		row.set_text(6, f_str if not f_str.is_empty() else "-")
 		if c == player_club:
 			row.set_custom_color(0, Color("facc15"))
 		elif c == viewed_club:
@@ -1350,12 +1358,91 @@ func _render_club_roster(c: Club) -> void:
 		"Italie": flag = "🇮🇹"
 		"Portugal": flag = "🇵🇹"
 		"Angleterre": flag = "🇬🇧"
+		"Allemagne": flag = "🇩🇪"
 
 	label_club_detail_name.text = c.club_name
 	label_club_detail_sub.text = "%s %s (Div %d) | Budget: %s €" % [flag, c.country, c.division, String.num_int64(c.budget)]
 
 	for child in club_roster_list.get_children():
 		child.queue_free()
+
+	# Section Forme Récente / Dernières Performances
+	var form_container = PanelContainer.new()
+	var fc_style = StyleBoxFlat.new()
+	fc_style.bg_color = Color(0.08, 0.12, 0.2, 0.95)
+	fc_style.set_corner_radius_all(8)
+	fc_style.border_width_left = 1
+	fc_style.border_width_top = 1
+	fc_style.border_width_right = 1
+	fc_style.border_width_bottom = 1
+	fc_style.border_color = Color(0.2, 0.28, 0.4, 0.7)
+	fc_style.content_margin_left = 12
+	fc_style.content_margin_right = 12
+	fc_style.content_margin_top = 8
+	fc_style.content_margin_bottom = 8
+	form_container.add_theme_stylebox_override("panel", fc_style)
+
+	var form_vbox = VBoxContainer.new()
+	form_vbox.add_theme_constant_override("separation", 6)
+
+	var form_header = Label.new()
+	form_header.text = "📊 Dernières Performances (5 derniers matchs) :"
+	form_header.add_theme_font_size_override("font_size", 12)
+	form_header.add_theme_color_override("font_color", Color("94a3b8"))
+	form_vbox.add_child(form_header)
+
+	var form_hbox = HBoxContainer.new()
+	form_hbox.add_theme_constant_override("separation", 6)
+
+	if c.recent_form.is_empty():
+		var empty_lbl = Label.new()
+		empty_lbl.text = "Aucun match joué cette saison"
+		empty_lbl.add_theme_font_size_override("font_size", 11)
+		empty_lbl.add_theme_color_override("font_color", Color("64748b"))
+		form_hbox.add_child(empty_lbl)
+	else:
+		var count = mini(c.recent_form.size(), 5)
+		for i in range(count - 1, -1, -1):
+			var m = c.recent_form[i]
+			var res = m.get("result", "-")
+			var badge = PanelContainer.new()
+			var b_style = StyleBoxFlat.new()
+			b_style.set_corner_radius_all(6)
+			b_style.content_margin_left = 8
+			b_style.content_margin_right = 8
+			b_style.content_margin_top = 3
+			b_style.content_margin_bottom = 3
+
+			var lbl = Label.new()
+			lbl.add_theme_font_size_override("font_size", 11)
+			if res == "V":
+				b_style.bg_color = Color(0.06, 0.35, 0.18, 0.9)
+				b_style.border_color = Color("10b981")
+				lbl.text = "V %d-%d vs %s" % [m.get("score_for", 0), m.get("score_against", 0), m.get("opponent", "")]
+				lbl.add_theme_color_override("font_color", Color("34d399"))
+			else:
+				b_style.bg_color = Color(0.35, 0.08, 0.1, 0.9)
+				b_style.border_color = Color("ef4444")
+				lbl.text = "D %d-%d vs %s" % [m.get("score_for", 0), m.get("score_against", 0), m.get("opponent", "")]
+				lbl.add_theme_color_override("font_color", Color("f87171"))
+
+			b_style.border_width_left = 1
+			b_style.border_width_top = 1
+			b_style.border_width_right = 1
+			b_style.border_width_bottom = 1
+			badge.add_theme_stylebox_override("panel", b_style)
+			badge.add_child(lbl)
+			form_hbox.add_child(badge)
+
+	form_vbox.add_child(form_hbox)
+	form_container.add_child(form_vbox)
+	club_roster_list.add_child(form_container)
+
+	var roster_header = Label.new()
+	roster_header.text = "👥 Effectif du Club (%d joueurs) :" % c.squad.size()
+	roster_header.add_theme_font_size_override("font_size", 13)
+	roster_header.add_theme_color_override("font_color", Color("e2e8f0"))
+	club_roster_list.add_child(roster_header)
 
 	for p in c.squad:
 		var card = PanelContainer.new()
@@ -1454,7 +1541,7 @@ func _render_club_roster(c: Club) -> void:
 		info_vbox.add_child(name_lbl)
 
 		var sub_lbl = Label.new()
-		sub_lbl.text = "%s %s • %d ans" % [p.get_flag_emoji(), p.nationality, p.age]
+		sub_lbl.text = "%s • %d ans" % [p.nationality, p.age]
 		sub_lbl.add_theme_font_size_override("font_size", 12)
 		sub_lbl.add_theme_color_override("font_color", Color(0.65, 0.75, 0.88))
 		info_vbox.add_child(sub_lbl)
@@ -1636,7 +1723,7 @@ func _render_market_view() -> void:
 		info_vbox.add_child(name_lbl)
 
 		var sub_lbl = Label.new()
-		sub_lbl.text = "%s %s • %d ans" % [p.get_flag_emoji(), p.nationality, p.age]
+		sub_lbl.text = "%s • %d ans" % [p.nationality, p.age]
 		sub_lbl.add_theme_font_size_override("font_size", 11)
 		sub_lbl.add_theme_color_override("font_color", Color(0.62, 0.72, 0.84))
 		info_vbox.add_child(sub_lbl)
@@ -1790,51 +1877,85 @@ func _update_topbar() -> void:
 
 	var total_days = current_league.schedule.size()
 	if current_league.current_matchday_index < total_days:
-		label_week.text = "Saison %d • Journée %d / %d (Course à 5 buts)" % [current_season, current_league.current_matchday_index + 1, total_days]
-		btn_advance.text = "Avant-Match (J%d) >" % [current_league.current_matchday_index + 1]
+		label_week.text = "Saison %d • J%d/%d (5 buts)" % [current_season, current_league.current_matchday_index + 1, total_days]
+		btn_advance.text = "⚡ Avant-Match (J%d) ▶" % [current_league.current_matchday_index + 1]
 		btn_advance.disabled = false
 	elif not current_league.is_playoffs_finished():
 		if not current_league.has_playoffs_started():
-			label_week.text = "Saison %d • Playoffs Top 3 à venir" % current_season
-			btn_advance.text = "🏆 Lancer les Playoffs (Top 3) >"
+			label_week.text = "Saison %d • Playoffs Top 3" % current_season
+			btn_advance.text = "🏆 Lancer les Playoffs ▶"
 			btn_advance.disabled = false
 		elif current_league.playoff_phase == 1:
 			var h = current_league.playoff_semi_home
 			var a = current_league.playoff_semi_away
 			label_week.text = "Playoffs : 1/2 Finale (%s vs %s)" % [h.club_name, a.club_name]
 			if player_club == h or player_club == a:
-				btn_advance.text = "Avant-Match (1/2 Finale) >"
+				btn_advance.text = "⚡ Avant-Match (1/2 Finale) ▶"
 			else:
-				btn_advance.text = "👁️ Assister 1/2 Finale (%s vs %s) >" % [h.club_name, a.club_name]
+				btn_advance.text = "👁️ Assister 1/2 Finale ▶"
 			btn_advance.disabled = false
 		elif current_league.playoff_phase == 2:
 			var h = current_league.playoff_final_home
 			var a = current_league.playoff_final_away
-			label_week.text = "Playoffs : GRANDE FINALE (%s vs %s)" % [h.club_name, a.club_name]
+			label_week.text = "Playoffs : FINALE (%s vs %s)" % [h.club_name, a.club_name]
 			if player_club == h or player_club == a:
-				btn_advance.text = "Avant-Match (GRANDE FINALE) >"
+				btn_advance.text = "⚡ Avant-Match (FINALE) ▶"
 			else:
-				btn_advance.text = "👁️ Assister FINALE (%s vs %s) >" % [h.club_name, a.club_name]
+				btn_advance.text = "👁️ Assister GRANDE FINALE ▶"
 			btn_advance.disabled = false
 	else:
 		var champ_name = current_league.playoff_champion.club_name if current_league.playoff_champion else "Champion"
 		if active_european_cup == null:
-			label_week.text = "Playoffs terminés • Champion : %s !" % champ_name
-			btn_advance.text = "🏆 Lancer Coupe d'Europe >"
+			label_week.text = "Champion : %s !" % champ_name
+			btn_advance.text = "🏆 Lancer Coupe d'Europe ▶"
 			btn_advance.disabled = false
 		elif active_european_cup.current_phase < 6:
 			label_week.text = active_european_cup.get_current_phase_name()
 			var user_match = active_european_cup.get_user_match_in_current_phase(player_club)
 			if user_match.size() >= 2:
-				btn_advance.text = "Avant-Match (Europe) >"
+				btn_advance.text = "⚡ Avant-Match (Europe) ▶"
 			else:
-				btn_advance.text = "👁️ Assister Choc Europe >"
+				btn_advance.text = "👁️ Assister Match Europe ▶"
 			btn_advance.disabled = false
 		else:
 			var win_name = active_european_cup.winner.club_name if active_european_cup.winner else "Terminé"
-			label_week.text = "Saison close • Champion : %s | Europe : %s" % [champ_name, win_name]
-			btn_advance.text = "🏁 Bilan & Nouvelle Saison >"
+			label_week.text = "Champion : %s | Europe : %s" % [champ_name, win_name]
+			btn_advance.text = "🏁 Bilan & Nouvelle Saison ▶"
 			btn_advance.disabled = false
+
+func _style_advance_button() -> void:
+	if btn_advance == null:
+		return
+	btn_advance.custom_minimum_size = Vector2(210, 40)
+	btn_advance.add_theme_font_size_override("font_size", 13)
+
+	var normal_box = StyleBoxFlat.new()
+	normal_box.bg_color = Color("059669")
+	normal_box.border_color = Color("34d399")
+	normal_box.border_width_left = 2
+	normal_box.border_width_top = 2
+	normal_box.border_width_right = 2
+	normal_box.border_width_bottom = 2
+	normal_box.set_corner_radius_all(8)
+	normal_box.content_margin_left = 16
+	normal_box.content_margin_right = 16
+	normal_box.content_margin_top = 8
+	normal_box.content_margin_bottom = 8
+	btn_advance.add_theme_stylebox_override("normal", normal_box)
+
+	var hover_box = normal_box.duplicate()
+	hover_box.bg_color = Color("10b981")
+	hover_box.border_color = Color("a7f3d0")
+	btn_advance.add_theme_stylebox_override("hover", hover_box)
+
+	var pressed_box = normal_box.duplicate()
+	pressed_box.bg_color = Color("047857")
+	btn_advance.add_theme_stylebox_override("pressed", pressed_box)
+
+	btn_advance.add_theme_stylebox_override("focus", hover_box)
+	btn_advance.add_theme_color_override("font_color", Color.WHITE)
+	btn_advance.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn_advance.add_theme_color_override("font_pressed_color", Color("e2e8f0"))
 
 enum MatchContext { REGULAR, PLAYOFF_SEMI, PLAYOFF_FINAL, EUROPEAN }
 var current_match_context: MatchContext = MatchContext.REGULAR
@@ -2113,6 +2234,7 @@ func _finalize_league_matchday() -> void:
 			if c != player_club:
 				c.get_finances().process_weekly_cycle(c, 0)
 
+	market.process_ai_squad_management(all_clubs, player_club)
 	market.trigger_ai_market_activity(player_club, all_clubs)
 	SaveManager.save_game(all_leagues, market, player_club, current_league, current_season)
 	_update_topbar()

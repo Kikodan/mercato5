@@ -261,6 +261,7 @@ static func _serialize_club(c: Club) -> Dictionary:
 		"palmares": c.palmares,
 		"reputation": c.reputation,
 		"finances": c.get_finances().to_dict(),
+		"recent_form": c.recent_form,
 		"squad": squad_arr,
 		"starters": starters
 	}
@@ -281,6 +282,10 @@ static func _deserialize_club(d: Dictionary) -> Club:
 	c.palmares.clear()
 	for palm in d.get("palmares", []):
 		c.palmares.append(str(palm))
+	c.recent_form.clear()
+	for f in d.get("recent_form", []):
+		if f is Dictionary:
+			c.recent_form.append(f)
 
 	var starters_names: Array = d.get("starters", [])
 	for p_data in d.get("squad", []):
