@@ -11,6 +11,7 @@ const TrophyModal = preload("res://scenes/TrophyModal.gd")
 const OptionsMenuModal = preload("res://scenes/OptionsMenuModal.gd")
 const HelpModal = preload("res://scenes/HelpModal.gd")
 const ClubTransferModal = preload("res://scenes/ClubTransferModal.gd")
+const SponsorNegotiationModal = preload("res://scenes/SponsorNegotiationModal.gd")
 
 var player_club: Club
 var current_league: League
@@ -25,6 +26,7 @@ var trophy_modal: TrophyModal = null
 var options_modal: OptionsMenuModal = null
 var help_modal: HelpModal = null
 var club_transfer_modal: ClubTransferModal = null
+var sponsor_negotiation_modal: SponsorNegotiationModal = null
 
 @onready var user_club_badge: ClubBadge = $TopBar/HBoxContainer/UserClubBadge
 @onready var label_club: Label = $TopBar/HBoxContainer/ClubNameLabel
@@ -136,6 +138,12 @@ func _ready() -> void:
 	club_transfer_modal = ClubTransferModal.new()
 	add_child(club_transfer_modal)
 	club_transfer_modal.transfer_agreed.connect(_on_club_transfer_agreed)
+	sponsor_negotiation_modal = SponsorNegotiationModal.new()
+	add_child(sponsor_negotiation_modal)
+	sponsor_negotiation_modal.sponsor_contract_signed.connect(func(cat, prop):
+		_render_economy_view()
+		show_toast("🤝 Nouveau contrat sponsor signé avec %s !" % prop.get("brand_name", ""))
+	)
 	_init_game_world()
 	_init_tactics_ui()
 	_init_world_browser_ui()
@@ -413,7 +421,7 @@ func _create_economy_kpi_card(title: String, val_str: String, val_col: Color, su
 	p.add_child(vb)
 	return p
 
-func _create_sponsor_item_card(type_str: String, name_str: String, payout_str: String, desc_str: String) -> PanelContainer:
+func _create_sponsor_item_card(type_str: String, name_str: String, payout_str: String, bonus_str: String, desc_str: String, category_id: String = "") -> PanelContainer:
 	var p = PanelContainer.new()
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.06, 0.09, 0.15, 0.9)
@@ -425,17 +433,17 @@ func _create_sponsor_item_card(type_str: String, name_str: String, payout_str: S
 	p.add_theme_stylebox_override("panel", sb)
 
 	var vb = VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 2)
+	vb.add_theme_constant_override("separation", 4)
 
 	var t = Label.new()
 	t.text = type_str
-	t.add_theme_font_size_override("font_size", 12)
+	t.add_theme_font_size_override("font_size", 11)
 	t.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
 	vb.add_child(t)
 
 	var n = Label.new()
 	n.text = name_str
-	n.add_theme_font_size_override("font_size", 15)
+	n.add_theme_font_size_override("font_size", 14)
 	n.add_theme_color_override("font_color", Color.WHITE)
 	vb.add_child(n)
 
@@ -445,11 +453,29 @@ func _create_sponsor_item_card(type_str: String, name_str: String, payout_str: S
 	val.add_theme_color_override("font_color", Color("34d399"))
 	vb.add_child(val)
 
+	if bonus_str != "":
+		var bon = Label.new()
+		bon.text = bonus_str
+		bon.add_theme_font_size_override("font_size", 11)
+		bon.add_theme_color_override("font_color", Color("facc15"))
+		vb.add_child(bon)
+
 	var d = Label.new()
 	d.text = desc_str
 	d.add_theme_font_size_override("font_size", 10)
 	d.add_theme_color_override("font_color", Color(0.55, 0.65, 0.75))
 	vb.add_child(d)
+
+	if category_id != "":
+		var btn = Button.new()
+		btn.text = "🤝 Négocier"
+		btn.custom_minimum_size = Vector2(0, 28)
+		btn.add_theme_font_size_override("font_size", 11)
+		btn.pressed.connect(func():
+			if player_club:
+				sponsor_negotiation_modal.open_negotiation(player_club, category_id)
+		)
+		vb.add_child(btn)
 
 	p.add_child(vb)
 	return p
@@ -482,7 +508,7 @@ func _render_economy_view() -> void:
 
 	var fin = player_club.get_finances()
 	var total_wage = player_club.get_total_wage()
-	var weekly_fixed_income = fin.primary_sponsor_weekly + fin.arena_sponsor_weekly + fin.weekly_tv_rights
+	var weekly_fixed_income = fin.get_total_fixed_income()
 	var weekly_fixed_expense = total_wage + fin.weekly_maintenance
 	var weekly_net = weekly_fixed_income - weekly_fixed_expense
 
@@ -649,40 +675,68 @@ func _render_economy_view() -> void:
 	sp_vbox.add_theme_constant_override("separation", 10)
 
 	var sp_title = Label.new()
-	sp_title.text = "🤝 SPONSORS & DROITS DE DIFFUSION"
+	sp_title.text = "🤝 SPONSORS, RÉGIE PUBLICITAIRE & DROITS DE DIFFUSION"
 	sp_title.add_theme_font_size_override("font_size", 16)
 	sp_title.add_theme_color_override("font_color", Color("facc15"))
 	sp_vbox.add_child(sp_title)
 
 	var sp_cards_row = HBoxContainer.new()
-	sp_cards_row.add_theme_constant_override("separation", 14)
+	sp_cards_row.add_theme_constant_override("separation", 10)
 
 	var sp1 = _create_sponsor_item_card(
-		"👕 Sponsor Maillot Principal",
+		"👕 Sponsor Maillot",
 		fin.primary_sponsor_name,
-		"+%s € / semaine" % String.num_int64(fin.primary_sponsor_weekly),
-		"Contrat annuel garanti"
+		"+%s € / sem" % String.num_int64(fin.primary_sponsor_weekly),
+		"+%s € / vic." % String.num_int64(fin.primary_sponsor_bonus_win),
+		"%d sem. restantes" % fin.primary_sponsor_weeks_left,
+		"PRIMARY"
 	)
 	sp1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp_cards_row.add_child(sp1)
 
 	var sp2 = _create_sponsor_item_card(
-		"🏟️ Partenaire Salle & LED",
+		"🏟️ Naming Salle",
 		fin.arena_sponsor_name,
-		"+%s € / semaine" % String.num_int64(fin.arena_sponsor_weekly),
-		"Affichage officiel de l'arena"
+		"+%s € / sem" % String.num_int64(fin.arena_sponsor_weekly),
+		"+%s € / vic." % String.num_int64(fin.arena_sponsor_bonus_win),
+		"%d sem. restantes" % fin.arena_sponsor_weeks_left,
+		"ARENA"
 	)
 	sp2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp_cards_row.add_child(sp2)
 
 	var sp3 = _create_sponsor_item_card(
-		"📺 Droits TV Championnat",
-		"Ligue Nationale Futsal",
-		"+%s € / semaine" % String.num_int64(fin.weekly_tv_rights),
-		"Dotation hebdomadaire fixe"
+		"👟 Équipementier",
+		fin.kit_sponsor_name,
+		"+%s € / sem" % String.num_int64(fin.kit_sponsor_weekly),
+		"+%s € / vic." % String.num_int64(fin.kit_sponsor_bonus_win),
+		"%d sem. restantes" % fin.kit_sponsor_weeks_left,
+		"KIT"
 	)
 	sp3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp_cards_row.add_child(sp3)
+
+	var sp4 = _create_sponsor_item_card(
+		"🪧 Régie Pub & LED",
+		fin.board_ads_name,
+		"+%s € / sem" % String.num_int64(fin.board_ads_weekly),
+		"+%s € / vic." % String.num_int64(fin.board_ads_bonus_win),
+		"%d sem. restantes" % fin.board_ads_weeks_left,
+		"BOARD"
+	)
+	sp4.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sp_cards_row.add_child(sp4)
+
+	var sp5 = _create_sponsor_item_card(
+		"📺 Droits TV Ligue",
+		"Ligue Nationale Futsal",
+		"+%s € / sem" % String.num_int64(fin.weekly_tv_rights),
+		"",
+		"Dotation officielle fixe",
+		""
+	)
+	sp5.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sp_cards_row.add_child(sp5)
 
 	sp_vbox.add_child(sp_cards_row)
 	sponsor_box.add_child(sp_vbox)
@@ -723,7 +777,9 @@ func _render_economy_view() -> void:
 	in_col.add_child(in_hdr)
 
 	in_col.add_child(_create_balance_line("Sponsor Maillot :", "+%s €" % String.num_int64(fin.primary_sponsor_weekly), Color("34d399")))
-	in_col.add_child(_create_balance_line("Sponsor Salle :", "+%s €" % String.num_int64(fin.arena_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Partenaire Salle :", "+%s €" % String.num_int64(fin.arena_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Équipementier Officiel :", "+%s €" % String.num_int64(fin.kit_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Panneaux & Régie LED :", "+%s €" % String.num_int64(fin.board_ads_weekly), Color("34d399")))
 	in_col.add_child(_create_balance_line("Droits TV officiels :", "+%s €" % String.num_int64(fin.weekly_tv_rights), Color("34d399")))
 	in_col.add_child(_create_balance_line("Billetterie moyenne (domicile) :", "+%s € / match" % String.num_int64(est_revenue), Color("facc15")))
 	in_col.add_child(HSeparator.new())
@@ -1644,6 +1700,27 @@ func _render_market_view() -> void:
 	for c in list.get_children():
 		c.queue_free()
 
+	if player_club and player_club.is_transfer_banned:
+		var ban_panel = PanelContainer.new()
+		var ban_style = StyleBoxFlat.new()
+		ban_style.bg_color = Color(0.4, 0.08, 0.1, 0.95)
+		ban_style.border_color = Color("f87171")
+		ban_style.border_width_left = 4
+		ban_style.set_corner_radius_all(8)
+		ban_style.content_margin_left = 14
+		ban_style.content_margin_right = 14
+		ban_style.content_margin_top = 10
+		ban_style.content_margin_bottom = 10
+		ban_panel.add_theme_stylebox_override("panel", ban_style)
+
+		var ban_lbl = Label.new()
+		ban_lbl.text = "🚫 INTERDICTION DE RECRUTEMENT (FAIR-PLAY FINANCIER)\nVotre club a terminé la saison dernière avec un résultat fixe hebdomadaire déficitaire. Tout recrutement (achats et agents libres) est suspendu pour l'exercice en cours. Assainissez votre masse salariale !"
+		ban_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ban_lbl.add_theme_font_size_override("font_size", 12)
+		ban_lbl.add_theme_color_override("font_color", Color.WHITE)
+		ban_panel.add_child(ban_lbl)
+		list.add_child(ban_panel)
+
 	var sel_country_idx = opt_market_country.selected
 	var sel_pos_idx = opt_market_pos.selected
 
@@ -2260,12 +2337,21 @@ func _finalize_league_matchday() -> void:
 
 	# Traitement économique hebdomadaire
 	var match_rec = 0
-	if current_user_report != null and current_user_report.home_club == player_club:
-		match_rec = player_club.get_finances().process_home_match_receipts(player_club, current_user_report.away_club)
-		show_toast("🏟️ Match à domicile : %d spectateurs • Recette billetterie : +%s €" % [
-			player_club.get_finances().recent_attendance,
-			String.num_int64(match_rec)
-		])
+	if current_user_report != null:
+		var is_home = (current_user_report.home_club == player_club)
+		var user_won = (is_home and current_user_report.home_score > current_user_report.away_score) or (not is_home and current_user_report.away_score > current_user_report.home_score)
+		if is_home:
+			match_rec = player_club.get_finances().process_home_match_receipts(player_club, current_user_report.away_club, false, user_won)
+			var bonus_txt = (" • Primes victoire sponsors : +%s €" % String.num_int64(player_club.get_finances().get_total_win_bonus())) if user_won else ""
+			show_toast("🏟️ Match à domicile : %d spectateurs • Recettes : +%s €%s" % [
+				player_club.get_finances().recent_attendance,
+				String.num_int64(match_rec),
+				bonus_txt
+			])
+		elif user_won:
+			var win_bonus = player_club.get_finances().get_total_win_bonus()
+			player_club.budget += win_bonus
+			show_toast("🏆 Victoire à l'extérieur ! Primes sponsors encaissées : +%s €" % String.num_int64(win_bonus))
 
 	player_club.get_finances().process_weekly_cycle(player_club, match_rec)
 
@@ -2443,6 +2529,9 @@ func _init_negotiation_ui() -> void:
 	)
 
 func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
+	if player_club and player_club.is_transfer_banned:
+		show_toast("🚫 Recrutement interdit cette saison par le Fair-Play Financier (DNCG) !")
+		return
 	if seller == null or seller == player_club:
 		open_negotiation(p, null, 0)
 		return
@@ -2455,6 +2544,9 @@ func _on_club_transfer_agreed(p: Player, seller: Club, agreed_fee: int) -> void:
 	open_negotiation(p, seller, agreed_fee)
 
 func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> void:
+	if player_club and player_club.is_transfer_banned:
+		show_toast("🚫 Recrutement interdit cette saison par le Fair-Play Financier (DNCG) !")
+		return
 	if p == null:
 		return
 	current_nego_player = p

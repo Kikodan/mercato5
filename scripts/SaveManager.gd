@@ -293,6 +293,7 @@ static func _serialize_club(c: Club) -> Dictionary:
 		"reputation": c.reputation,
 		"finances": c.get_finances().to_dict(),
 		"recent_form": c.recent_form,
+		"is_transfer_banned": c.is_transfer_banned,
 		"squad": squad_arr,
 		"youth_academy": youth_arr,
 		"starters": starters
@@ -310,6 +311,7 @@ static func _deserialize_club(d: Dictionary) -> Club:
 	c.secondary_color = Color(d.get("s_col", "e2e8f0"))
 	c.badge_shape = d.get("b_shape", 0)
 	c.reputation = int(d.get("reputation", 50))
+	c.is_transfer_banned = bool(d.get("is_transfer_banned", false))
 	c.finances = ClubFinances.from_dict(d.get("finances", {}), c.division, c.club_name)
 	c.palmares.clear()
 	for palm in d.get("palmares", []):

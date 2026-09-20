@@ -116,7 +116,8 @@ func archive_season(season_num: int, club_name: String, country: String, div: in
 
 func get_value_breakdown(club_division: int = 1) -> Dictionary:
 	var ovr: int = get_overall()
-	var base: float = pow(ovr, 2.75) * 45.0
+	var ovr_norm: float = maxf(1.0, (float(ovr) - 30.0) / 10.0)
+	var base: float = pow(ovr_norm, 3.4) * 6500.0 + 40000.0
 
 	var age_factor: float = 1.0
 	if age <= 21:
@@ -155,7 +156,7 @@ func get_value_breakdown(club_division: int = 1) -> Dictionary:
 	var palmares_factor: float = clampf(1.0 + float(palmares.size()) * 0.08, 1.0, 1.50)
 
 	var final_val: int = int(base * age_factor * div_factor * perf_factor * palmares_factor)
-	final_val = max(5_000, final_val)
+	final_val = max(10_000, final_val)
 
 	return {
 		"base": int(base),
@@ -170,7 +171,10 @@ func recalculate_value(club_division: int = 1) -> void:
 	var breakdown = get_value_breakdown(club_division)
 	market_value = breakdown["final_value"]
 	if greed == 1.0:
-		greed = randf_range(0.85, 1.25)
-	salary = max(350, int(market_value * 0.0035))
+		greed = randf_range(0.88, 1.22)
+	# Salaire soutenable et proportionnel au niveau sur échelle 100
+	var ovr: int = get_overall()
+	var base_sal: int = int(market_value * 0.0014) + int(pow(float(ovr) / 10.0, 2.0) * 35.0)
+	salary = clampi(base_sal, 450, 22_000)
 	wage_demand = int(salary * greed)
 

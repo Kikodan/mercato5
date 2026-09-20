@@ -22,6 +22,7 @@ const ClubFinances = preload("res://scripts/ClubFinances.gd")
 @export var youth_academy: Array[Player] = []
 @export var palmares: Array[String] = []
 @export var recent_form: Array[Dictionary] = []
+@export var is_transfer_banned: bool = false
 
 func add_match_result(res: String, score_for: int, score_against: int, opponent: String, is_home: bool) -> void:
 	recent_form.push_front({
@@ -54,6 +55,14 @@ func get_total_wage() -> int:
 	for p in squad:
 		total += p.salary
 	return total
+
+func get_average_overall() -> int:
+	if squad.is_empty():
+		return 68
+	var sum: int = 0
+	for p in squad:
+		sum += p.get_overall()
+	return int(float(sum) / float(squad.size()))
 
 func is_lineup_valid() -> bool:
 	if starting_five.size() != 5:

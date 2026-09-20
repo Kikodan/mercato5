@@ -259,6 +259,28 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 	var mercato_card = _create_section_card("💼 RENOUVELLEMENT DU MERCATO", m_lbl)
 	dynamic_content.add_child(mercato_card)
 
+	# 4. Section Contrôle du Fair-Play Financier (DNCG)
+	var ffp_vbox = VBoxContainer.new()
+	ffp_vbox.add_theme_constant_override("separation", 6)
+	var ffp_status_lbl = Label.new()
+	ffp_status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ffp_status_lbl.add_theme_font_size_override("font_size", 12)
+
+	if report.ffp_transfer_sanction:
+		ffp_status_lbl.text = "❌ SANCTION PRONONCÉE : Résultat fixe hebdomadaire déficitaire (%s € / sem).\n• Le gendarme financier vous interdit tout recrutement de joueurs pour la Saison %d !\n• Vous ne pouvez ni acheter de joueurs ni signer d'agents libres. Vous devez vous appuyer sur vos jeunes du centre de formation et assainir votre masse salariale." % [
+			String.num_int64(report.ffp_fixed_net), report.next_season
+		]
+		ffp_status_lbl.add_theme_color_override("font_color", Color("f87171"))
+	else:
+		ffp_status_lbl.text = "✅ BILAN VALIDÉ : Votre résultat fixe hebdomadaire est sain (%s%s € / sem).\n• La commission de contrôle valide vos comptes.\n• Autorisation totale accordée pour négocier et recruter sur le marché des transferts." % [
+			"+" if report.ffp_fixed_net >= 0 else "", String.num_int64(report.ffp_fixed_net)
+		]
+		ffp_status_lbl.add_theme_color_override("font_color", Color("34d399"))
+
+	ffp_vbox.add_child(ffp_status_lbl)
+	var ffp_card = _create_section_card("⚖️ CONTRÔLE DE GESTION & FAIR-PLAY FINANCIER", ffp_vbox)
+	dynamic_content.add_child(ffp_card)
+
 func _create_section_card(title_text: String, content_node: Control = null) -> PanelContainer:
 	var p = PanelContainer.new()
 	var s = StyleBoxFlat.new()

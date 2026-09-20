@@ -16,6 +16,8 @@ class SeasonTransitionReport:
 	var retirees: Array[Dictionary] = [] # {"player": Player, "club_name": String, "age": int, "is_user": bool}
 	var user_retirees: Array[Player] = []
 	var new_free_agents_count: int = 0
+	var ffp_transfer_sanction: bool = false
+	var ffp_fixed_net: int = 0
 
 static func execute_season_transition(
 	all_leagues: Array[League],
@@ -27,6 +29,24 @@ static func execute_season_transition(
 	var report = SeasonTransitionReport.new()
 	report.season_ended = current_season
 	report.next_season = current_season + 1
+
+	# 0. Contrôle du Fair-Play Financier (DNCG)
+	for l in all_leagues:
+		for c in l.clubs:
+			var fin = c.get_finances()
+			var fixed_inc = fin.get_total_fixed_income()
+			var fixed_exp = c.get_total_wage() + fin.weekly_maintenance
+			var fixed_net = fixed_inc - fixed_exp
+			if fixed_net < 0:
+				c.is_transfer_banned = true
+				if c == player_club:
+					report.ffp_transfer_sanction = true
+					report.ffp_fixed_net = fixed_net
+			else:
+				c.is_transfer_banned = false
+				if c == player_club:
+					report.ffp_transfer_sanction = false
+					report.ffp_fixed_net = fixed_net
 
 	# 1. Collecter les vainqueurs et champions
 	if active_european_cup != null and active_european_cup.winner != null:
@@ -287,7 +307,7 @@ static func _process_market_and_budgets(
 		for i in count_to_add:
 			var nat = countries.pick_random()
 			var pos = positions.pick_random()
-			var lvl = randi_range(9, 15)
+			var lvl = randi_range(62, 85)
 			var new_fa = PlayerGenerator.create_random_player(nat, pos, lvl)
 			new_fa.age = randi_range(18, 27)
 			market.free_agents.append(new_fa)
