@@ -121,14 +121,14 @@ func open_player(p: Player, c: Club = null) -> void:
 	# Valeur & Décomposition
 	var div = c.division if c != null else 4
 	var bd = p.get_value_breakdown(div)
-	lbl_market_value.text = "💰 %s €" % String.num_int64(bd["final_value"])
+	lbl_market_value.text = "💰 %s €" % FormatUtils.format_number(bd["final_value"])
 	lbl_value_breakdown.text = "Base OVR : %s € | Âge (x%.2f) | Division (x%.2f) | Perf (x%.2f) | Palmarès (x%.2f)" % [
-		String.num_int64(bd["base"]), bd["age_factor"], bd["div_factor"], bd["perf_factor"], bd["palmares_factor"]
+		FormatUtils.format_number(bd["base"]), bd["age_factor"], bd["div_factor"], bd["perf_factor"], bd["palmares_factor"]
 	]
 
 	# Contrat
 	lbl_contract_info.text = "Salaire : %s €/semaine  |  Prétention : %s €/semaine  |  Contrat restant : %d an(s)" % [
-		String.num_int64(p.salary), String.num_int64(p.wage_demand), p.contract_years
+		FormatUtils.format_number(p.salary), FormatUtils.format_number(p.wage_demand), p.contract_years
 	]
 
 	# Palmarès

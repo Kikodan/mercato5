@@ -165,7 +165,7 @@ func _update_header() -> void:
 
 	lbl_title.text = "🤝 NÉGOCIATION • %s" % cat_label
 	lbl_current_contract.text = "Contrat actif : %s (+%s €/semaine | +%s €/victoire | %d semaines restantes)" % [
-		cur_name, String.num_int64(cur_pay), String.num_int64(cur_bonus), cur_weeks
+		cur_name, FormatUtils.format_number(cur_pay), FormatUtils.format_number(cur_bonus), cur_weeks
 	]
 
 func _render_proposals() -> void:
@@ -218,9 +218,9 @@ func _create_proposal_card(prop: Dictionary, index: int) -> PanelContainer:
 	var grid = VBoxContainer.new()
 	grid.add_theme_constant_override("separation", 6)
 
-	grid.add_child(_create_detail_row("Versement fixe :", "+%s € / sem" % String.num_int64(prop["weekly_payout"]), Color("34d399")))
-	grid.add_child(_create_detail_row("Prime de victoire :", "+%s € / match" % String.num_int64(prop["win_bonus"]), Color("facc15")))
-	grid.add_child(_create_detail_row("Prime signature :", "+%s € cash" % String.num_int64(prop["signing_bonus"]), Color("38bdf8")))
+	grid.add_child(_create_detail_row("Versement fixe :", "+%s € / sem" % FormatUtils.format_number(prop["weekly_payout"]), Color("34d399")))
+	grid.add_child(_create_detail_row("Prime de victoire :", "+%s € / match" % FormatUtils.format_number(prop["win_bonus"]), Color("facc15")))
+	grid.add_child(_create_detail_row("Prime signature :", "+%s € cash" % FormatUtils.format_number(prop["signing_bonus"]), Color("38bdf8")))
 	grid.add_child(_create_detail_row("Engagement :", "%d semaines" % prop["duration_weeks"], Color("e2e8f0")))
 	vb.add_child(grid)
 
@@ -280,7 +280,7 @@ func _on_negotiate_pressed(index: int) -> void:
 		prop["win_bonus"] = int(prop["win_bonus"] * bonus_mult)
 		prop["signing_bonus"] = int(prop["signing_bonus"] * 1.15)
 		lbl_feedback.text = "🎉 Négociation réussie avec %s ! Le versement passe de %s € à %s € / semaine !" % [
-			prop["brand_name"], String.num_int64(old_pay), String.num_int64(prop["weekly_payout"])
+			prop["brand_name"], FormatUtils.format_number(old_pay), FormatUtils.format_number(prop["weekly_payout"])
 		]
 		lbl_feedback.modulate = Color("34d399")
 	else:

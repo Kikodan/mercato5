@@ -518,7 +518,7 @@ func _render_economy_view() -> void:
 
 	var card_budget = _create_economy_kpi_card(
 		"💰 TRÉSORERIE ACTUELLE",
-		"%s €" % String.num_int64(player_club.budget),
+		FormatUtils.format_money(player_club.budget),
 		Color("facc15"),
 		"Santé : " + ("Saine et solide ✅" if player_club.budget > 80000 else ("Équilibrée ⚖️" if player_club.budget > 25000 else "Attention, trésorerie faible ⚠️"))
 	)
@@ -527,9 +527,9 @@ func _render_economy_view() -> void:
 
 	var card_wage = _create_economy_kpi_card(
 		"👥 MASSE SALARIALE",
-		"%s € / sem" % String.num_int64(total_wage),
+		"%s € / sem" % FormatUtils.format_number(total_wage),
 		Color("38bdf8"),
-		"%s € par an (%d joueurs sous contrat)" % [String.num_int64(total_wage * 52), player_club.squad.size()]
+		"%s € par an (%d joueurs sous contrat)" % [FormatUtils.format_number(total_wage * 52), player_club.squad.size()]
 	)
 	card_wage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	kpi_hbox.add_child(card_wage)
@@ -538,7 +538,7 @@ func _render_economy_view() -> void:
 	var net_prefix = "+" if weekly_net >= 0 else ""
 	var card_net = _create_economy_kpi_card(
 		"📊 RÉSULTAT FIXE / SEMAINE",
-		"%s%s € / sem" % [net_prefix, String.num_int64(weekly_net)],
+		"%s%s € / sem" % [net_prefix, FormatUtils.format_number(weekly_net)],
 		net_color,
 		"Hors billetterie des matchs à domicile"
 	)
@@ -569,7 +569,7 @@ func _render_economy_view() -> void:
 
 	var arena_sub = Label.new()
 	arena_sub.text = "%s • Capacité officielle : %s places (Division %d)" % [
-		fin.arena_name, String.num_int64(fin.arena_capacity), player_club.division
+		fin.arena_name, FormatUtils.format_number(fin.arena_capacity), player_club.division
 	]
 	arena_sub.add_theme_font_size_override("font_size", 13)
 	arena_sub.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
@@ -629,14 +629,14 @@ func _render_economy_view() -> void:
 	live_grid.add_child(fill_lbl)
 
 	var att_lbl = Label.new()
-	att_lbl.text = "Affluence attendue : %s spectateurs" % String.num_int64(est_attendance)
+	att_lbl.text = "Affluence attendue : %s spectateurs" % FormatUtils.format_number(est_attendance)
 	att_lbl.add_theme_font_size_override("font_size", 13)
 	att_lbl.add_theme_color_override("font_color", Color(0.8, 0.88, 1.0))
 	att_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	live_grid.add_child(att_lbl)
 
 	var rev_lbl = Label.new()
-	rev_lbl.text = "Recette estimée : %s € / match" % String.num_int64(est_revenue)
+	rev_lbl.text = "Recette estimée : %s € / match" % FormatUtils.format_number(est_revenue)
 	rev_lbl.add_theme_font_size_override("font_size", 13)
 	rev_lbl.add_theme_color_override("font_color", Color("facc15"))
 	rev_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -686,8 +686,8 @@ func _render_economy_view() -> void:
 	var sp1 = _create_sponsor_item_card(
 		"👕 Sponsor Maillot",
 		fin.primary_sponsor_name,
-		"+%s € / sem" % String.num_int64(fin.primary_sponsor_weekly),
-		"+%s € / vic." % String.num_int64(fin.primary_sponsor_bonus_win),
+		"+%s € / sem" % FormatUtils.format_number(fin.primary_sponsor_weekly),
+		"+%s € / vic." % FormatUtils.format_number(fin.primary_sponsor_bonus_win),
 		"%d sem. restantes" % fin.primary_sponsor_weeks_left,
 		"PRIMARY"
 	)
@@ -697,8 +697,8 @@ func _render_economy_view() -> void:
 	var sp2 = _create_sponsor_item_card(
 		"🏟️ Naming Salle",
 		fin.arena_sponsor_name,
-		"+%s € / sem" % String.num_int64(fin.arena_sponsor_weekly),
-		"+%s € / vic." % String.num_int64(fin.arena_sponsor_bonus_win),
+		"+%s € / sem" % FormatUtils.format_number(fin.arena_sponsor_weekly),
+		"+%s € / vic." % FormatUtils.format_number(fin.arena_sponsor_bonus_win),
 		"%d sem. restantes" % fin.arena_sponsor_weeks_left,
 		"ARENA"
 	)
@@ -708,8 +708,8 @@ func _render_economy_view() -> void:
 	var sp3 = _create_sponsor_item_card(
 		"👟 Équipementier",
 		fin.kit_sponsor_name,
-		"+%s € / sem" % String.num_int64(fin.kit_sponsor_weekly),
-		"+%s € / vic." % String.num_int64(fin.kit_sponsor_bonus_win),
+		"+%s € / sem" % FormatUtils.format_number(fin.kit_sponsor_weekly),
+		"+%s € / vic." % FormatUtils.format_number(fin.kit_sponsor_bonus_win),
 		"%d sem. restantes" % fin.kit_sponsor_weeks_left,
 		"KIT"
 	)
@@ -719,8 +719,8 @@ func _render_economy_view() -> void:
 	var sp4 = _create_sponsor_item_card(
 		"🪧 Régie Pub & LED",
 		fin.board_ads_name,
-		"+%s € / sem" % String.num_int64(fin.board_ads_weekly),
-		"+%s € / vic." % String.num_int64(fin.board_ads_bonus_win),
+		"+%s € / sem" % FormatUtils.format_number(fin.board_ads_weekly),
+		"+%s € / vic." % FormatUtils.format_number(fin.board_ads_bonus_win),
 		"%d sem. restantes" % fin.board_ads_weeks_left,
 		"BOARD"
 	)
@@ -730,7 +730,7 @@ func _render_economy_view() -> void:
 	var sp5 = _create_sponsor_item_card(
 		"📺 Droits TV Ligue",
 		"Ligue Nationale Futsal",
-		"+%s € / sem" % String.num_int64(fin.weekly_tv_rights),
+		"+%s € / sem" % FormatUtils.format_number(fin.weekly_tv_rights),
 		"",
 		"Dotation officielle fixe",
 		""
@@ -776,14 +776,14 @@ func _render_economy_view() -> void:
 	in_hdr.add_theme_color_override("font_color", Color("34d399"))
 	in_col.add_child(in_hdr)
 
-	in_col.add_child(_create_balance_line("Sponsor Maillot :", "+%s €" % String.num_int64(fin.primary_sponsor_weekly), Color("34d399")))
-	in_col.add_child(_create_balance_line("Partenaire Salle :", "+%s €" % String.num_int64(fin.arena_sponsor_weekly), Color("34d399")))
-	in_col.add_child(_create_balance_line("Équipementier Officiel :", "+%s €" % String.num_int64(fin.kit_sponsor_weekly), Color("34d399")))
-	in_col.add_child(_create_balance_line("Panneaux & Régie LED :", "+%s €" % String.num_int64(fin.board_ads_weekly), Color("34d399")))
-	in_col.add_child(_create_balance_line("Droits TV officiels :", "+%s €" % String.num_int64(fin.weekly_tv_rights), Color("34d399")))
-	in_col.add_child(_create_balance_line("Billetterie moyenne (domicile) :", "+%s € / match" % String.num_int64(est_revenue), Color("facc15")))
+	in_col.add_child(_create_balance_line("Sponsor Maillot :", "+%s €" % FormatUtils.format_number(fin.primary_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Partenaire Salle :", "+%s €" % FormatUtils.format_number(fin.arena_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Équipementier Officiel :", "+%s €" % FormatUtils.format_number(fin.kit_sponsor_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Panneaux & Régie LED :", "+%s €" % FormatUtils.format_number(fin.board_ads_weekly), Color("34d399")))
+	in_col.add_child(_create_balance_line("Droits TV officiels :", "+%s €" % FormatUtils.format_number(fin.weekly_tv_rights), Color("34d399")))
+	in_col.add_child(_create_balance_line("Billetterie moyenne (domicile) :", "+%s € / match" % FormatUtils.format_number(est_revenue), Color("facc15")))
 	in_col.add_child(HSeparator.new())
-	in_col.add_child(_create_balance_line("TOTAL REVENUS FIXES :", "+%s € / sem" % String.num_int64(weekly_fixed_income), Color("34d399"), true))
+	in_col.add_child(_create_balance_line("TOTAL REVENUS FIXES :", "+%s € / sem" % FormatUtils.format_number(weekly_fixed_income), Color("34d399"), true))
 
 	cols_hbox.add_child(in_col)
 
@@ -798,12 +798,12 @@ func _render_economy_view() -> void:
 	out_hdr.add_theme_color_override("font_color", Color("f87171"))
 	out_col.add_child(out_hdr)
 
-	out_col.add_child(_create_balance_line("Salaires joueurs (%d contrats) :" % player_club.squad.size(), "-%s €" % String.num_int64(total_wage), Color("f87171")))
-	out_col.add_child(_create_balance_line("Entretien salle & logistique :", "-%s €" % String.num_int64(fin.weekly_maintenance), Color("f87171")))
+	out_col.add_child(_create_balance_line("Salaires joueurs (%d contrats) :" % player_club.squad.size(), "-%s €" % FormatUtils.format_number(total_wage), Color("f87171")))
+	out_col.add_child(_create_balance_line("Entretien salle & logistique :", "-%s €" % FormatUtils.format_number(fin.weekly_maintenance), Color("f87171")))
 	out_col.add_child(_create_balance_line("Déplacements & arbitrage :", "Inclus dans l'entretien", Color(0.7, 0.75, 0.85)))
 	out_col.add_child(_create_balance_line("Indemnités de transfert :", "Selon opérations mercato", Color(0.7, 0.75, 0.85)))
 	out_col.add_child(HSeparator.new())
-	out_col.add_child(_create_balance_line("TOTAL DÉPENSES FIXES :", "-%s € / sem" % String.num_int64(weekly_fixed_expense), Color("f87171"), true))
+	out_col.add_child(_create_balance_line("TOTAL DÉPENSES FIXES :", "-%s € / sem" % FormatUtils.format_number(weekly_fixed_expense), Color("f87171"), true))
 
 	cols_hbox.add_child(out_col)
 
@@ -1027,7 +1027,7 @@ func _render_inspector(p: Player) -> void:
 	inspector_content.add_child(title)
 
 	var val_lbl = Label.new()
-	val_lbl.text = "Val: %s € | Sal: %s €/sem | Contrat: %d an(s)" % [String.num_int64(p.market_value), String.num_int64(p.salary), p.contract_years]
+	val_lbl.text = "Val: %s € | Sal: %s €/sem | Contrat: %d an(s)" % [FormatUtils.format_number(p.market_value), FormatUtils.format_number(p.salary), p.contract_years]
 	val_lbl.modulate = Color("facc15")
 	val_lbl.add_theme_font_size_override("font_size", 12)
 	val_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1167,7 +1167,7 @@ func _render_inspector(p: Player) -> void:
 	if player_club.squad.has(p):
 		var severance = p.salary * 4
 		var btn_release = Button.new()
-		btn_release.text = "Libérer (%s €)" % String.num_int64(severance)
+		btn_release.text = "Libérer (%s €)" % FormatUtils.format_number(severance)
 		btn_release.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn_release.modulate = Color("f87171")
 		btn_release.add_theme_font_size_override("font_size", 12)
@@ -1451,7 +1451,7 @@ func _render_club_roster(c: Club) -> void:
 		"Allemagne": flag = "🇩🇪"
 
 	label_club_detail_name.text = c.club_name
-	label_club_detail_sub.text = "%s %s (Div %d) | Budget: %s €" % [flag, c.country, c.division, String.num_int64(c.budget)]
+	label_club_detail_sub.text = "%s %s (Div %d) | Budget: %s €" % [flag, c.country, c.division, FormatUtils.format_number(c.budget)]
 
 	for child in club_roster_list.get_children():
 		child.queue_free()
@@ -1650,7 +1650,7 @@ func _render_club_roster(c: Club) -> void:
 
 		# 4. Valeur Marchande
 		var price_lbl = Label.new()
-		price_lbl.text = "%s €" % String.num_int64(p.market_value)
+		price_lbl.text = FormatUtils.format_money(p.market_value)
 		price_lbl.add_theme_color_override("font_color", Color(0.95, 0.82, 0.28))
 		price_lbl.add_theme_font_size_override("font_size", 13)
 		hbox.add_child(price_lbl)
@@ -1735,6 +1735,9 @@ func _render_market_view() -> void:
 	var target_pos = -1
 	if sel_pos_idx > 0:
 		target_pos = sel_pos_idx - 1
+
+	if market.free_agents.size() < 45:
+		market.inject_new_market_players(8)
 
 	# Trier les agents libres par note globale (OVR) décroissante pour une lisibilité optimale
 	var sorted_agents: Array[Player] = market.free_agents.duplicate()
@@ -1857,14 +1860,14 @@ func _render_market_view() -> void:
 		fin_vbox.add_theme_constant_override("separation", 1)
 
 		var wage_lbl = Label.new()
-		wage_lbl.text = "%s €/sem" % String.num_int64(p.wage_demand)
+		wage_lbl.text = "%s €/sem" % FormatUtils.format_number(p.wage_demand)
 		wage_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		wage_lbl.add_theme_font_size_override("font_size", 14)
 		wage_lbl.add_theme_color_override("font_color", Color(0.98, 0.82, 0.28))
 		fin_vbox.add_child(wage_lbl)
 
 		var val_lbl = Label.new()
-		val_lbl.text = "Val : %s €" % String.num_int64(p.market_value)
+		val_lbl.text = "Val : %s €" % FormatUtils.format_number(p.market_value)
 		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		val_lbl.add_theme_font_size_override("font_size", 12)
 		val_lbl.add_theme_color_override("font_color", Color(0.60, 0.70, 0.82))
@@ -1946,7 +1949,7 @@ func _render_inbox_view() -> void:
 		btn_refuse.modulate = Color("ef4444")
 
 		if o.offer_type == TransferOffer.Type.PLAYER_PURCHASE:
-			desc.text = "💰 %s propose %s € pour recruter %s." % [o.sender_club.club_name, String.num_int64(o.transfer_fee), o.target_player.full_name]
+			desc.text = "💰 %s propose %s € pour recruter %s." % [o.sender_club.club_name, FormatUtils.format_number(o.transfer_fee), o.target_player.full_name]
 			btn_accept.pressed.connect(func():
 				market.accept_transfer_offer(o, player_club)
 				_update_topbar()
@@ -1954,7 +1957,7 @@ func _render_inbox_view() -> void:
 				_render_squad_view()
 			)
 		elif o.offer_type == TransferOffer.Type.JOB_OFFER:
-			desc.text = "👔 %s (%s) vous propose le poste de manager (Budget: %s €)." % [o.sender_club.club_name, o.sender_club.country, String.num_int64(o.sender_club.budget)]
+			desc.text = "👔 %s (%s) vous propose le poste de manager (Budget: %s €)." % [o.sender_club.club_name, o.sender_club.country, FormatUtils.format_number(o.sender_club.budget)]
 			btn_accept.pressed.connect(func():
 				player_club = o.sender_club
 				for l in all_leagues:
@@ -1991,7 +1994,7 @@ func _update_topbar() -> void:
 	user_club_badge.queue_redraw()
 
 	label_club.text = "%s (D%d - %s)" % [player_club.club_name, player_club.division, player_club.country]
-	label_budget.text = "Budget : %s €" % String.num_int64(player_club.budget)
+	label_budget.text = "Budget : %s €" % FormatUtils.format_number(player_club.budget)
 
 	var s_names = ["Équilibré", "Attaque", "Contre"]
 	var t_names = ["Cryo", "Tir", "Défense"]
@@ -2443,16 +2446,16 @@ func _finalize_league_matchday() -> void:
 		var user_won = (is_home and current_user_report.home_score > current_user_report.away_score) or (not is_home and current_user_report.away_score > current_user_report.home_score)
 		if is_home:
 			match_rec = player_club.get_finances().process_home_match_receipts(player_club, current_user_report.away_club, false, user_won)
-			var bonus_txt = (" • Primes victoire sponsors : +%s €" % String.num_int64(player_club.get_finances().get_total_win_bonus())) if user_won else ""
+			var bonus_txt = (" • Primes victoire sponsors : +%s €" % FormatUtils.format_number(player_club.get_finances().get_total_win_bonus())) if user_won else ""
 			show_toast("🏟️ Match à domicile : %d spectateurs • Recettes : +%s €%s" % [
 				player_club.get_finances().recent_attendance,
-				String.num_int64(match_rec),
+				FormatUtils.format_number(match_rec),
 				bonus_txt
 			])
 		elif user_won:
 			var win_bonus = player_club.get_finances().get_total_win_bonus()
 			player_club.budget += win_bonus
-			show_toast("🏆 Victoire à l'extérieur ! Primes sponsors encaissées : +%s €" % String.num_int64(win_bonus))
+			show_toast("🏆 Victoire à l'extérieur ! Primes sponsors encaissées : +%s €" % FormatUtils.format_number(win_bonus))
 
 	player_club.get_finances().process_weekly_cycle(player_club, match_rec)
 
@@ -2644,7 +2647,7 @@ func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
 
 func _on_club_transfer_agreed(p: Player, seller: Club, agreed_fee: int) -> void:
 	show_toast("🤝 Accord de transfert conclu avec %s pour %s € ! Place aux négociations salariales..." % [
-		seller.club_name, String.num_int64(agreed_fee)
+		seller.club_name, FormatUtils.format_number(agreed_fee)
 	])
 	open_negotiation(p, seller, agreed_fee)
 
@@ -2675,7 +2678,7 @@ func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> vo
 	var seller_txt = ("Club: %s" % seller.club_name) if seller != null else "Agent Libre"
 	label_nego_stats.text = "%s | %s | OVR: %d | Valeur: %s € | Exigence: %s €/sem" % [
 		seller_txt, pos_names[p.position], p.get_overall(),
-		String.num_int64(p.market_value), String.num_int64(p.wage_demand)
+		FormatUtils.format_number(p.market_value), FormatUtils.format_number(p.wage_demand)
 	]
 
 	var vbox_nego = label_nego_name.get_parent()
@@ -2719,7 +2722,7 @@ func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> vo
 		slider_fee.min_value = 0
 		slider_fee.max_value = max(10000, agreed_fee * 2)
 		slider_fee.value = agreed_fee
-		label_fee_val.text = "%s € (Accord club validé)" % String.num_int64(agreed_fee)
+		label_fee_val.text = "%s € (Accord club validé)" % FormatUtils.format_number(agreed_fee)
 	else:
 		transfer_fee_row.visible = false
 		slider_fee.editable = true
@@ -2734,8 +2737,8 @@ func _update_negotiation_feedback() -> void:
 	var proposed_wage: int = int(slider_wage.value)
 	var proposed_bonus: int = int(slider_bonus.value)
 
-	label_wage_val.text = "%s € / sem" % String.num_int64(proposed_wage)
-	label_bonus_val.text = "%s €" % String.num_int64(proposed_bonus)
+	label_wage_val.text = "%s € / sem" % FormatUtils.format_number(proposed_wage)
+	label_bonus_val.text = "%s €" % FormatUtils.format_number(proposed_bonus)
 
 	var wage_ratio: float = float(proposed_wage) / float(max(1, p.wage_demand))
 	var expected_bonus: float = float(p.market_value) * 0.10
@@ -2795,7 +2798,7 @@ func _on_btn_propose_offer_pressed() -> void:
 
 	var upfront_cost: int = proposed_bonus + proposed_fee
 	if player_club.budget < upfront_cost:
-		show_toast("Budget insuffisant : %s € requis immédiatement." % String.num_int64(upfront_cost), true)
+		show_toast("Budget insuffisant : %s € requis immédiatement." % FormatUtils.format_number(upfront_cost), true)
 		return
 
 	var seller = current_nego_seller

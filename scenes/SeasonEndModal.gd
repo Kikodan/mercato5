@@ -148,21 +148,21 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 		u_style.border_color = Color(0.2, 0.8, 0.4)
 		u_style.border_width_left = 3
 		status_text = "🎉 MONSTRE PERFORMANCE ! %s EST PROMU EN DIVISION %d !\n💰 Dotation de début de saison reçue : +%s €" % [
-			player_club.club_name.to_upper(), report.user_new_division, String.num_int64(report.user_budget_gain)
+			player_club.club_name.to_upper(), report.user_new_division, FormatUtils.format_number(report.user_budget_gain)
 		]
 	elif report.user_status == "RELEGATED":
 		u_style.bg_color = Color(0.38, 0.1, 0.12, 0.95)
 		u_style.border_color = Color(0.9, 0.25, 0.3)
 		u_style.border_width_left = 3
 		status_text = "⚠️ SAISON DIFFICILE : %s EST RELÉGUÉ EN DIVISION %d.\n💰 Dotation de réorganisation reçue : +%s €" % [
-			player_club.club_name.to_upper(), report.user_new_division, String.num_int64(report.user_budget_gain)
+			player_club.club_name.to_upper(), report.user_new_division, FormatUtils.format_number(report.user_budget_gain)
 		]
 	else:
 		u_style.bg_color = Color(0.1, 0.2, 0.35, 0.95)
 		u_style.border_color = Color(0.3, 0.6, 0.9)
 		u_style.border_width_left = 3
 		status_text = "⚖️ OBJECTIF ATTEINT : %s SE MAINTIENT EN DIVISION %d !\n💰 Dotation financière de nouvelle saison reçue : +%s €" % [
-			player_club.club_name.to_upper(), report.user_new_division, String.num_int64(report.user_budget_gain)
+			player_club.club_name.to_upper(), report.user_new_division, FormatUtils.format_number(report.user_budget_gain)
 		]
 
 	user_status_box.add_theme_stylebox_override("panel", u_style)
@@ -268,12 +268,12 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 
 	if report.ffp_transfer_sanction:
 		ffp_status_lbl.text = "❌ SANCTION PRONONCÉE : Résultat fixe hebdomadaire déficitaire (%s € / sem).\n• Le gendarme financier vous interdit tout recrutement de joueurs pour la Saison %d !\n• Vous ne pouvez ni acheter de joueurs ni signer d'agents libres. Vous devez vous appuyer sur vos jeunes du centre de formation et assainir votre masse salariale." % [
-			String.num_int64(report.ffp_fixed_net), report.next_season
+			FormatUtils.format_number(report.ffp_fixed_net), report.next_season
 		]
 		ffp_status_lbl.add_theme_color_override("font_color", Color("f87171"))
 	else:
 		ffp_status_lbl.text = "✅ BILAN VALIDÉ : Votre résultat fixe hebdomadaire est sain (%s%s € / sem).\n• La commission de contrôle valide vos comptes.\n• Autorisation totale accordée pour négocier et recruter sur le marché des transferts." % [
-			"+" if report.ffp_fixed_net >= 0 else "", String.num_int64(report.ffp_fixed_net)
+			"+" if report.ffp_fixed_net >= 0 else "", FormatUtils.format_number(report.ffp_fixed_net)
 		]
 		ffp_status_lbl.add_theme_color_override("font_color", Color("34d399"))
 

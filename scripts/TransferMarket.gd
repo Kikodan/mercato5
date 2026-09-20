@@ -29,7 +29,7 @@ func finalize_signing(buyer: Club, player: Player, agreed_salary: int, signing_b
 
 	var total_cash_cost: int = signing_bonus + transfer_fee
 	if buyer.budget < total_cash_cost:
-		transaction_completed.emit("Budget insuffisant (%s € requis)." % String.num_int64(total_cash_cost))
+		transaction_completed.emit("Budget insuffisant (%s € requis)." % FormatUtils.format_number(total_cash_cost))
 		return false
 
 	buyer.budget -= total_cash_cost
@@ -45,9 +45,9 @@ func finalize_signing(buyer: Club, player: Player, agreed_salary: int, signing_b
 	player.contract_years = contract_years
 	buyer.squad.append(player)
 
-	var club_src = (" (acheté à %s pour %s €)" % [seller.club_name, String.num_int64(transfer_fee)]) if seller != null else " (libre)"
+	var club_src = (" (acheté à %s pour %s €)" % [seller.club_name, FormatUtils.format_number(transfer_fee)]) if seller != null else " (libre)"
 	transaction_completed.emit("✅ Signature officielle ! %s s'engage pour %d an(s) à %s €/sem%s." % [
-		player.full_name, contract_years, String.num_int64(agreed_salary), club_src
+		player.full_name, contract_years, FormatUtils.format_number(agreed_salary), club_src
 	])
 	return true
 
@@ -58,14 +58,14 @@ func release_player(club: Club, player: Player) -> bool:
 
 	var severance: int = player.salary * 4 # 4 semaines d'indemnité
 	if club.budget < severance:
-		transaction_completed.emit("Budget insuffisant pour payer les indemnités de départ (%s €)." % String.num_int64(severance))
+		transaction_completed.emit("Budget insuffisant pour payer les indemnités de départ (%s €)." % FormatUtils.format_number(severance))
 		return false
 
 	club.budget -= severance
 	club.squad.erase(player)
 	club.starting_five.erase(player)
 	free_agents.append(player)
-	transaction_completed.emit("Contrat résilié : %s a été libéré sur le marché (indemnités : %s €)." % [player.full_name, String.num_int64(severance)])
+	transaction_completed.emit("Contrat résilié : %s a été libéré sur le marché (indemnités : %s €)." % [player.full_name, FormatUtils.format_number(severance)])
 	return true
 
 func sign_free_agent(buyer: Club, player: Player) -> bool:
@@ -94,7 +94,7 @@ func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt:
 		return {
 			"status": "ACCEPTED",
 			"counter_offer": offer_amount,
-			"message": "Accord trouvé ! %s accepte votre offre de %s €." % [seller.club_name, String.num_int64(offer_amount)]
+			"message": "Accord trouvé ! %s accepte votre offre de %s €." % [seller.club_name, FormatUtils.format_number(offer_amount)]
 		}
 
 	# Si tentative 4 échouée -> rupture
@@ -110,7 +110,7 @@ func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt:
 		return {
 			"status": "REJECTED_LOW",
 			"counter_offer": base_asking,
-			"message": "Offre jugée dérisoire ! Le président exige au minimum %s €." % String.num_int64(base_asking)
+			"message": "Offre jugée dérisoire ! Le président exige au minimum %s €." % FormatUtils.format_number(base_asking)
 		}
 
 	# Contre-proposition
@@ -119,7 +119,7 @@ func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt:
 	return {
 		"status": "COUNTER_OFFER",
 		"counter_offer": counter,
-		"message": "%s refuse cette proposition mais vous soumet une contre-offre à %s €." % [seller.club_name, String.num_int64(counter)]
+		"message": "%s refuse cette proposition mais vous soumet une contre-offre à %s €." % [seller.club_name, FormatUtils.format_number(counter)]
 	}
 
 func trigger_ai_market_activity(player_club: Club, other_clubs: Array[Club]) -> void:
@@ -158,7 +158,7 @@ func accept_transfer_offer(offer: TransferOffer, player_club: Club) -> void:
 		player_club.starting_five.erase(p)
 		offer.sender_club.squad.append(p)
 		pending_offers.erase(offer)
-		transaction_completed.emit("Vente de %s conclue pour %s €." % [p.full_name, String.num_int64(offer.transfer_fee)])
+		transaction_completed.emit("Vente de %s conclue pour %s €." % [p.full_name, FormatUtils.format_number(offer.transfer_fee)])
 		inbox_updated.emit()
 
 func reject_offer(offer: TransferOffer) -> void:
@@ -255,17 +255,24 @@ func process_ai_squad_management(all_clubs: Array[Club], user_club: Club = null)
 				club.auto_pick_lineup()
 
 	# 5. Renouvellement et circulation hebdomadaire du marché : nouveaux joueurs libres & pépites
-	var positions = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.FWD]
-	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Allemagne", "Brésil", "Belgique", "Pays-Bas"]
-	
-	# Retirer 1 ou 2 agents libres trop anciens s'il y en a beaucoup
-	if free_agents.size() > 40:
-		free_agents.remove_at(randi_range(0, free_agents.size() - 1))
+	inject_new_market_players(randi_range(4, 7))
 
-	# Ajouter 2 à 4 nouveaux joueurs libres chaque semaine
-	var new_arrivals = randi_range(2, 4)
-	for i in new_arrivals:
+# Injection dynamique de nouveaux joueurs sur le marché des transferts
+func inject_new_market_players(count: int = 5) -> void:
+	var positions = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.FWD]
+	var countries = ["France", "Espagne", "Italie", "Portugal", "Angleterre", "Allemagne", "Brésil", "Belgique", "Pays-Bas", "Argentine", "Maroc", "Sénégal"]
+	
+	for i in range(count):
 		var c = countries.pick_random()
-		var p = PlayerGenerator.create_random_player(c, positions.pick_random(), randi_range(58, 82))
+		var pos = positions.pick_random()
+		var ovr = randi_range(56, 84)
+		var p = PlayerGenerator.create_random_player(c, pos, ovr)
+		p.market_value = int(pow(float(ovr) / 10.0, 3.8) * 1200.0)
+		p.wage_demand = maxi(800, int(p.market_value * 0.0018))
+		p.salary = p.wage_demand
 		free_agents.push_front(p)
+	
+	# Conserver une taille raisonnable mais généreuse (jusqu'à 90 joueurs disponibles)
+	while free_agents.size() > 90:
+		free_agents.pop_back()
 

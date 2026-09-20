@@ -219,7 +219,7 @@ func _build_ui() -> void:
 	slider_offer.step = 2_000
 	slider_offer.value = 50_000
 	slider_offer.value_changed.connect(func(val: float):
-		lbl_offer_val.text = "%s €" % String.num_int64(int(val))
+		lbl_offer_val.text = FormatUtils.format_money(int(val))
 	)
 	fee_vbox.add_child(slider_offer)
 
@@ -323,17 +323,17 @@ func _refresh_display() -> void:
 		var pos_str = ["Gardien (GK)", "Défenseur (DEF)", "Milieu (MID)", "Attaquant (FWD)"][target_player.position]
 		lbl_player_name.text = "%s %s" % [target_player.get_flag_emoji(), target_player.full_name]
 		lbl_player_details.text = "%s • %d ans • Note %d OVR • Valeur marchande : %s €" % [
-			pos_str, target_player.age, target_player.get_overall(), String.num_int64(target_player.market_value)
+			pos_str, target_player.age, target_player.get_overall(), FormatUtils.format_number(target_player.market_value)
 		]
 
 		var base_asking = int(target_player.market_value * 1.15)
-		lbl_asking_hint.text = "Estimation du prix demandé par le club : environ %s €" % String.num_int64(base_asking)
+		lbl_asking_hint.text = "Estimation du prix demandé par le club : environ %s €" % FormatUtils.format_number(base_asking)
 
 		slider_offer.min_value = max(2_000, int(target_player.market_value * 0.4))
 		slider_offer.max_value = max(15_000, int(target_player.market_value * 2.8))
 		slider_offer.step = 1_000
 		slider_offer.value = target_player.market_value
-		lbl_offer_val.text = "%s €" % String.num_int64(int(slider_offer.value))
+		lbl_offer_val.text = FormatUtils.format_money(int(slider_offer.value))
 
 	_update_attempt_ui()
 	lbl_president_dialogue.text = "« Nous vous écoutons. Quel montant proposez-vous pour racheter le contrat de %s ? »" % (target_player.full_name if target_player else "")
@@ -377,7 +377,7 @@ func _on_submit_bid() -> void:
 
 		"COUNTER_OFFER":
 			last_counter_offer = res.get("counter_offer", 0)
-			btn_accept_counter.text = "🤝 Accepter la contre-proposition (%s €)" % String.num_int64(last_counter_offer)
+			btn_accept_counter.text = "🤝 Accepter la contre-proposition (%s €)" % FormatUtils.format_number(last_counter_offer)
 			btn_accept_counter.visible = true
 			current_attempt += 1
 			if current_attempt > max_attempts:
@@ -402,7 +402,7 @@ func _on_accept_counter() -> void:
 	slider_offer.value = last_counter_offer
 	is_agreed = true
 	agreed_transfer_fee = last_counter_offer
-	lbl_president_dialogue.text = "« Parfait ! Nous avons un accord de principe à %s €. Vous pouvez négocier avec le joueur. »" % String.num_int64(last_counter_offer)
+	lbl_president_dialogue.text = "« Parfait ! Nous avons un accord de principe à %s €. Vous pouvez négocier avec le joueur. »" % FormatUtils.format_number(last_counter_offer)
 	btn_submit_bid.visible = false
 	btn_accept_counter.visible = false
 	btn_proceed_player.visible = true

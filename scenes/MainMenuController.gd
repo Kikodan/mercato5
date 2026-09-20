@@ -59,7 +59,7 @@ func _check_save_state() -> void:
 			info.get("country", "France"),
 			info.get("division", 1),
 			info.get("matchday", 1),
-			String.num_int64(info.get("budget", 100_000))
+			FormatUtils.format_number(info.get("budget", 100_000))
 		]
 		save_badge.shape = info.get("badge_shape", 0)
 		save_badge.symbol = info.get("badge_symbol", 1)
@@ -198,7 +198,7 @@ func _create_club_card(c: Club) -> PanelContainer:
 	name_lbl.add_theme_font_size_override("font_size", 15)
 
 	var sub_lbl = Label.new()
-	sub_lbl.text = "Budget: %s € | %d joueurs" % [String.num_int64(c.budget), c.squad.size()]
+	sub_lbl.text = "Budget: %s € | %d joueurs" % [FormatUtils.format_number(c.budget), c.squad.size()]
 	sub_lbl.modulate = Color(0.75, 0.82, 0.92)
 	sub_lbl.add_theme_font_size_override("font_size", 12)
 
@@ -235,7 +235,7 @@ func _select_club(c: Club) -> void:
 		"Angleterre": fl = "🇬🇧"
 
 	lbl_preview_sub.text = "%s %s (Division %d)" % [fl, c.country, c.division]
-	lbl_preview_budget.text = "💰 Budget de départ : %s €" % String.num_int64(c.budget)
+	lbl_preview_budget.text = "💰 Budget de départ : %s €" % FormatUtils.format_number(c.budget)
 
 	# Afficher l'effectif
 	for ch in preview_squad_list.get_children():
