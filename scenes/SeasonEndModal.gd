@@ -92,6 +92,7 @@ func _build_ui() -> void:
 
 	lbl_user_status = Label.new()
 	lbl_user_status.text = "Statut du Club..."
+	lbl_user_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl_user_status.add_theme_font_size_override("font_size", 14)
 	user_status_box.add_child(lbl_user_status)
 
@@ -99,6 +100,7 @@ func _build_ui() -> void:
 	scroll_container = ScrollContainer.new()
 	scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll_container.custom_minimum_size = Vector2(870, 320)
+	scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_box.add_child(scroll_container)
 
 	dynamic_content = VBoxContainer.new()
@@ -172,7 +174,6 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 
 	# 1. Section Retraites du club utilisateur (si existantes)
 	if report.user_retirees.size() > 0:
-		var ret_card = _create_section_card("🧓 DÉPARTS À LA RETRAITE DANS VOTRE EFFECTIF")
 		var v_ret = VBoxContainer.new()
 		v_ret.add_theme_constant_override("separation", 6)
 		for p in report.user_retirees:
@@ -180,14 +181,14 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 			l.text = "• %s (%d ans, %s) a décidé de raccrocher les crampons. Un jeune espoir du centre de formation intègre le groupe." % [
 				p.full_name, p.age - 1, ["Gardien", "Défenseur", "Milieu", "Attaquant"][p.position]
 			]
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			l.add_theme_color_override("font_color", Color(0.95, 0.65, 0.35))
 			l.add_theme_font_size_override("font_size", 13)
 			v_ret.add_child(l)
-		ret_card.add_child(v_ret)
+		var ret_card = _create_section_card("🧓 DÉPARTS À LA RETRAITE DANS VOTRE EFFECTIF", v_ret)
 		dynamic_content.add_child(ret_card)
 
 	# 2. Section Montées et Descentes
-	var promo_card = _create_section_card("⬆️ MONTÉES & ⬇️ DESCENTES OFFICIELLES")
 	var grid = GridContainer.new()
 	grid.columns = 2
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -244,40 +245,43 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 			col_down.add_child(l)
 	grid.add_child(col_down)
 
-	promo_card.add_child(grid)
+	var promo_card = _create_section_card("⬆️ MONTÉES & ⬇️ DESCENTES OFFICIELLES", grid)
 	dynamic_content.add_child(promo_card)
 
 	# 3. Section Marché & Nouveaux Joueurs
-	var mercato_card = _create_section_card("💼 RENOUVELLEMENT DU MERCATO")
 	var m_lbl = Label.new()
 	m_lbl.text = "• Le marché des transferts est désormais réactualisé pour la nouvelle saison !\n• %d nouveaux agents libres et jeunes pépites ont été ajoutés sur le marché.\n• L'ensemble des joueurs ont vieilli d'un an et leurs valeurs marchandes ont été actualisées en fonction de leurs performances." % [
 		report.new_free_agents_count
 	]
+	m_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	m_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 	m_lbl.add_theme_font_size_override("font_size", 12)
-	mercato_card.add_child(m_lbl)
+	var mercato_card = _create_section_card("💼 RENOUVELLEMENT DU MERCATO", m_lbl)
 	dynamic_content.add_child(mercato_card)
 
-func _create_section_card(title_text: String) -> PanelContainer:
+func _create_section_card(title_text: String, content_node: Control = null) -> PanelContainer:
 	var p = PanelContainer.new()
 	var s = StyleBoxFlat.new()
 	s.bg_color = Color(0.06, 0.09, 0.14, 0.8)
 	s.set_corner_radius_all(6)
-	s.content_margin_left = 12
-	s.content_margin_right = 12
-	s.content_margin_top = 10
-	s.content_margin_bottom = 10
+	s.content_margin_left = 14
+	s.content_margin_right = 14
+	s.content_margin_top = 12
+	s.content_margin_bottom = 12
 	p.add_theme_stylebox_override("panel", s)
 
 	var v = VBoxContainer.new()
-	v.add_theme_constant_override("separation", 8)
+	v.add_theme_constant_override("separation", 10)
 	p.add_child(v)
 
 	var t = Label.new()
 	t.text = title_text
 	t.add_theme_font_size_override("font_size", 13)
-	t.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+	t.add_theme_color_override("font_color", Color(0.95, 0.85, 0.35))
 	v.add_child(t)
+
+	if content_node != null:
+		v.add_child(content_node)
 
 	return p
 

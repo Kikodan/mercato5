@@ -31,11 +31,40 @@ content_margin_right = 18.0
 content_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary"]
-bg_color = Color(0.18, 0.46, 0.82, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+bg_color = Color(0.12, 0.44, 0.82, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32, 0.65, 0.98, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_new"]
+bg_color = Color(0.12, 0.55, 0.38, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.85, 0.58, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_secondary"]
+bg_color = Color(0.1, 0.14, 0.22, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.34, 0.5, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_action"]
 bg_color = Color(0.16, 0.65, 0.42, 1)
@@ -88,44 +117,22 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -240.0
-offset_right = 220.0
-offset_bottom = 240.0
+offset_left = -250.0
+offset_top = -180.0
+offset_right = 250.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
-
-[node name="HeaderBox" type="VBoxContainer" parent="MainView/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="LabelTitle" type="Label" parent="MainView/VBox/HeaderBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.22, 0.74, 0.97, 1)
-theme_override_font_sizes/font_size = 36
-text = "⚽ MERCATO 5"
-horizontal_alignment = 1
-
-[node name="LabelSubtitle" type="Label" parent="MainView/VBox/HeaderBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.68, 0.8, 1)
-theme_override_font_sizes/font_size = 14
-text = "MANAGEMENT & TACTIQUE DE FOOTBALL EN SALLE"
-horizontal_alignment = 1
-
-[node name="Spacer1" type="Control" parent="MainView/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
+theme_override_constants/separation = 14
 
 [node name="MenuButtons" type="VBoxContainer" parent="MainView/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="BtnContinue" type="Button" parent="MainView/VBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 19
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_primary")
 text = "▶  CONTINUER LA PARTIE"
 
@@ -135,10 +142,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="HBox" type="HBoxContainer" parent="MainView/VBox/MenuButtons/ContinueInfoCard"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="SaveBadge" type="Control" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox"]
-custom_minimum_size = Vector2(36, 36)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
 script = ExtResource("2_badge")
@@ -149,38 +156,42 @@ size_flags_horizontal = 3
 
 [node name="LabelTitleSave" type="Label" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 0.6, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.4, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 12
 text = "SAUVEGARDE DISPONIBLE"
 
 [node name="LabelSaveSummary" type="Label" parent="MainView/VBox/MenuButtons/ContinueInfoCard/HBox/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 text = "Paris RG (France, Div 1) - J1 | Budget: 150 000 €"
 
 [node name="BtnNewGame" type="Button" parent="MainView/VBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 42)
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_new")
 text = "⭐  NOUVELLE PARTIE"
 
 [node name="BtnLoad" type="Button" parent="MainView/VBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_secondary")
 text = "📁  CHARGER UNE SAUVEGARDE"
 
 [node name="BtnOptions" type="Button" parent="MainView/VBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_secondary")
 text = "⚙️  OPTIONS & MUSIQUE"
 
 [node name="BtnQuit" type="Button" parent="MainView/VBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_secondary")
 text = "❌  QUITTER LE JEU"
 
 [node name="Spacer2" type="Control" parent="MainView/VBox"]

@@ -10,6 +10,7 @@ bin/godot.exe
 bin/godot_console.exe
 *.log
 *.bak
+scratch/
 
 # Operating System files
 .DS_Store

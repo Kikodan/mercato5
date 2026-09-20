@@ -43,9 +43,8 @@ func _draw() -> void:
 	var center = Vector2(size.x * 0.5, size.y * 0.5)
 	var radius = s * 0.48
 
-	# 1. Fond du macaron (cercle moderne avec anneau aux couleurs du club)
+	# 1. Fond du macaron (cercle sombre moderne)
 	draw_circle(center, radius, Color(0.06, 0.09, 0.15, 0.95))
-	draw_arc(center, radius - 1.0, 0, TAU, 48, kit_primary, 2.5)
 
 	# 2. Déterminer l'index du visage PNG
 	var face_id = face_data.get("face_id", -1)
@@ -55,13 +54,13 @@ func _draw() -> void:
 		else:
 			face_id = 0
 
-	# 3. Dessiner le portrait transparent découpé
+	# 3. Dessiner le portrait parfaitement centré dans le cercle
 	var tex = get_face_texture(face_id)
 	if tex != null:
-		var tex_w = float(tex.get_width())
-		var tex_h = float(tex.get_height())
-		var scale_factor = (radius * 1.88) / tex_h
-		var draw_w = tex_w * scale_factor
-		var draw_h = tex_h * scale_factor
-		var dest_rect = Rect2(center.x - draw_w * 0.5, center.y - draw_h * 0.50, draw_w, draw_h)
+		var d = radius * 2.0
+		var dest_rect = Rect2(center.x - radius, center.y - radius, d, d)
 		draw_texture_rect(tex, dest_rect, false)
+
+	# 4. Anneau de contour aux couleurs du club par-dessus le portrait pour une découpe nette
+	draw_arc(center, radius - 1.0, 0, TAU, 48, kit_primary, 2.5)
+
