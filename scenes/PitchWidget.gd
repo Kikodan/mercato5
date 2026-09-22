@@ -81,6 +81,9 @@ func _draw() -> void:
 	draw_rect(Rect2((s.x - cage_w) * 0.5, pad - 8.0, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
 	draw_rect(Rect2((s.x - cage_w) * 0.5, s.y - pad, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
 
+	var default_font = ThemeDB.fallback_font
+	var font_size = 11
+
 	# Bannière Note Moyenne d'Équipe en direct
 	if starting_five.size() > 0:
 		var slot_roles = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.MID, Player.Position.FWD]
@@ -102,8 +105,6 @@ func _draw() -> void:
 		draw_string(default_font, Vector2((s.x - b_size.x) * 0.5, pad + 20.0), banner_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 11, Color("facc15"))
 
 	# Jetons de joueurs
-	var default_font = ThemeDB.fallback_font
-	var font_size = 11
 
 	for i in FORMATION_POSITIONS.size():
 		var slot_pos = FORMATION_POSITIONS[i] * s
