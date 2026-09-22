@@ -92,6 +92,7 @@ var selected_swap_player: Player = null
 const EuropeanCup = preload("res://scripts/EuropeanCup.gd")
 var active_european_cup: EuropeanCup = null
 var is_viewing_european_cup: bool = false
+var is_interseason: bool = false
 
 @onready var notification_toast: PanelContainer = $NotificationToast
 @onready var label_toast: Label = $NotificationToast/LabelToast
@@ -506,6 +507,8 @@ func _render_economy_view() -> void:
 	if player_club == null:
 		return
 
+	_update_recruitment_ban_status()
+
 	var fin = player_club.get_finances()
 	var total_wage = player_club.get_total_wage()
 	var weekly_fixed_income = fin.get_total_fixed_income()
@@ -536,11 +539,12 @@ func _render_economy_view() -> void:
 
 	var net_color = Color("34d399") if weekly_net >= 0 else Color("f87171")
 	var net_prefix = "+" if weekly_net >= 0 else ""
+	var net_status = "Recrutement Autorisé ✅" if weekly_net >= 0 else "Recrutement Interdit 🚫 (Déficit)"
 	var card_net = _create_economy_kpi_card(
 		"📊 RÉSULTAT FIXE / SEMAINE",
 		"%s%s € / sem" % [net_prefix, FormatUtils.format_number(weekly_net)],
 		net_color,
-		"Hors billetterie des matchs à domicile"
+		"%s (Hors billetterie)" % net_status
 	)
 	card_net.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	kpi_hbox.add_child(card_net)
@@ -1840,7 +1844,9 @@ func _render_market_view() -> void:
 	for c in list.get_children():
 		c.queue_free()
 
-	if player_club and player_club.is_transfer_banned:
+	var is_recruiting_allowed = _update_recruitment_ban_status()
+
+	if player_club and not is_recruiting_allowed:
 		var ban_panel = PanelContainer.new()
 		var ban_style = StyleBoxFlat.new()
 		ban_style.bg_color = Color(0.4, 0.08, 0.1, 0.95)
@@ -1854,7 +1860,11 @@ func _render_market_view() -> void:
 		ban_panel.add_theme_stylebox_override("panel", ban_style)
 
 		var ban_lbl = Label.new()
-		ban_lbl.text = "🚫 INTERDICTION DE RECRUTEMENT (FAIR-PLAY FINANCIER)\nVotre club a terminé la saison dernière avec un résultat fixe hebdomadaire déficitaire. Tout recrutement (achats et agents libres) est suspendu pour l'exercice en cours. Assainissez votre masse salariale !"
+		var deficit = abs(player_club.get_fixed_net_result())
+		ban_lbl.text = "🚫 RECRUTEMENT SUSPENDU — RÉSULTAT FIXE DÉFICITAIRE (-%s / semaine)\nSelon les règles du Fair-Play Financier, vos entrées fixes garanties (sponsors + droits TV) doivent couvrir vos dépenses fixes (salaires + entretien).\nIl vous manque %s / semaine pour équilibrer vos comptes et lever immédiatement cette restriction.\n👉 Rendez-vous dans 'Économie' pour négocier des sponsors ou dans 'Effectif' pour dégraisser vos salaires !" % [
+			FormatUtils.format_number(deficit),
+			FormatUtils.format_money(deficit)
+		]
 		ban_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		ban_lbl.add_theme_font_size_override("font_size", 12)
 		ban_lbl.add_theme_color_override("font_color", Color.WHITE)
@@ -2137,6 +2147,13 @@ func _update_topbar() -> void:
 	var t_names = ["Cryo", "Tir", "Défense"]
 	tactic_label.text = "[%s | %s]" % [s_names[player_club.tactical_style], t_names[player_club.training_focus]]
 
+	if is_interseason:
+		btn_advance.modulate = Color("10b981")
+		label_week.text = "Intersaison • Clôture Financière & Préparation"
+		btn_advance.text = "🏁 Clôturer la Saison %d & Valider ▶" % current_season
+		btn_advance.disabled = false
+		return
+
 	var total_days = current_league.schedule.size()
 	if current_league.current_matchday_index < total_days:
 		btn_advance.modulate = Color(1, 1, 1)
@@ -2190,7 +2207,8 @@ func _update_topbar() -> void:
 		else:
 			var win_name = active_european_cup.winner.club_name if active_european_cup.winner else "Terminé"
 			label_week.text = "Champion : %s | Europe : %s" % [champ_name, win_name]
-			btn_advance.text = "🏁 Bilan & Nouvelle Saison ▶"
+			btn_advance.text = "🏁 Clôturer la Saison %d & Valider ▶" % current_season
+			btn_advance.modulate = Color("10b981")
 			btn_advance.disabled = false
 
 func _is_user_in_playoffs() -> bool:
@@ -2235,6 +2253,8 @@ func _is_user_in_european_cup() -> bool:
 		return false
 
 func _can_simulate_to_season_end() -> bool:
+	if is_interseason:
+		return false
 	if current_league == null or player_club == null:
 		return false
 	if current_league.current_matchday_index < current_league.schedule.size():
@@ -2275,7 +2295,7 @@ func _simulate_to_season_end() -> void:
 	show_toast("⏩ Fin de saison simulée ! Tous les playoffs et la Coupe d'Europe sont terminés.")
 	_update_topbar()
 	_render_standings_view()
-	_trigger_season_transition()
+	_enter_interseason_day()
 
 func _style_advance_button() -> void:
 	if btn_advance == null:
@@ -2413,8 +2433,15 @@ func _on_btn_advance_pressed() -> void:
 				_simulate_european_phase_ai_only()
 		return
 
-	# Cas 4 : Saison complètement terminée -> Bilan & Nouvelle Saison
-	_trigger_season_transition()
+	# Cas 4 : Saison complètement terminée -> Intersaison puis Bilan & Nouvelle Saison
+	if is_interseason:
+		_trigger_season_transition()
+		return
+	elif active_european_cup != null and active_european_cup.current_phase >= 6:
+		_enter_interseason_day()
+		return
+	else:
+		_trigger_season_transition()
 
 func _on_pre_match_kickoff(skip_live: bool) -> void:
 	match current_match_context:
@@ -2677,6 +2704,24 @@ func _simulate_european_phase_ai_only() -> void:
 	_update_topbar()
 	_render_standings_view()
 
+func _update_recruitment_ban_status() -> bool:
+	if player_club == null:
+		return true
+	var net_fixed = player_club.get_fixed_net_result()
+	if net_fixed >= 0:
+		player_club.is_transfer_banned = false
+		return true
+	else:
+		player_club.is_transfer_banned = true
+		return false
+
+func _enter_interseason_day() -> void:
+	is_interseason = true
+	_update_recruitment_ban_status()
+	_update_topbar()
+	_render_standings_view()
+	show_toast("📅 Intersaison ouverte ! Ajustez vos finances (sponsors, effectif) avant de clôturer la saison.")
+
 func _on_trophy_acknowledged() -> void:
 	if trophy_modal.current_type == TrophyModal.TrophyType.LEAGUE:
 		if active_european_cup == null:
@@ -2689,7 +2734,7 @@ func _on_trophy_acknowledged() -> void:
 				_update_topbar()
 				_render_standings_view()
 	elif trophy_modal.current_type == TrophyModal.TrophyType.EUROPEAN:
-		_trigger_season_transition()
+		_enter_interseason_day()
 
 func _trigger_season_transition() -> void:
 	var report = SeasonManager.execute_season_transition(all_leagues, market, player_club, active_european_cup, current_season)
@@ -2700,6 +2745,7 @@ func _on_new_season_started() -> void:
 	current_season += 1
 	active_european_cup = null
 	is_viewing_european_cup = false
+	is_interseason = false
 	btn_european_cup.text = "🏆 Coupe d'Europe"
 
 	# Retrouver la ligue du joueur (qui peut avoir changé suite aux promotions ou relégations)
@@ -2774,8 +2820,9 @@ func _init_negotiation_ui() -> void:
 	)
 
 func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
-	if player_club and player_club.is_transfer_banned:
-		show_toast("🚫 Recrutement interdit cette saison par le Fair-Play Financier (DNCG) !")
+	if not _update_recruitment_ban_status():
+		var deficit = abs(player_club.get_fixed_net_result())
+		show_toast("🚫 Recrutement interdit : résultat fixe déficitaire (-%s/sem). Assainissez vos comptes !" % FormatUtils.format_money(deficit), true)
 		return
 	if seller == null or seller == player_club:
 		open_negotiation(p, null, 0)
@@ -2789,8 +2836,9 @@ func _on_club_transfer_agreed(p: Player, seller: Club, agreed_fee: int) -> void:
 	open_negotiation(p, seller, agreed_fee)
 
 func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> void:
-	if player_club and player_club.is_transfer_banned:
-		show_toast("🚫 Recrutement interdit cette saison par le Fair-Play Financier (DNCG) !")
+	if not _update_recruitment_ban_status():
+		var deficit = abs(player_club.get_fixed_net_result())
+		show_toast("🚫 Recrutement interdit : résultat fixe déficitaire (-%s/sem). Assainissez vos comptes !" % FormatUtils.format_money(deficit), true)
 		return
 	if p == null:
 		return
@@ -3036,16 +3084,22 @@ func _create_youth_prospect_card(p: Player) -> PanelContainer:
 	pot_box.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var pot_title = Label.new()
-	pot_title.text = "⭐ Potentiel estimé :"
+	pot_title.text = "⭐ Potentiel théorique :"
 	pot_title.add_theme_font_size_override("font_size", 11)
 	pot_title.modulate = Color("facc15")
 	pot_box.add_child(pot_title)
 
 	var pot_val = Label.new()
 	pot_val.text = "%d - %d OVR" % [p.potential_min, p.potential_max]
-	pot_val.add_theme_font_size_override("font_size", 16)
+	pot_val.add_theme_font_size_override("font_size", 15)
 	pot_val.modulate = Color("facc15")
 	pot_box.add_child(pot_val)
+
+	var pot_sub = Label.new()
+	pot_sub.text = "(Plafond non atteint à 100%)"
+	pot_sub.add_theme_font_size_override("font_size", 10)
+	pot_sub.modulate = Color("94a3b8")
+	pot_box.add_child(pot_sub)
 
 	var pot_bar = ProgressBar.new()
 	pot_bar.custom_minimum_size = Vector2(130, 8)

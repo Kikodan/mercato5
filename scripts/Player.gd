@@ -90,6 +90,75 @@ func get_average_rating() -> float:
 		return 6.0
 	return float(stats_current_season.get("rating_sum", 0.0)) / float(m)
 
+func evolve_annual(club_div: int = 1) -> Dictionary:
+	var matches_played: int = stats_current_season.get("matches", 0)
+	var avg_rating: float = get_average_rating()
+	var ovr_before: int = get_overall()
+
+	var primary_attrs: Array[String] = []
+	match position:
+		Position.GK:
+			primary_attrs = ["reflexes", "defending", "passing", "stamina"]
+		Position.DEF:
+			primary_attrs = ["defending", "stamina", "speed", "passing"]
+		Position.MID:
+			primary_attrs = ["passing", "dribbling", "stamina", "shooting", "defending"]
+		Position.FWD:
+			primary_attrs = ["shooting", "speed", "dribbling", "passing"]
+
+	# 1. Jeunes (< 22 ans) : progression naturelle + bonus perfs
+	if age < 22:
+		var growth_pts = randi_range(1, 2)
+		if matches_played >= 6 and avg_rating >= 6.4:
+			growth_pts += 1
+		for i in growth_pts:
+			var attr = primary_attrs.pick_random()
+			set(attr, clampi(get(attr) + 1, 20, 99))
+
+	# 2. Développement (22 à 25 ans) : progression modérée
+	elif age <= 25:
+		if randf() < 0.65:
+			var attr = primary_attrs.pick_random()
+			set(attr, clampi(get(attr) + 1, 20, 99))
+		if matches_played >= 8 and avg_rating >= 7.0:
+			var bonus_attr = primary_attrs.pick_random()
+			set(bonus_attr, clampi(get(bonus_attr) + 1, 20, 99))
+
+	# 3. Apogée (26 à 29 ans) : stabilité et nuance selon performance
+	elif age <= 29:
+		if matches_played >= 8 and avg_rating >= 7.2:
+			var attr = primary_attrs.pick_random()
+			set(attr, clampi(get(attr) + 1, 20, 99))
+		elif matches_played == 0 and randf() < 0.35:
+			var phys = ["speed", "stamina"].pick_random()
+			set(phys, clampi(get(phys) - 1, 20, 99))
+
+	# 4. Vétérans (30 à 33 ans) : léger déclin physique (vitesse, endurance)
+	elif age <= 33:
+		if randf() < 0.50:
+			speed = clampi(speed - 1, 20, 99)
+		if randf() < 0.40:
+			stamina = clampi(stamina - 1, 20, 99)
+		if matches_played >= 8 and avg_rating >= 6.8 and randf() < 0.35:
+			var tech = "passing" if position != Position.GK else "reflexes"
+			set(tech, clampi(get(tech) + 1, 20, 99))
+
+	# 5. Vétérans avancés (34+ ans) : déclin physique et général
+	else:
+		speed = clampi(speed - randi_range(1, 2), 20, 99)
+		stamina = clampi(stamina - randi_range(1, 2), 20, 99)
+		if randf() < 0.45:
+			var attr = primary_attrs.pick_random()
+			set(attr, clampi(get(attr) - 1, 20, 99))
+
+	recalculate_value(club_div)
+	var ovr_after: int = get_overall()
+	return {
+		"before": ovr_before,
+		"after": ovr_after,
+		"diff": ovr_after - ovr_before
+	}
+
 func archive_season(season_num: int, club_name: String, country: String, div: int) -> void:
 	stats_history.append({
 		"season": season_num,

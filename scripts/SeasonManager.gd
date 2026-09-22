@@ -33,20 +33,11 @@ static func execute_season_transition(
 	# 0. Contrôle du Fair-Play Financier (DNCG)
 	for l in all_leagues:
 		for c in l.clubs:
-			var fin = c.get_finances()
-			var fixed_inc = fin.get_total_fixed_income()
-			var fixed_exp = c.get_total_wage() + fin.weekly_maintenance
-			var fixed_net = fixed_inc - fixed_exp
-			if fixed_net < 0:
-				c.is_transfer_banned = true
-				if c == player_club:
-					report.ffp_transfer_sanction = true
-					report.ffp_fixed_net = fixed_net
-			else:
-				c.is_transfer_banned = false
-				if c == player_club:
-					report.ffp_transfer_sanction = false
-					report.ffp_fixed_net = fixed_net
+			var fixed_net = c.get_fixed_net_result()
+			c.is_transfer_banned = (fixed_net < 0)
+			if c == player_club:
+				report.ffp_transfer_sanction = (fixed_net < 0)
+				report.ffp_fixed_net = fixed_net
 
 	# 1. Collecter les vainqueurs et champions
 	if active_european_cup != null and active_european_cup.winner != null:
@@ -247,33 +238,19 @@ static func _process_aging_and_stats(
 	for l in all_leagues:
 		for c in l.clubs:
 			for p in c.squad:
-				# 1. Archiver la saison
+				# 1. Évolution physique / technique selon âge et performances
+				p.evolve_annual(c.division)
+				# 2. Archiver la saison
 				p.archive_season(season_num, c.club_name, c.country, c.division)
-				# 2. Prendre 1 an
+				# 3. Prendre 1 an
 				p.age += 1
-				# 3. Évolution physique / progression
-				if p.age <= 22 and randf() < 0.65:
-					# Progression jeune
-					var attrs = ["speed", "shooting", "passing", "defending", "stamina"]
-					var a = attrs.pick_random()
-					var cur_val = p.get(a)
-					if cur_val < 20:
-						p.set(a, cur_val + 1)
-				elif p.age >= 33 and randf() < 0.45:
-					# Régression vétéran
-					if randf() < 0.5 and p.stamina > 5:
-						p.stamina -= 1
-					elif p.speed > 5:
-						p.speed -= 1
-				# 4. Recalcul de la valeur marchande
-				p.recalculate_value(c.division)
 
 	# Agents libres restants
 	if market != null:
 		for fa in market.free_agents:
+			fa.evolve_annual(1)
 			fa.archive_season(season_num, "Agent Libre", fa.nationality, 1)
 			fa.age += 1
-			fa.recalculate_value(1)
 
 static func _process_market_and_budgets(
 	all_leagues: Array[League],

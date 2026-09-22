@@ -56,6 +56,15 @@ func get_total_wage() -> int:
 		total += p.salary
 	return total
 
+func get_fixed_net_result() -> int:
+	var fin = get_finances()
+	var fixed_income = fin.get_total_fixed_income()
+	var fixed_expense = get_total_wage() + fin.weekly_maintenance
+	return fixed_income - fixed_expense
+
+func is_in_financial_fair_play_compliance() -> bool:
+	return get_fixed_net_result() >= 0
+
 func get_average_overall() -> int:
 	if squad.is_empty():
 		return 68
@@ -117,23 +126,36 @@ func init_youth_academy_if_empty() -> void:
 func process_weekly_youth_evolution() -> void:
 	init_youth_academy_if_empty()
 	for p in youth_academy:
-		# 60% de chance de progression hebdomadaire
-		if randf() < 0.60:
+		# Le potentiel théorique n'est jamais atteint à 100% en note réelle
+		var max_real_achievable = clampi(p.potential_max - 4, 40, p.potential_max - 2)
+		if p.get_overall() < max_real_achievable and randf() < 0.60:
 			var stat_choice = randi_range(0, 5)
 			match stat_choice:
-				0: p.speed = mini(99, p.speed + randi_range(1, 2))
-				1: p.shooting = mini(99, p.shooting + randi_range(1, 2))
-				2: p.passing = mini(99, p.passing + randi_range(1, 2))
-				3: p.defending = mini(99, p.defending + randi_range(1, 2))
-				4: p.dribbling = mini(99, p.dribbling + randi_range(1, 2))
+				0: p.speed = mini(99, p.speed + 1)
+				1: p.shooting = mini(99, p.shooting + 1)
+				2: p.passing = mini(99, p.passing + 1)
+				3: p.defending = mini(99, p.defending + 1)
+				4: p.dribbling = mini(99, p.dribbling + 1)
 				5:
 					if p.position == Player.Position.GK:
-						p.reflexes = mini(99, p.reflexes + randi_range(1, 2))
+						p.reflexes = mini(99, p.reflexes + 1)
 					else:
-						p.stamina = mini(99, p.stamina + randi_range(1, 2))
-			# Le potentiel se précise (la fourchette se resserre vers le haut)
-			p.potential_min = clampi(p.potential_min + 1, p.get_overall(), p.potential_max)
-			p.potential_max = clampi(p.potential_max + (1 if randf() > 0.65 else 0), p.potential_min, 99)
+						p.stamina = mini(99, p.stamina + 1)
+
+			if p.get_overall() > max_real_achievable:
+				match stat_choice:
+					0: p.speed = maxi(20, p.speed - 1)
+					1: p.shooting = maxi(20, p.shooting - 1)
+					2: p.passing = maxi(20, p.passing - 1)
+					3: p.defending = maxi(20, p.defending - 1)
+					4: p.dribbling = maxi(20, p.dribbling - 1)
+					5:
+						if p.position == Player.Position.GK:
+							p.reflexes = maxi(20, p.reflexes - 1)
+						else:
+							p.stamina = maxi(20, p.stamina - 1)
+
+			p.potential_min = clampi(p.potential_min + 1, p.get_overall() + 2, p.potential_max)
 			p.recalculate_value(division)
 
 func promote_youth_to_senior(p: Player) -> bool:
