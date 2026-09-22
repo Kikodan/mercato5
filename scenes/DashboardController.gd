@@ -12,6 +12,7 @@ const OptionsMenuModal = preload("res://scenes/OptionsMenuModal.gd")
 const HelpModal = preload("res://scenes/HelpModal.gd")
 const ClubTransferModal = preload("res://scenes/ClubTransferModal.gd")
 const SponsorNegotiationModal = preload("res://scenes/SponsorNegotiationModal.gd")
+const AppVersion = preload("res://scripts/AppVersion.gd")
 
 var player_club: Club
 var current_league: League
@@ -163,6 +164,16 @@ func _ready() -> void:
 	_update_inbox_badge()
 	_render_squad_view()
 	_show_tab(tab_squad)
+
+	# Badge de version dans la barre latérale
+	var side_vbox = get_node_or_null("Body/SideNav/VBoxContainer")
+	if side_vbox != null:
+		var spacer = Control.new()
+		spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		side_vbox.add_child(spacer)
+		var ver_badge = AppVersion.create_version_badge(true)
+		ver_badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		side_vbox.add_child(ver_badge)
 
 func _get_game_global() -> Node:
 	if is_inside_tree() and get_tree() != null and get_tree().root != null:
@@ -507,8 +518,6 @@ func _render_economy_view() -> void:
 	if player_club == null:
 		return
 
-	_update_recruitment_ban_status()
-
 	var fin = player_club.get_finances()
 	var total_wage = player_club.get_total_wage()
 	var weekly_fixed_income = fin.get_total_fixed_income()
@@ -539,12 +548,13 @@ func _render_economy_view() -> void:
 
 	var net_color = Color("34d399") if weekly_net >= 0 else Color("f87171")
 	var net_prefix = "+" if weekly_net >= 0 else ""
-	var net_status = "Recrutement Autorisé ✅" if weekly_net >= 0 else "Recrutement Interdit 🚫 (Déficit)"
+	var current_season_status = "S%d: Recrutement OK ✅" % current_season if not player_club.is_transfer_banned else "S%d: Sanction DNCG 🚫" % current_season
+	var next_season_forecast = "Prévisionnel S%d: Recrutement OK ✅" % (current_season + 1) if weekly_net >= 0 else "Prévisionnel S%d: Risque DNCG ⚠️" % (current_season + 1)
 	var card_net = _create_economy_kpi_card(
 		"📊 RÉSULTAT FIXE / SEMAINE",
 		"%s%s € / sem" % [net_prefix, FormatUtils.format_number(weekly_net)],
 		net_color,
-		"%s (Hors billetterie)" % net_status
+		"%s • %s" % [current_season_status, next_season_forecast]
 	)
 	card_net.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	kpi_hbox.add_child(card_net)
@@ -1844,12 +1854,10 @@ func _render_market_view() -> void:
 	for c in list.get_children():
 		c.queue_free()
 
-	var is_recruiting_allowed = _update_recruitment_ban_status()
-
-	if player_club and not is_recruiting_allowed:
+	if player_club and player_club.is_transfer_banned:
 		var ban_panel = PanelContainer.new()
 		var ban_style = StyleBoxFlat.new()
-		ban_style.bg_color = Color(0.4, 0.08, 0.1, 0.95)
+		ban_style.bg_color = Color(0.35, 0.08, 0.10, 0.95)
 		ban_style.border_color = Color("f87171")
 		ban_style.border_width_left = 4
 		ban_style.set_corner_radius_all(8)
@@ -1860,10 +1868,18 @@ func _render_market_view() -> void:
 		ban_panel.add_theme_stylebox_override("panel", ban_style)
 
 		var ban_lbl = Label.new()
-		var deficit = abs(player_club.get_fixed_net_result())
-		ban_lbl.text = "🚫 RECRUTEMENT SUSPENDU — RÉSULTAT FIXE DÉFICITAIRE (-%s / semaine)\nSelon les règles du Fair-Play Financier, vos entrées fixes garanties (sponsors + droits TV) doivent couvrir vos dépenses fixes (salaires + entretien).\nIl vous manque %s / semaine pour équilibrer vos comptes et lever immédiatement cette restriction.\n👉 Rendez-vous dans 'Économie' pour négocier des sponsors ou dans 'Effectif' pour dégraisser vos salaires !" % [
-			FormatUtils.format_number(deficit),
-			FormatUtils.format_money(deficit)
+		var cur_net = player_club.get_fixed_net_result()
+		var forecast_txt = ""
+		if cur_net >= 0:
+			forecast_txt = "Solde fixe actuel positif (+%s/sem) : si vous terminez la saison ainsi, la DNCG lèvera la sanction pour la Saison %d !" % [
+				FormatUtils.format_money(cur_net), current_season + 1
+			]
+		else:
+			forecast_txt = "Solde fixe actuel déficitaire (-%s/sem) : assainissez vos finances avant la fin de saison pour éviter la reconduction de la sanction !" % [
+				FormatUtils.format_money(abs(cur_net))
+			]
+		ban_lbl.text = "🚫 SANCTION DNCG ACTIVE (SAISON %d)\nLe recrutement (achats et signatures libres) est suspendu pour l'ensemble de la Saison %d suite au bilan déficitaire de la saison passée.\nLa décision est prise une fois par an en début d'exercice. Une nouvelle décision sera prise à la fin de cette saison.\n👉 %s" % [
+			current_season, current_season, forecast_txt
 		]
 		ban_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		ban_lbl.add_theme_font_size_override("font_size", 12)
@@ -2704,23 +2720,19 @@ func _simulate_european_phase_ai_only() -> void:
 	_update_topbar()
 	_render_standings_view()
 
-func _update_recruitment_ban_status() -> bool:
-	if player_club == null:
-		return true
-	var net_fixed = player_club.get_fixed_net_result()
-	if net_fixed >= 0:
-		player_club.is_transfer_banned = false
-		return true
-	else:
-		player_club.is_transfer_banned = true
-		return false
-
 func _enter_interseason_day() -> void:
 	is_interseason = true
-	_update_recruitment_ban_status()
 	_update_topbar()
 	_render_standings_view()
-	show_toast("📅 Intersaison ouverte ! Ajustez vos finances (sponsors, effectif) avant de clôturer la saison.")
+	var net_fixed = player_club.get_fixed_net_result() if player_club else 0
+	if net_fixed >= 0:
+		show_toast("📅 Intersaison ouverte ! Bilan prévisionnel positif (+%s/sem) : recrutement autorisé en Saison %d." % [
+			FormatUtils.format_money(net_fixed), current_season + 1
+		])
+	else:
+		show_toast("⚠️ Bilan prévisionnel déficitaire (-%s/sem) ! Assainissez vos comptes avant de clôturer la saison." % [
+			FormatUtils.format_money(abs(net_fixed))
+		], true)
 
 func _on_trophy_acknowledged() -> void:
 	if trophy_modal.current_type == TrophyModal.TrophyType.LEAGUE:
@@ -2820,9 +2832,8 @@ func _init_negotiation_ui() -> void:
 	)
 
 func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
-	if not _update_recruitment_ban_status():
-		var deficit = abs(player_club.get_fixed_net_result())
-		show_toast("🚫 Recrutement interdit : résultat fixe déficitaire (-%s/sem). Assainissez vos comptes !" % FormatUtils.format_money(deficit), true)
+	if player_club and player_club.is_transfer_banned:
+		show_toast("🚫 Recrutement interdit cette saison par décision de la DNCG !", true)
 		return
 	if seller == null or seller == player_club:
 		open_negotiation(p, null, 0)
@@ -2836,9 +2847,8 @@ func _on_club_transfer_agreed(p: Player, seller: Club, agreed_fee: int) -> void:
 	open_negotiation(p, seller, agreed_fee)
 
 func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> void:
-	if not _update_recruitment_ban_status():
-		var deficit = abs(player_club.get_fixed_net_result())
-		show_toast("🚫 Recrutement interdit : résultat fixe déficitaire (-%s/sem). Assainissez vos comptes !" % FormatUtils.format_money(deficit), true)
+	if player_club and player_club.is_transfer_banned:
+		show_toast("🚫 Recrutement interdit cette saison par décision de la DNCG !", true)
 		return
 	if p == null:
 		return

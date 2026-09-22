@@ -4,6 +4,7 @@ const GameWorld = preload("res://scripts/GameWorld.gd")
 const SaveManager = preload("res://scripts/SaveManager.gd")
 const ClubBadge = preload("res://scripts/ClubBadge.gd")
 const OptionsMenuModal = preload("res://scenes/OptionsMenuModal.gd")
+const AppVersion = preload("res://scripts/AppVersion.gd")
 
 @onready var main_view: Control = $MainView
 @onready var btn_continue: Button = $MainView/VBox/MenuButtons/BtnContinue
@@ -38,6 +39,11 @@ var current_selected_league: League = null
 func _ready() -> void:
 	_check_save_state()
 	_show_main_view()
+
+	# Badge de version Git dans le menu principal
+	var ver_badge = AppVersion.create_version_badge()
+	ver_badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	$MainView/VBox.add_child(ver_badge)
 
 	btn_continue.pressed.connect(_on_btn_continue_pressed)
 	btn_new_game.pressed.connect(_on_btn_new_game_pressed)
