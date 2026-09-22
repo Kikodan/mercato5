@@ -51,6 +51,24 @@ func finalize_signing(buyer: Club, player: Player, agreed_salary: int, signing_b
 	])
 	return true
 
+func renew_contract(club: Club, player: Player, agreed_salary: int, signing_bonus: int, new_contract_years: int) -> bool:
+	if not club.squad.has(player):
+		transaction_completed.emit("Erreur : le joueur n'appartient pas au club.")
+		return false
+
+	if club.budget < signing_bonus:
+		transaction_completed.emit("Budget insuffisant pour verser la prime de prolongation (%s € requis)." % FormatUtils.format_number(signing_bonus))
+		return false
+
+	club.budget -= signing_bonus
+	player.salary = agreed_salary
+	player.contract_years = new_contract_years
+
+	transaction_completed.emit("📝 Prolongation officielle ! %s prolonge son contrat pour %d an(s) à %s €/sem (prime : %s €)." % [
+		player.full_name, new_contract_years, FormatUtils.format_number(agreed_salary), FormatUtils.format_number(signing_bonus)
+	])
+	return true
+
 func release_player(club: Club, player: Player) -> bool:
 	if club.squad.size() <= 5:
 		transaction_completed.emit("Impossible de libérer : effectif minimum atteint (5 joueurs).")

@@ -2,9 +2,12 @@ class_name PlayerDetailModal
 extends Control
 
 signal closed()
+signal contract_extension_requested(player: Player)
 
 const ClubBadge = preload("res://scripts/ClubBadge.gd")
 const PlayerFaceWidget = preload("res://scenes/PlayerFaceWidget.gd")
+
+var user_club: Club = null
 
 @onready var face_widget: PlayerFaceWidget = $CenterContainer/Panel/VBox/Header/FaceWidget
 @onready var lbl_player_name: Label = $CenterContainer/Panel/VBox/Header/InfoBox/HBoxName/LabelPlayerName
@@ -130,6 +133,33 @@ func open_player(p: Player, c: Club = null) -> void:
 	lbl_contract_info.text = "Salaire : %s €/semaine  |  Prétention : %s €/semaine  |  Contrat restant : %d an(s)" % [
 		FormatUtils.format_number(p.salary), FormatUtils.format_number(p.wage_demand), p.contract_years
 	]
+	var contract_box = lbl_contract_info.get_parent()
+	var btn_prolong = contract_box.get_node_or_null("BtnProlongContract")
+	var is_own_player = (user_club != null and (c == user_club or user_club.squad.has(p)))
+	if is_own_player:
+		if btn_prolong == null:
+			btn_prolong = Button.new()
+			btn_prolong.name = "BtnProlongContract"
+			btn_prolong.text = "📝 Prolonger / Renégocier le contrat"
+			btn_prolong.custom_minimum_size = Vector2(0, 26)
+			btn_prolong.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn_prolong.add_theme_font_size_override("font_size", 11)
+			var b_st = StyleBoxFlat.new()
+			b_st.bg_color = Color(0.10, 0.40, 0.28, 0.9)
+			b_st.border_color = Color("10b981")
+			b_st.set_border_width_all(1)
+			b_st.set_corner_radius_all(6)
+			btn_prolong.add_theme_stylebox_override("normal", b_st)
+			contract_box.add_child(btn_prolong)
+		btn_prolong.visible = true
+		for conn in btn_prolong.pressed.get_connections():
+			btn_prolong.pressed.disconnect(conn["callable"])
+		btn_prolong.pressed.connect(func():
+			visible = false
+			contract_extension_requested.emit(current_player)
+		)
+	elif btn_prolong != null:
+		btn_prolong.visible = false
 
 	# Palmarès
 	for child in palmares_container.get_children():

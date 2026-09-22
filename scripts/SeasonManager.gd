@@ -18,6 +18,7 @@ class SeasonTransitionReport:
 	var new_free_agents_count: int = 0
 	var ffp_transfer_sanction: bool = false
 	var ffp_fixed_net: int = 0
+	var user_expired_contracts: Array[Player] = []
 
 static func execute_season_transition(
 	all_leagues: Array[League],
@@ -62,7 +63,10 @@ static func execute_season_transition(
 	# 4. Vieillissement (+1 an), évolution et archivage des statistiques
 	_process_aging_and_stats(all_leagues, market, current_season)
 
-	# 5. Renouvellement du Mercato & Budgets de nouvelle saison
+	# 5. Gestion des contrats (décrémentation, renouvellement IA et départs libres)
+	_process_contracts(all_leagues, market, player_club, report)
+
+	# 6. Renouvellement du Mercato & Budgets de nouvelle saison
 	_process_market_and_budgets(all_leagues, market, player_club, report)
 
 	# 6. Réinitialisation des championnats et calendriers
@@ -289,3 +293,46 @@ static func _process_market_and_budgets(
 			new_fa.age = randi_range(18, 27)
 			market.free_agents.append(new_fa)
 		report.new_free_agents_count = count_to_add
+
+static func _process_contracts(
+	all_leagues: Array[League],
+	market: TransferMarket,
+	player_club: Club,
+	report: SeasonTransitionReport
+) -> void:
+	for l in all_leagues:
+		for c in l.clubs:
+			var is_user: bool = (c == player_club)
+			var to_expire: Array[Player] = []
+			for p in c.squad:
+				p.contract_years -= 1
+				if p.contract_years <= 0:
+					if not is_user:
+						# Club IA : prolonge automatiquement les bons éléments s'il en a les moyens
+						var should_renew = (p.get_overall() >= 65 or randf() < 0.60) and (c.budget > 15_000)
+						if should_renew:
+							p.contract_years = randi_range(1, 3)
+						else:
+							to_expire.append(p)
+					else:
+						# Club utilisateur : contrat expiré faute de prolongation
+						to_expire.append(p)
+
+			for p in to_expire:
+				c.squad.erase(p)
+				c.starting_five.erase(p)
+				p.contract_years = 1
+				p.recalculate_value(1)
+				if market != null:
+					market.free_agents.append(p)
+				if is_user:
+					report.user_expired_contracts.append(p)
+
+			# Garantir un effectif d'au moins 7 joueurs
+			while c.squad.size() < 7:
+				var pos = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.FWD].pick_random()
+				var target_lvl = max(6, int(c.get_average_overall() * 0.9))
+				var rookie = PlayerGenerator.create_random_player(c.country, pos, target_lvl)
+				rookie.age = randi_range(17, 20)
+				rookie.contract_years = 3
+				c.squad.append(rookie)

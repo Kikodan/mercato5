@@ -99,6 +99,7 @@ var is_interseason: bool = false
 @onready var label_toast: Label = $NotificationToast/LabelToast
 
 @onready var negotiation_modal: Control = $NegotiationModal
+@onready var label_nego_title: Label = $NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/LabelNegoTitle
 @onready var nego_badge: ClubBadge = $NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox/NegoBadge
 @onready var label_nego_name: Label = $NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox/VBox/LabelNegoPlayerName
 @onready var label_nego_stats: Label = $NegotiationModal/CenterContainer/PanelContainer/VBoxContainer/PlayerSummaryPanel/HBox/VBox/LabelNegoPlayerStats
@@ -119,6 +120,7 @@ var is_interseason: bool = false
 
 var current_nego_player: Player = null
 var current_nego_seller: Club = null
+var is_contract_extension: bool = false
 var toast_tween: Tween = null
 
 func _ready() -> void:
@@ -159,6 +161,8 @@ func _ready() -> void:
 	btn_european_cup.pressed.connect(_on_btn_european_cup_pressed)
 	pre_match_modal.kickoff_requested.connect(_on_pre_match_kickoff)
 	pre_match_modal.player_detail_requested.connect(func(p, c): player_detail_modal.open_player(p, c))
+	player_detail_modal.user_club = player_club
+	player_detail_modal.contract_extension_requested.connect(open_contract_extension)
 	_style_advance_button()
 	_update_topbar()
 	_update_inbox_badge()
@@ -1094,6 +1098,19 @@ func _create_player_card(p: Player, is_starter: bool) -> PanelContainer:
 				_render_squad_view()
 			)
 
+	var contract_lbl = Label.new()
+	contract_lbl.add_theme_font_size_override("font_size", 12)
+	if p.contract_years <= 1:
+		contract_lbl.text = "⚠️ 1 an"
+		contract_lbl.modulate = Color("f97316")
+		contract_lbl.tooltip_text = "Contrat expirant en fin de saison ! Cliquez pour inspecter ou prolonger."
+	elif p.contract_years == 2:
+		contract_lbl.text = "2 ans"
+		contract_lbl.modulate = Color("94a3b8")
+	else:
+		contract_lbl.text = "%d ans" % p.contract_years
+		contract_lbl.modulate = Color("34d399")
+
 	var btn_profile = Button.new()
 	btn_profile.text = "👤"
 	btn_profile.tooltip_text = "Fiche détaillée du joueur"
@@ -1114,6 +1131,7 @@ func _create_player_card(p: Player, is_starter: bool) -> PanelContainer:
 	hbox.add_child(age_lbl)
 	hbox.add_child(ovr_lbl)
 	hbox.add_child(form_lbl)
+	hbox.add_child(contract_lbl)
 	hbox.add_child(btn_profile)
 	hbox.add_child(btn_action)
 	panel.add_child(hbox)
@@ -1148,6 +1166,15 @@ func _render_inspector(p: Player) -> void:
 	val_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	val_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector_content.add_child(val_lbl)
+
+	if p.contract_years <= 1:
+		var contract_alert = Label.new()
+		contract_alert.text = "⚠️ Fin de contrat dans 1 an : départ libre en fin de saison si non prolongé !"
+		contract_alert.modulate = Color("f97316")
+		contract_alert.add_theme_font_size_override("font_size", 11)
+		contract_alert.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		contract_alert.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		inspector_content.add_child(contract_alert)
 
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 2
@@ -1298,6 +1325,17 @@ func _render_inspector(p: Player) -> void:
 		row_actions.add_child(btn_release)
 
 	btn_vbox.add_child(row_actions)
+
+	if player_club.squad.has(p):
+		var btn_renew = Button.new()
+		btn_renew.text = "📝 Prolonger le contrat"
+		btn_renew.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn_renew.modulate = Color("34d399")
+		btn_renew.add_theme_font_size_override("font_size", 12)
+		btn_renew.pressed.connect(func():
+			open_contract_extension(p)
+		)
+		btn_vbox.add_child(btn_renew)
 
 	var btn_full_profile = Button.new()
 	btn_full_profile.text = "👤 Fiche Complète"
@@ -2829,7 +2867,71 @@ func _init_negotiation_ui() -> void:
 		negotiation_modal.visible = false
 		current_nego_player = null
 		current_nego_seller = null
+		is_contract_extension = false
 	)
+
+func open_contract_extension(p: Player) -> void:
+	if p == null:
+		return
+	is_contract_extension = true
+	current_nego_player = p
+	current_nego_seller = player_club
+
+	if label_nego_title != null:
+		label_nego_title.text = "PROLONGATION DE CONTRAT"
+
+	nego_badge.shape = player_club.badge_shape
+	nego_badge.symbol = player_club.badge_symbol
+	nego_badge.primary_color = player_club.primary_color
+	nego_badge.secondary_color = player_club.secondary_color
+	nego_badge.queue_redraw()
+
+	var pos_names = ["Gardien", "Défenseur", "Milieu", "Attaquant"]
+	label_nego_name.text = "%s %s (%d ans)" % [p.get_flag_emoji(), p.full_name, p.age]
+	label_nego_stats.text = "%s | %s | OVR: %d | Salaire actuel: %s €/sem | Contrat restant: %d an(s)" % [
+		player_club.club_name, pos_names[p.position], p.get_overall(),
+		FormatUtils.format_number(p.salary), p.contract_years
+	]
+
+	var vbox_nego = label_nego_name.get_parent()
+	var btn_view_nego = vbox_nego.get_node_or_null("BtnViewNegoFiche")
+	if btn_view_nego == null:
+		btn_view_nego = Button.new()
+		btn_view_nego.name = "BtnViewNegoFiche"
+		btn_view_nego.text = "👁️ Consulter la Fiche Complète"
+		btn_view_nego.custom_minimum_size = Vector2(170, 24)
+		btn_view_nego.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		btn_view_nego.add_theme_font_size_override("font_size", 10)
+		var b_st = StyleBoxFlat.new()
+		b_st.bg_color = Color(0.16, 0.26, 0.42)
+		b_st.set_corner_radius_all(6)
+		btn_view_nego.add_theme_stylebox_override("normal", b_st)
+		vbox_nego.add_child(btn_view_nego)
+	for conn in btn_view_nego.pressed.get_connections():
+		btn_view_nego.pressed.disconnect(conn["callable"])
+	btn_view_nego.pressed.connect(func():
+		if current_nego_player != null:
+			player_detail_modal.open_player(current_nego_player, player_club)
+	)
+
+	var target_wage = maxi(p.salary, p.wage_demand)
+	slider_wage.min_value = max(200, int(target_wage * 0.4))
+	slider_wage.max_value = max(15000, int(target_wage * 2.2))
+	slider_wage.step = 100
+	slider_wage.value = target_wage
+
+	var def_bonus = int(p.market_value * 0.08)
+	slider_bonus.min_value = 0
+	slider_bonus.max_value = max(25000, def_bonus * 3)
+	slider_bonus.step = 500
+	slider_bonus.value = def_bonus
+
+	opt_contract_years.selected = clamp(p.contract_years, 0, 3)
+
+	transfer_fee_row.visible = false
+
+	_update_negotiation_feedback()
+	negotiation_modal.visible = true
 
 func open_club_transfer_negotiation(p: Player, seller: Club) -> void:
 	if player_club and player_club.is_transfer_banned:
@@ -2852,6 +2954,9 @@ func open_negotiation(p: Player, seller: Club = null, agreed_fee: int = 0) -> vo
 		return
 	if p == null:
 		return
+	is_contract_extension = false
+	if label_nego_title != null:
+		label_nego_title.text = "NÉGOCIATION DU CONTRAT"
 	current_nego_player = p
 	current_nego_seller = seller
 
@@ -2935,41 +3040,73 @@ func _update_negotiation_feedback() -> void:
 	label_wage_val.text = "%s € / sem" % FormatUtils.format_number(proposed_wage)
 	label_bonus_val.text = "%s €" % FormatUtils.format_number(proposed_bonus)
 
-	var wage_ratio: float = float(proposed_wage) / float(max(1, p.wage_demand))
-	var expected_bonus: float = float(p.market_value) * 0.10
-	var bonus_ratio: float = float(proposed_bonus) / float(max(500.0, expected_bonus))
-
 	var score: float = 0.0
-	if current_nego_seller != null:
-		# L'indemnité club étant déjà acceptée, le joueur évalue son salaire et prime
-		score = (wage_ratio * 0.70 + bonus_ratio * 0.30) * 100.0
-	else:
-		score = (wage_ratio * 0.65 + bonus_ratio * 0.35) * 100.0
-
-	score = clampf(score, 5.0, 100.0)
-	progress_mood.value = score
-
 	var dialogue: String = ""
 	var mood_text: String = ""
 	var mood_color: Color = Color("facc15")
 
-	if score >= 80.0:
-		dialogue = "« Proposition remarquable ! Mon client et moi-même acceptons sans hésiter. »"
-		mood_text = "Très enthousiaste (Accord certain)"
-		mood_color = Color("10b981")
-	elif score >= 55.0:
-		dialogue = "« L'offre est solide et respecte nos exigences. Nous validons l'accord. »"
-		mood_text = "Favorable (Accord possible)"
-		mood_color = Color("84cc16")
-	elif score >= 40.0:
-		dialogue = "« C'est en dessous de nos espérances. Faites un effort sur le salaire ou la prime. »"
-		mood_text = "Hésitant (Offre insuffisante)"
-		mood_color = Color("facc15")
-	else:
-		dialogue = "« Cette offre est inacceptable ! Mon joueur ne viendra pas dans ces conditions. »"
-		mood_text = "Réfractaire (Offre rejetée)"
-		mood_color = Color("f87171")
+	if is_contract_extension:
+		var target_wage: int = maxi(p.salary, p.wage_demand)
+		var wage_ratio: float = 0.0
+		if proposed_wage < p.salary:
+			# Forte réticence en cas de baisse salariale proposée
+			wage_ratio = (float(proposed_wage) / float(max(1, p.salary))) * 0.45
+		else:
+			wage_ratio = float(proposed_wage) / float(max(1, target_wage))
 
+		var expected_bonus: float = float(p.market_value) * 0.08
+		var bonus_ratio: float = float(proposed_bonus) / float(max(500.0, expected_bonus))
+
+		score = (wage_ratio * 0.75 + bonus_ratio * 0.25) * 100.0
+		score = clampf(score, 5.0, 100.0)
+
+		if score >= 80.0:
+			dialogue = "« Je me sens très bien au club et cette prolongation est parfaite ! Je signe tout de suite. »"
+			mood_text = "Très enthousiaste (Prolongation certaine)"
+			mood_color = Color("10b981")
+		elif score >= 55.0:
+			dialogue = "« L'offre est solide et respecte mes attentes. Je suis ravi de prolonger mon bail ici. »"
+			mood_text = "Favorable (Prolongation acceptée)"
+			mood_color = Color("84cc16")
+		elif score >= 40.0:
+			dialogue = "« Cette proposition est trop juste pour prolonger. Un effort sur le salaire est nécessaire. »"
+			mood_text = "Hésitant (Offre insuffisante)"
+			mood_color = Color("facc15")
+		else:
+			dialogue = "« Hors de question de prolonger dans ces conditions ! Je préfère aller au bout de mon contrat. »"
+			mood_text = "Réfractaire (Prolongation rejetée)"
+			mood_color = Color("f87171")
+	else:
+		var wage_ratio: float = float(proposed_wage) / float(max(1, p.wage_demand))
+		var expected_bonus: float = float(p.market_value) * 0.10
+		var bonus_ratio: float = float(proposed_bonus) / float(max(500.0, expected_bonus))
+
+		if current_nego_seller != null:
+			# L'indemnité club étant déjà acceptée, le joueur évalue son salaire et prime
+			score = (wage_ratio * 0.70 + bonus_ratio * 0.30) * 100.0
+		else:
+			score = (wage_ratio * 0.65 + bonus_ratio * 0.35) * 100.0
+
+		score = clampf(score, 5.0, 100.0)
+
+		if score >= 80.0:
+			dialogue = "« Proposition remarquable ! Mon client et moi-même acceptons sans hésiter. »"
+			mood_text = "Très enthousiaste (Accord certain)"
+			mood_color = Color("10b981")
+		elif score >= 55.0:
+			dialogue = "« L'offre est solide et respecte nos exigences. Nous validons l'accord. »"
+			mood_text = "Favorable (Accord possible)"
+			mood_color = Color("84cc16")
+		elif score >= 40.0:
+			dialogue = "« C'est en dessous de nos espérances. Faites un effort sur le salaire ou la prime. »"
+			mood_text = "Hésitant (Offre insuffisante)"
+			mood_color = Color("facc15")
+		else:
+			dialogue = "« Cette offre est inacceptable ! Mon joueur ne viendra pas dans ces conditions. »"
+			mood_text = "Réfractaire (Offre rejetée)"
+			mood_color = Color("f87171")
+
+	progress_mood.value = score
 	label_agent_dialogue.text = dialogue
 	label_mood_text.text = mood_text
 	label_mood_text.modulate = mood_color
@@ -2980,8 +3117,25 @@ func _on_btn_propose_offer_pressed() -> void:
 	var p = current_nego_player
 	var proposed_wage: int = int(slider_wage.value)
 	var proposed_bonus: int = int(slider_bonus.value)
-	var proposed_fee: int = int(slider_fee.value) if current_nego_seller != null else 0
+	var proposed_fee: int = int(slider_fee.value) if (current_nego_seller != null and not is_contract_extension) else 0
 	var years: int = opt_contract_years.selected + 1
+
+	if is_contract_extension:
+		if progress_mood.value < 55.0:
+			show_toast("Prolongation refusée par le joueur (offre insuffisante).", true)
+			return
+		if player_club.budget < proposed_bonus:
+			show_toast("Budget insuffisant : %s € requis pour la prime de prolongation." % FormatUtils.format_number(proposed_bonus), true)
+			return
+		if market.renew_contract(player_club, p, proposed_wage, proposed_bonus, years):
+			negotiation_modal.visible = false
+			current_nego_player = null
+			current_nego_seller = null
+			is_contract_extension = false
+			_update_topbar()
+			_render_squad_view()
+			_render_inspector(p)
+		return
 
 	if player_club.squad.size() >= TransferMarket.MAX_SQUAD_SIZE:
 		show_toast("Effectif complet (%d/%d) : libérez d'abord un joueur." % [player_club.squad.size(), TransferMarket.MAX_SQUAD_SIZE], true)
@@ -3001,6 +3155,7 @@ func _on_btn_propose_offer_pressed() -> void:
 		negotiation_modal.visible = false
 		current_nego_player = null
 		current_nego_seller = null
+		is_contract_extension = false
 		_update_topbar()
 		_render_squad_view()
 		if seller != null:
@@ -3011,8 +3166,13 @@ func _on_btn_propose_offer_pressed() -> void:
 func _on_btn_accept_demands_pressed() -> void:
 	if current_nego_player == null:
 		return
-	slider_wage.value = current_nego_player.wage_demand
-	slider_bonus.value = max(1000, int(current_nego_player.market_value * 0.12))
+	var p = current_nego_player
+	if is_contract_extension:
+		slider_wage.value = maxi(p.salary, p.wage_demand)
+		slider_bonus.value = max(1000, int(p.market_value * 0.08))
+	else:
+		slider_wage.value = p.wage_demand
+		slider_bonus.value = max(1000, int(p.market_value * 0.12))
 	_update_negotiation_feedback()
 	_on_btn_propose_offer_pressed()
 

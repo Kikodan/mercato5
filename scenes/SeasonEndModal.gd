@@ -188,6 +188,22 @@ func setup(report: SeasonManager.SeasonTransitionReport, player_club: Club) -> v
 		var ret_card = _create_section_card("🧓 DÉPARTS À LA RETRAITE DANS VOTRE EFFECTIF", v_ret)
 		dynamic_content.add_child(ret_card)
 
+	# 1bis. Section Départs en fin de contrat du club utilisateur
+	if report.user_expired_contracts.size() > 0:
+		var v_exp = VBoxContainer.new()
+		v_exp.add_theme_constant_override("separation", 6)
+		for p in report.user_expired_contracts:
+			var l = Label.new()
+			l.text = "• %s (%s, %d ans) n'a pas été prolongé et quitte le club librement sur le marché des transferts." % [
+				p.full_name, ["Gardien", "Défenseur", "Milieu", "Attaquant"][p.position], p.age
+			]
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.add_theme_color_override("font_color", Color(0.97, 0.45, 0.45))
+			l.add_theme_font_size_override("font_size", 13)
+			v_exp.add_child(l)
+		var exp_card = _create_section_card("📄 DÉPARTS EN FIN DE CONTRAT DANS VOTRE EFFECTIF", v_exp)
+		dynamic_content.add_child(exp_card)
+
 	# 2. Section Montées et Descentes
 	var grid = GridContainer.new()
 	grid.columns = 2
