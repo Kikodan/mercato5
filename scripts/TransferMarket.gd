@@ -96,7 +96,7 @@ func buy_player_from_club(buyer: Club, seller: Club, player: Player) -> bool:
 	return finalize_signing(buyer, player, int(player.salary * 1.1), bonus, 3, seller, fee)
 
 # Évaluation d'une offre d'achat de club (Phase 1 du transfert en 4 essais)
-func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt: int) -> Dictionary:
+func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt: int, clause_pct: int = 0, clause_type: String = "NONE") -> Dictionary:
 	var base_asking = int(player.market_value * 1.15)
 	var sorted = seller.squad.duplicate()
 	sorted.sort_custom(func(a, b): return a.get_overall() > b.get_overall())
@@ -104,15 +104,31 @@ func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt:
 	if is_star:
 		base_asking = int(base_asking * 1.25)
 
-	# Seuil d'acceptation directe (s'assouplit légèrement au fil des tentatives)
+	# Remise accordée par le club vendeur si une clause à la revente est offerte :
+	var clause_discount: float = 0.0
+	if clause_type == "TOTAL" and clause_pct > 0:
+		clause_discount = float(clause_pct) * 0.90 / 100.0
+	elif clause_type == "PROFIT" and clause_pct > 0:
+		clause_discount = float(clause_pct) * 0.52 / 100.0
+
+	var adjusted_asking = int(base_asking * (1.0 - clause_discount))
+
+	# Seuil d'acceptation directe :
 	var accept_ratio = 1.02 - (attempt - 1) * 0.04
-	var min_acceptable = int(base_asking * accept_ratio)
+	var min_acceptable = int(adjusted_asking * accept_ratio)
 
 	if offer_amount >= min_acceptable:
+		var clause_txt = ""
+		if clause_pct > 0:
+			var clause_lbl = ("%d%% sur revente totale" if clause_type == "TOTAL" else "%d%% sur plus-value") % clause_pct
+			clause_txt = " (avec clause de %s)" % clause_lbl
 		return {
 			"status": "ACCEPTED",
 			"counter_offer": offer_amount,
-			"message": "Accord trouvé ! %s accepte votre offre de %s €." % [seller.club_name, FormatUtils.format_number(offer_amount)]
+			"adjusted_asking": adjusted_asking,
+			"message": "Accord trouvé ! %s accepte votre offre de %s €%s." % [
+				seller.club_name, FormatUtils.format_number(offer_amount), clause_txt
+			]
 		}
 
 	# Si tentative 4 échouée -> rupture
@@ -120,37 +136,44 @@ func evaluate_club_bid(seller: Club, player: Player, offer_amount: int, attempt:
 		return {
 			"status": "BROKEN",
 			"counter_offer": 0,
-			"message": "Négociations rompues ! Le président de %s refuse définitivement votre offre." % seller.club_name
+			"adjusted_asking": adjusted_asking,
+			"message": "Négociations rompues ! Le président de %s refuse définitivement vos propositions." % seller.club_name
 		}
 
-	# Offre trop basse (< 65%)
-	if offer_amount < int(base_asking * 0.65):
+	# Offre trop basse (< 60%)
+	if offer_amount < int(adjusted_asking * 0.60):
 		return {
 			"status": "REJECTED_LOW",
-			"counter_offer": base_asking,
-			"message": "Offre jugée dérisoire ! Le président exige au minimum %s €." % FormatUtils.format_number(base_asking)
+			"counter_offer": adjusted_asking,
+			"adjusted_asking": adjusted_asking,
+			"message": "Offre jugée insuffisante ! Le président attend au moins %s €." % FormatUtils.format_number(adjusted_asking)
 		}
 
-	# Contre-proposition
-	var counter = int((base_asking + offer_amount) / 2)
-	counter = maxi(counter, int(base_asking * 0.88))
+	# Contre-proposition dynamique : le club fait un pas vers l'offre de l'acheteur
+	var concession_weight = 0.38 + (attempt - 1) * 0.12
+	var counter = int(adjusted_asking * (1.0 - concession_weight) + offer_amount * concession_weight)
+	counter = maxi(counter, int(adjusted_asking * 0.82))
 	return {
 		"status": "COUNTER_OFFER",
 		"counter_offer": counter,
-		"message": "%s refuse cette proposition mais vous soumet une contre-offre à %s €." % [seller.club_name, FormatUtils.format_number(counter)]
+		"adjusted_asking": adjusted_asking,
+		"message": "%s fait un pas vers vous et ajuste son exigence à %s €." % [seller.club_name, FormatUtils.format_number(counter)]
 	}
 
 func trigger_ai_market_activity(player_club: Club, other_clubs: Array[Club]) -> void:
 	pending_offers.clear()
 	for p in player_club.squad:
-		if randf() < 0.20:
+		# Joueur sur liste des transferts : probabilité d'offre IA fortement accrue (55% vs 15%)
+		var bid_chance = 0.55 if p.is_transfer_listed else 0.15
+		if randf() < bid_chance:
 			var buyer: Club = other_clubs.pick_random()
 			if buyer and buyer != player_club and buyer.squad.size() < 24:
 				var offer = TransferOffer.new()
 				offer.offer_type = TransferOffer.Type.PLAYER_PURCHASE
 				offer.sender_club = buyer
 				offer.target_player = p
-				offer.transfer_fee = int(p.market_value * randf_range(0.95, 1.35))
+				var mult = randf_range(1.0, 1.30) if p.is_transfer_listed else randf_range(0.95, 1.35)
+				offer.transfer_fee = int(p.market_value * mult)
 				pending_offers.append(offer)
 
 	if randf() < 0.15:

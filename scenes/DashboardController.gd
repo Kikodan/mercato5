@@ -213,6 +213,10 @@ func _init_game_world() -> void:
 		viewed_league = current_league
 		viewed_club = player_club
 
+	for l in all_leagues:
+		for c in l.clubs:
+			c.is_user_controlled = (c == player_club)
+
 	if market.get_parent() == null:
 		add_child(market)
 	if not market.inbox_updated.is_connected(_update_inbox_badge):
@@ -1111,6 +1115,21 @@ func _create_player_card(p: Player, is_starter: bool) -> PanelContainer:
 		contract_lbl.text = "%d ans" % p.contract_years
 		contract_lbl.modulate = Color("34d399")
 
+	hbox.add_child(pos_tag)
+	hbox.add_child(info_lbl)
+	hbox.add_child(age_lbl)
+	hbox.add_child(ovr_lbl)
+	hbox.add_child(form_lbl)
+	hbox.add_child(contract_lbl)
+
+	if p.is_transfer_listed:
+		var listed_lbl = Label.new()
+		listed_lbl.text = "🏷️"
+		listed_lbl.tooltip_text = "Joueur placé sur la liste des transferts"
+		listed_lbl.add_theme_font_size_override("font_size", 12)
+		listed_lbl.modulate = Color("c084fc")
+		hbox.add_child(listed_lbl)
+
 	var btn_profile = Button.new()
 	btn_profile.text = "👤"
 	btn_profile.tooltip_text = "Fiche détaillée du joueur"
@@ -1126,12 +1145,6 @@ func _create_player_card(p: Player, is_starter: bool) -> PanelContainer:
 			_render_squad_view()
 	)
 
-	hbox.add_child(pos_tag)
-	hbox.add_child(info_lbl)
-	hbox.add_child(age_lbl)
-	hbox.add_child(ovr_lbl)
-	hbox.add_child(form_lbl)
-	hbox.add_child(contract_lbl)
 	hbox.add_child(btn_profile)
 	hbox.add_child(btn_action)
 	panel.add_child(hbox)
@@ -1239,8 +1252,8 @@ func _render_inspector(p: Player) -> void:
 
 	var stats_badge = PanelContainer.new()
 	var sb_badge = StyleBoxFlat.new()
-	sb_badge.bg_color = Color(0.10, 0.16, 0.28, 0.7)
-	sb_badge.border_color = Color(0.22, 0.74, 0.97, 0.5)
+	sb_badge.bg_color = Color(0.06, 0.09, 0.16, 0.90)
+	sb_badge.border_color = Color(0.20, 0.28, 0.40, 0.5)
 	sb_badge.set_border_width_all(1)
 	sb_badge.set_corner_radius_all(6)
 	sb_badge.content_margin_left = 8
@@ -1251,11 +1264,11 @@ func _render_inspector(p: Player) -> void:
 
 	var lbl_season_stats = Label.new()
 	if p.position == Player.Position.GK:
-		lbl_season_stats.text = "📊 Stats : %d m | %d arrêts | Note: %s" % [cur_m, cur_s, cur_r_str]
+		lbl_season_stats.text = "%d match%s  •  🧤 %d arrêts  •  ⭐ Note : %s" % [cur_m, ("s" if cur_m > 1 else ""), cur_s, cur_r_str]
 	else:
-		lbl_season_stats.text = "📊 Stats : %d m | ⚽ %d buts | 🎯 %d pass. | 🛡️ %d tac. | Note: %s" % [cur_m, cur_g, cur_a, cur_t, cur_r_str]
-	lbl_season_stats.add_theme_font_size_override("font_size", 11)
-	lbl_season_stats.add_theme_color_override("font_color", Color("38bdf8"))
+		lbl_season_stats.text = "%d match%s  •  ⚽ %d  •  🎯 %d  •  ⭐ Note : %s" % [cur_m, ("s" if cur_m > 1 else ""), cur_g, cur_a, cur_r_str]
+	lbl_season_stats.add_theme_font_size_override("font_size", 12)
+	lbl_season_stats.add_theme_color_override("font_color", Color("e2e8f0"))
 	lbl_season_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl_season_stats.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stats_badge.add_child(lbl_season_stats)
@@ -1336,6 +1349,18 @@ func _render_inspector(p: Player) -> void:
 			open_contract_extension(p)
 		)
 		btn_vbox.add_child(btn_renew)
+
+		var btn_list = Button.new()
+		btn_list.text = "🏷️ Retirer de la liste des transferts" if p.is_transfer_listed else "🏷️ Placer sur la liste des transferts"
+		btn_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn_list.modulate = Color("f87171") if p.is_transfer_listed else Color("c084fc")
+		btn_list.add_theme_font_size_override("font_size", 12)
+		btn_list.pressed.connect(func():
+			p.is_transfer_listed = not p.is_transfer_listed
+			_render_squad_view()
+			_render_inspector(p)
+		)
+		btn_vbox.add_child(btn_list)
 
 	var btn_full_profile = Button.new()
 	btn_full_profile.text = "👤 Fiche Complète"
@@ -2162,6 +2187,8 @@ func _render_inbox_view() -> void:
 			btn_accept.pressed.connect(func():
 				player_club = o.sender_club
 				for l in all_leagues:
+					for c in l.clubs:
+						c.is_user_controlled = (c == player_club)
 					if l.clubs.has(player_club):
 						current_league = l
 						viewed_league = l

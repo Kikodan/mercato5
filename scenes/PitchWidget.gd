@@ -81,6 +81,26 @@ func _draw() -> void:
 	draw_rect(Rect2((s.x - cage_w) * 0.5, pad - 8.0, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
 	draw_rect(Rect2((s.x - cage_w) * 0.5, s.y - pad, cage_w, 8.0), Color(1.0, 1.0, 1.0, 0.4), false, 2.0)
 
+	# Bannière Note Moyenne d'Équipe en direct
+	if starting_five.size() > 0:
+		var slot_roles = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.MID, Player.Position.FWD]
+		var sum_eff: float = 0.0
+		for idx in range(starting_five.size()):
+			var p_item = starting_five[idx]
+			var target_role = slot_roles[idx] if idx < slot_roles.size() else p_item.position
+			sum_eff += float(p_item.get_effective_overall(target_role))
+		var avg_team = sum_eff / float(starting_five.size())
+
+		var banner_w = minf(230.0, s.x - pad * 2.0 - 10.0)
+		var banner_h = 24.0
+		var banner_rect = Rect2((s.x - banner_w) * 0.5, pad + 4.0, banner_w, banner_h)
+		draw_rect(banner_rect, Color(0.06, 0.10, 0.18, 0.94), true)
+		draw_rect(banner_rect, Color("facc15"), false, 1.2)
+
+		var banner_txt = "⭐ 5 DE DÉPART : %.1f OVR" % avg_team
+		var b_size = default_font.get_string_size(banner_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 11)
+		draw_string(default_font, Vector2((s.x - b_size.x) * 0.5, pad + 20.0), banner_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 11, Color("facc15"))
+
 	# Jetons de joueurs
 	var default_font = ThemeDB.fallback_font
 	var font_size = 11
@@ -89,13 +109,13 @@ func _draw() -> void:
 		var slot_pos = FORMATION_POSITIONS[i] * s
 		if i < starting_five.size():
 			var p = starting_five[i]
-			_draw_player_token(slot_pos, p, default_font, font_size)
+			_draw_player_token(slot_pos, p, default_font, font_size, i)
 		else:
 			_draw_empty_slot(slot_pos, default_font, font_size)
 
 const PlayerFaceWidget = preload("res://scenes/PlayerFaceWidget.gd")
 
-func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> void:
+func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int, slot_idx: int) -> void:
 	var r = 24.0
 	var is_selected = (p == selected_player)
 	var pos_color = Color("f59e0b")
@@ -103,6 +123,11 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 		Player.Position.DEF: pos_color = Color("38bdf8")
 		Player.Position.MID: pos_color = Color("10b981")
 		Player.Position.FWD: pos_color = Color("f43f5e")
+
+	var slot_roles = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.MID, Player.Position.FWD]
+	var slot_role = slot_roles[slot_idx] if slot_idx < slot_roles.size() else p.position
+	var penalty = p.get_position_penalty(slot_role)
+	var eff_ovr = p.get_effective_overall(slot_role)
 
 	# Anneau de sélection dorée
 	if is_selected:
@@ -126,7 +151,7 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 		draw_texture_rect(tex, dest_rect, false)
 
 	# Anneau extérieur du jeton
-	draw_arc(pos, r - 0.5, 0, TAU, 36, Color("facc15") if is_selected else pos_color, 2.5)
+	draw_arc(pos, r - 0.5, 0, TAU, 36, Color("facc15") if is_selected else (Color("f87171") if penalty > 0 else pos_color), 2.5)
 
 	# Pastille Poste (Haut Gauche)
 	var pos_badge_c = pos + Vector2(-r * 0.72, -r * 0.72)
@@ -136,29 +161,33 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int) -> 
 	var p_size = font.get_string_size(pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, 9)
 	draw_string(font, pos_badge_c + Vector2(-p_size.x * 0.5, 3.5), pos_str, HORIZONTAL_ALIGNMENT_CENTER, -1, 9, Color.WHITE)
 
-	# Pastille Note OVR (Haut Droite)
+	# Pastille Note OVR (Haut Droite) - Affiche la note effective avec indicateur de malus
 	var ovr_badge_c = pos + Vector2(r * 0.72, -r * 0.72)
-	draw_circle(ovr_badge_c, 9.5, Color("0f172a"))
-	draw_arc(ovr_badge_c, 9.5, 0, TAU, 16, Color("facc15"), 1.2)
-	var text_ovr = str(p.get_overall())
-	var ovr_size = font.get_string_size(text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 10)
-	draw_string(font, ovr_badge_c + Vector2(-ovr_size.x * 0.5, 3.5), text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 10, Color("facc15"))
+	var ovr_badge_color = Color("0f172a")
+	var ovr_text_color = Color("facc15") if penalty == 0 else Color("f87171")
+	draw_circle(ovr_badge_c, 10.0, ovr_badge_color)
+	draw_arc(ovr_badge_c, 10.0, 0, TAU, 16, ovr_text_color, 1.4)
+	var text_ovr = str(eff_ovr) if penalty == 0 else ("%d↓" % eff_ovr)
+	var ovr_size = font.get_string_size(text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 9)
+	draw_string(font, ovr_badge_c + Vector2(-ovr_size.x * 0.5, 3.5), text_ovr, HORIZONTAL_ALIGNMENT_CENTER, -1, 9, ovr_text_color)
 
 	# Nom du joueur sous le pion
-	var name_box_w = 88.0
+	var name_box_w = 90.0
 	var name_box_h = 16.0
 	var name_rect = Rect2(pos.x - name_box_w * 0.5, pos.y + r + 3.0, name_box_w, name_box_h)
 	draw_rect(name_rect, Color(0.12, 0.16, 0.26, 0.95) if is_selected else Color(0.06, 0.09, 0.16, 0.9), true)
-	draw_rect(name_rect, Color("facc15") if is_selected else pos_color, false, 1.5 if is_selected else 1.0)
+	draw_rect(name_rect, Color("facc15") if is_selected else (Color("f87171") if penalty > 0 else pos_color), false, 1.5 if is_selected else 1.0)
 
 	var display_name = p.full_name
 	var parts = p.full_name.split(" ")
 	if parts.size() > 0 and not parts[0].is_empty():
 		display_name = parts[0]
-	if display_name.length() > 11:
-		display_name = display_name.substr(0, 10) + "."
+	if p.is_transfer_listed:
+		display_name += " 🏷️"
+	if display_name.length() > 13:
+		display_name = display_name.substr(0, 11) + "."
 	var name_size = font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1)
-	draw_string(font, Vector2(pos.x - name_size.x * 0.5, pos.y + r + 15.0), display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1, Color("facc15") if is_selected else Color.WHITE)
+	draw_string(font, Vector2(pos.x - name_size.x * 0.5, pos.y + r + 15.0), display_name, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size - 1, Color("facc15") if is_selected else Color("f1f5f9"))
 
 
 

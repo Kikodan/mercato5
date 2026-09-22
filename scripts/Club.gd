@@ -23,6 +23,7 @@ const ClubFinances = preload("res://scripts/ClubFinances.gd")
 @export var palmares: Array[String] = []
 @export var recent_form: Array[Dictionary] = []
 @export var is_transfer_banned: bool = false
+@export var is_user_controlled: bool = false
 
 func add_match_result(res: String, score_for: int, score_against: int, opponent: String, is_home: bool) -> void:
 	recent_form.push_front({
@@ -74,27 +75,63 @@ func get_average_overall() -> int:
 	return int(float(sum) / float(squad.size()))
 
 func is_lineup_valid() -> bool:
-	if starting_five.size() != 5:
-		return false
-	for p in starting_five:
-		if p.position == Player.Position.GK:
-			return true
-	return false
+	return starting_five.size() == 5
 
 func auto_pick_lineup() -> void:
 	starting_five.clear()
-	var sorted_squad: Array[Player] = squad.duplicate()
-	sorted_squad.sort_custom(func(a, b): return a.get_overall() > b.get_overall())
+	var available: Array[Player] = squad.duplicate()
+	var slot_positions = [
+		Player.Position.GK,
+		Player.Position.DEF,
+		Player.Position.MID,
+		Player.Position.MID,
+		Player.Position.FWD
+	]
 
-	for p in sorted_squad:
-		if p.position == Player.Position.GK:
-			starting_five.append(p)
-			sorted_squad.erase(p)
-			break
+	# Sélection intelligente par poste en intégrant la forme physique (turnover IA)
+	for slot_pos in slot_positions:
+		var best_p: Player = null
+		var best_score: float = -999.0
+		for p in available:
+			# Si c'est un poste de champ et que le candidat est un gardien, on l'évite si d'autres joueurs de champ existent
+			if slot_pos != Player.Position.GK and p.position == Player.Position.GK:
+				var has_outfield = available.any(func(x): return x.position != Player.Position.GK)
+				if has_outfield:
+					continue
 
-	for p in sorted_squad:
-		if starting_five.size() < 5 and p.position != Player.Position.GK:
+			var eff_ovr = float(p.get_effective_overall(slot_pos))
+			# Pondération de la forme physique : un remplaçant frais (100%) surpasse un titulaire fatigué (< 65%)
+			var fit_weight = 0.35 + 0.65 * p.fitness
+			var score = eff_ovr * fit_weight
+			if score > best_score:
+				best_score = score
+				best_p = p
+
+		if best_p != null:
+			starting_five.append(best_p)
+			available.erase(best_p)
+
+	# Si moins de 5 joueurs sélectionnés (effectif très réduit), compléter avec les joueurs restants
+	for p in available:
+		if starting_five.size() < 5:
 			starting_five.append(p)
+
+func get_starting_five_average_ovr() -> float:
+	if starting_five.is_empty():
+		return float(get_average_overall())
+	var slot_positions = [
+		Player.Position.GK,
+		Player.Position.DEF,
+		Player.Position.MID,
+		Player.Position.MID,
+		Player.Position.FWD
+	]
+	var sum_ovr: float = 0.0
+	for i in range(starting_five.size()):
+		var p = starting_five[i]
+		var slot_pos = slot_positions[i] if i < slot_positions.size() else p.position
+		sum_ovr += float(p.get_effective_overall(slot_pos))
+	return sum_ovr / float(starting_five.size())
 
 func recover_fitness() -> void:
 	for p in squad:

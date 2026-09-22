@@ -31,6 +31,7 @@ var lbl_asking_hint: Label
 
 var slider_offer: HSlider
 var lbl_offer_val: Label
+var opt_clause: OptionButton
 var lbl_president_dialogue: Label
 var president_box: PanelContainer
 
@@ -239,6 +240,29 @@ func _build_ui() -> void:
 		quick_hbox.add_child(q_btn)
 
 	fee_vbox.add_child(quick_hbox)
+
+	# Clause à la revente
+	var clause_row = HBoxContainer.new()
+	clause_row.add_theme_constant_override("separation", 10)
+	var lbl_clause_title = Label.new()
+	lbl_clause_title.text = "📜 Clause à la revente :"
+	lbl_clause_title.add_theme_font_size_override("font_size", 12)
+	lbl_clause_title.modulate = Color("facc15")
+	clause_row.add_child(lbl_clause_title)
+
+	opt_clause = OptionButton.new()
+	opt_clause.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	opt_clause.add_theme_font_size_override("font_size", 11)
+	opt_clause.add_item("Aucune clause (0%)", 0)
+	opt_clause.add_item("10% sur la revente totale (-9% prix demandé)", 1)
+	opt_clause.add_item("20% sur la revente totale (-18% prix demandé)", 2)
+	opt_clause.add_item("15% sur la plus-value (-8% prix demandé)", 3)
+	opt_clause.add_item("25% sur la plus-value (-13% prix demandé)", 4)
+	opt_clause.add_item("35% sur la plus-value (-18% prix demandé)", 5)
+	opt_clause.item_selected.connect(func(_idx): _update_asking_hint())
+	clause_row.add_child(opt_clause)
+	fee_vbox.add_child(clause_row)
+
 	fee_card.add_child(fee_vbox)
 	main_vbox.add_child(fee_card)
 
@@ -309,6 +333,41 @@ func _build_ui() -> void:
 
 	main_vbox.add_child(act_hbox)
 
+func _get_selected_clause() -> Dictionary:
+	var idx = opt_clause.selected if opt_clause != null else 0
+	match idx:
+		1: return {"type": "TOTAL", "pct": 10}
+		2: return {"type": "TOTAL", "pct": 20}
+		3: return {"type": "PROFIT", "pct": 15}
+		4: return {"type": "PROFIT", "pct": 25}
+		5: return {"type": "PROFIT", "pct": 35}
+		_: return {"type": "NONE", "pct": 0}
+
+func _update_asking_hint() -> void:
+	if target_player == null or seller_club == null:
+		return
+	var base_asking = int(target_player.market_value * 1.15)
+	var sorted = seller_club.squad.duplicate()
+	sorted.sort_custom(func(a, b): return a.get_overall() > b.get_overall())
+	if sorted.slice(0, mini(3, sorted.size())).has(target_player):
+		base_asking = int(base_asking * 1.25)
+
+	var clause = _get_selected_clause()
+	var discount: float = 0.0
+	if clause["type"] == "TOTAL" and clause["pct"] > 0:
+		discount = float(clause["pct"]) * 0.90 / 100.0
+	elif clause["type"] == "PROFIT" and clause["pct"] > 0:
+		discount = float(clause["pct"]) * 0.52 / 100.0
+
+	var adj_asking = int(base_asking * (1.0 - discount))
+	if clause["pct"] > 0:
+		var c_txt = ("%d%% sur revente totale" if clause["type"] == "TOTAL" else "%d%% sur plus-value") % clause["pct"]
+		lbl_asking_hint.text = "Exigence estimée : environ %s € (Clause : %s -> remise ~%d%%)" % [
+			FormatUtils.format_number(adj_asking), c_txt, int(discount * 100.0)
+		]
+	else:
+		lbl_asking_hint.text = "Exigence estimée du club vendeur : environ %s €" % FormatUtils.format_number(adj_asking)
+
 func _refresh_display() -> void:
 	if seller_club != null:
 		seller_badge.shape = seller_club.badge_shape
@@ -326,8 +385,9 @@ func _refresh_display() -> void:
 			pos_str, target_player.age, target_player.get_overall(), FormatUtils.format_number(target_player.market_value)
 		]
 
-		var base_asking = int(target_player.market_value * 1.15)
-		lbl_asking_hint.text = "Estimation du prix demandé par le club : environ %s €" % FormatUtils.format_number(base_asking)
+		if opt_clause != null:
+			opt_clause.selected = 0
+		_update_asking_hint()
 
 		slider_offer.min_value = max(2_000, int(target_player.market_value * 0.4))
 		slider_offer.max_value = max(15_000, int(target_player.market_value * 2.8))
@@ -361,7 +421,8 @@ func _on_submit_bid() -> void:
 		return
 
 	var offer_amount = int(slider_offer.value)
-	var res = market_ref.evaluate_club_bid(seller_club, target_player, offer_amount, current_attempt)
+	var clause = _get_selected_clause()
+	var res = market_ref.evaluate_club_bid(seller_club, target_player, offer_amount, current_attempt, clause["pct"], clause["type"])
 
 	lbl_president_dialogue.text = res.get("message", "")
 
@@ -369,6 +430,15 @@ func _on_submit_bid() -> void:
 		"ACCEPTED":
 			is_agreed = true
 			agreed_transfer_fee = offer_amount
+			if clause["pct"] > 0:
+				target_player.sell_on_clause = {
+					"type": clause["type"],
+					"percentage": clause["pct"],
+					"beneficiary": seller_club.club_name,
+					"bought_for": agreed_transfer_fee
+				}
+			else:
+				target_player.sell_on_clause = {}
 			btn_submit_bid.visible = false
 			btn_accept_counter.visible = false
 			btn_proceed_player.visible = true
@@ -402,6 +472,16 @@ func _on_accept_counter() -> void:
 	slider_offer.value = last_counter_offer
 	is_agreed = true
 	agreed_transfer_fee = last_counter_offer
+	var clause = _get_selected_clause()
+	if clause["pct"] > 0:
+		target_player.sell_on_clause = {
+			"type": clause["type"],
+			"percentage": clause["pct"],
+			"beneficiary": seller_club.club_name,
+			"bought_for": agreed_transfer_fee
+		}
+	else:
+		target_player.sell_on_clause = {}
 	lbl_president_dialogue.text = "« Parfait ! Nous avons un accord de principe à %s €. Vous pouvez négocier avec le joueur. »" % FormatUtils.format_number(last_counter_offer)
 	btn_submit_bid.visible = false
 	btn_accept_counter.visible = false

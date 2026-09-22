@@ -130,11 +130,13 @@ func open_player(p: Player, c: Club = null) -> void:
 	]
 
 	# Contrat
-	lbl_contract_info.text = "Salaire : %s €/semaine  |  Prétention : %s €/semaine  |  Contrat restant : %d an(s)" % [
-		FormatUtils.format_number(p.salary), FormatUtils.format_number(p.wage_demand), p.contract_years
+	var listed_tag = "  |  🏷️ [SUR LISTE DES TRANSFERTS]" if p.is_transfer_listed else ""
+	lbl_contract_info.text = "Salaire : %s €/semaine  |  Prétention : %s €/semaine  |  Contrat restant : %d an(s)%s" % [
+		FormatUtils.format_number(p.salary), FormatUtils.format_number(p.wage_demand), p.contract_years, listed_tag
 	]
 	var contract_box = lbl_contract_info.get_parent()
 	var btn_prolong = contract_box.get_node_or_null("BtnProlongContract")
+	var btn_transfer_list = contract_box.get_node_or_null("BtnTransferList")
 	var is_own_player = (user_club != null and (c == user_club or user_club.squad.has(p)))
 	if is_own_player:
 		if btn_prolong == null:
@@ -158,8 +160,44 @@ func open_player(p: Player, c: Club = null) -> void:
 			visible = false
 			contract_extension_requested.emit(current_player)
 		)
-	elif btn_prolong != null:
-		btn_prolong.visible = false
+
+		if btn_transfer_list == null:
+			btn_transfer_list = Button.new()
+			btn_transfer_list.name = "BtnTransferList"
+			btn_transfer_list.custom_minimum_size = Vector2(0, 26)
+			btn_transfer_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn_transfer_list.add_theme_font_size_override("font_size", 11)
+			contract_box.add_child(btn_transfer_list)
+
+		btn_transfer_list.visible = true
+		if p.is_transfer_listed:
+			btn_transfer_list.text = "🏷️ Retirer de la liste des transferts"
+			var b_red = StyleBoxFlat.new()
+			b_red.bg_color = Color(0.35, 0.12, 0.15, 0.9)
+			b_red.border_color = Color("f87171")
+			b_red.set_border_width_all(1)
+			b_red.set_corner_radius_all(6)
+			btn_transfer_list.add_theme_stylebox_override("normal", b_red)
+		else:
+			btn_transfer_list.text = "🏷️ Placer sur la liste des transferts"
+			var b_purp = StyleBoxFlat.new()
+			b_purp.bg_color = Color(0.24, 0.15, 0.38, 0.9)
+			b_purp.border_color = Color("c084fc")
+			b_purp.set_border_width_all(1)
+			b_purp.set_corner_radius_all(6)
+			btn_transfer_list.add_theme_stylebox_override("normal", b_purp)
+
+		for conn in btn_transfer_list.pressed.get_connections():
+			btn_transfer_list.pressed.disconnect(conn["callable"])
+		btn_transfer_list.pressed.connect(func():
+			p.is_transfer_listed = not p.is_transfer_listed
+			open_player(p, c)
+		)
+	else:
+		if btn_prolong != null:
+			btn_prolong.visible = false
+		if btn_transfer_list != null:
+			btn_transfer_list.visible = false
 
 	# Palmarès
 	for child in palmares_container.get_children():
@@ -229,11 +267,11 @@ func _create_stats_row(season: String, club: String, m: int, g: int, a: int, t: 
 	var container = PanelContainer.new()
 	var sb = StyleBoxFlat.new()
 	if is_current:
-		sb.bg_color = Color(0.12, 0.20, 0.35, 0.55)
-		sb.border_color = Color(0.22, 0.74, 0.97, 0.7)
+		sb.bg_color = Color(0.08, 0.12, 0.20, 0.90)
+		sb.border_color = Color(0.25, 0.35, 0.50, 0.6)
 		sb.set_border_width_all(1)
 	else:
-		sb.bg_color = Color(0.06, 0.10, 0.16, 0.35)
+		sb.bg_color = Color(0.05, 0.08, 0.14, 0.60)
 	sb.set_corner_radius_all(6)
 	sb.content_margin_left = 6
 	sb.content_margin_right = 6

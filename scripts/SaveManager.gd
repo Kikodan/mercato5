@@ -202,7 +202,9 @@ static func _serialize_player(p: Player) -> Dictionary:
 		"stats_cur": p.stats_current_season,
 		"stats_hist": p.stats_history,
 		"palmares": p.palmares,
-		"c_starts": p.consecutive_starts
+		"c_starts": p.consecutive_starts,
+		"is_listed": p.is_transfer_listed,
+		"sell_on": p.sell_on_clause
 	}
 
 static func _deserialize_player(d: Dictionary) -> Player:
@@ -223,6 +225,8 @@ static func _deserialize_player(d: Dictionary) -> Player:
 	p.is_youth_prospect = d.get("is_youth", false)
 	p.fitness = d.get("fit", 1.0)
 	p.consecutive_starts = int(d.get("c_starts", 0))
+	p.is_transfer_listed = d.get("is_listed", false)
+	p.sell_on_clause = d.get("sell_on", {})
 	p.market_value = d.get("val", 50_000)
 	p.salary = d.get("sal", 2_000)
 	p.wage_demand = d.get("wage_dem", 2_000)

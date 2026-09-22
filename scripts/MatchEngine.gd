@@ -21,9 +21,14 @@ static func simulate_match(home: Club, away: Club, target_goals: int = 5) -> Mat
 	report.target_goals = target_goals
 
 
-	if not home.is_lineup_valid():
+	if not home.is_user_controlled:
 		home.auto_pick_lineup()
-	if not away.is_lineup_valid():
+	elif not home.is_lineup_valid():
+		home.auto_pick_lineup()
+
+	if not away.is_user_controlled:
+		away.auto_pick_lineup()
+	elif not away.is_lineup_valid():
 		away.auto_pick_lineup()
 
 	# Initialiser les matchs joués et notes pour les 10 titulaires
@@ -84,9 +89,25 @@ static func simulate_match(home: Club, away: Club, target_goals: int = 5) -> Mat
 	return report
 
 
+static func _get_slot_position(lineup: Array[Player], player: Player) -> int:
+	var idx = lineup.find(player)
+	match idx:
+		0: return Player.Position.GK
+		1: return Player.Position.DEF
+		2, 3: return Player.Position.MID
+		4: return Player.Position.FWD
+		_: return player.position if player else Player.Position.MID
+
+static func _get_position_multiplier(lineup: Array[Player], player: Player) -> float:
+	if player == null:
+		return 1.0
+	var slot = _get_slot_position(lineup, player)
+	var pen = player.get_position_penalty(slot)
+	return clampf(1.0 - float(pen) * 0.025, 0.40, 1.0)
+
 static func _calc_possession(c1: Club, c2: Club) -> float:
-	var m1 = _get_stat(c1.starting_five, "passing") * _get_fitness(c1.starting_five)
-	var m2 = _get_stat(c2.starting_five, "passing") * _get_fitness(c2.starting_five)
+	var m1 = _get_team_possession_power(c1.starting_five)
+	var m2 = _get_team_possession_power(c2.starting_five)
 
 	if c1.tactical_style == 1:
 		m1 *= 1.15
@@ -100,6 +121,15 @@ static func _calc_possession(c1: Club, c2: Club) -> float:
 
 	return clampf(m1 / max(1.0, m1 + m2), 0.25, 0.75)
 
+static func _get_team_possession_power(lineup: Array[Player]) -> float:
+	if lineup.is_empty():
+		return 10.0
+	var sum: float = 0.0
+	for p in lineup:
+		var pos_mod = _get_position_multiplier(lineup, p)
+		sum += float(p.passing) * p.fitness * pos_mod
+	return sum / float(lineup.size())
+
 static func _resolve_phase(minute: int, atk: Club, def_c: Club, rep: MatchReport, match_ratings: Dictionary, target_goals: int) -> void:
 	var attacker: Player = _pick_outfield(atk.starting_five)
 	var defender: Player = _pick_outfield(def_c.starting_five)
@@ -108,8 +138,12 @@ static func _resolve_phase(minute: int, atk: Club, def_c: Club, rep: MatchReport
 	var fat_atk = attacker.fitness if minute <= 20 else attacker.fitness * (0.6 if attacker.trait_negative == "Fumeur" else 0.85)
 	var fat_def = defender.fitness if minute <= 20 else defender.fitness * 0.85
 
-	var atk_power = (attacker.speed + attacker.passing + attacker.dribbling) * 0.333 * fat_atk
-	var def_power = (defender.speed + defender.defending + defender.stamina) * 0.333 * fat_def
+	var atk_pos_mod = _get_position_multiplier(atk.starting_five, attacker)
+	var def_pos_mod = _get_position_multiplier(def_c.starting_five, defender)
+	var gk_pos_mod = _get_position_multiplier(def_c.starting_five, keeper)
+
+	var atk_power = (attacker.speed + attacker.passing + attacker.dribbling) * 0.333 * fat_atk * atk_pos_mod
+	var def_power = (defender.speed + defender.defending + defender.stamina) * 0.333 * fat_def * def_pos_mod
 
 	if atk.tactical_style == 1:
 		atk_power *= 1.15
@@ -146,8 +180,9 @@ static func _resolve_phase(minute: int, atk: Club, def_c: Club, rep: MatchReport
 	var shot_bonus = 8.0 if atk.training_focus == 1 else 0.0
 	var def_bonus = 8.0 if def_c.training_focus == 2 else 0.0
 
-	var shot_rating = float(attacker.shooting) + shot_bonus + (12.0 if attacker.trait_positive == "Renard des surfaces" else 0.0)
-	var save_rating = float((keeper.reflexes * 0.7 + keeper.defending * 0.3) if keeper else 55.0) + def_bonus + (12.0 if keeper and keeper.trait_positive == "Mur" else 0.0)
+	var shot_rating = (float(attacker.shooting) + shot_bonus + (12.0 if attacker.trait_positive == "Renard des surfaces" else 0.0)) * atk_pos_mod
+	var base_save = float((keeper.reflexes * 0.7 + keeper.defending * 0.3) if keeper else 55.0)
+	var save_rating = (base_save + def_bonus + (12.0 if keeper and keeper.trait_positive == "Mur" else 0.0)) * gk_pos_mod
 
 	# Tir cadré (vers le but)
 	if atk == rep.home_club:
@@ -232,13 +267,15 @@ static func _force_goal(minute: int, atk: Club, def_c: Club, rep: MatchReport, m
 
 
 static func _pick_outfield(lineup: Array[Player]) -> Player:
+	if lineup.size() > 1:
+		var outfield = lineup.slice(1)
+		return outfield.pick_random()
 	var out = lineup.filter(func(p): return p.position != Player.Position.GK)
-	return out.pick_random() if not out.is_empty() else lineup.pick_random()
+	return out.pick_random() if not out.is_empty() else (lineup.pick_random() if not lineup.is_empty() else null)
 
 static func _get_gk(lineup: Array[Player]) -> Player:
-	for p in lineup:
-		if p.position == Player.Position.GK:
-			return p
+	if not lineup.is_empty():
+		return lineup[0]
 	return null
 
 static func _get_stat(lineup: Array[Player], stat: String) -> float:

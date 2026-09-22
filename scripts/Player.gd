@@ -47,6 +47,8 @@ func get_flag_emoji() -> String:
 @export var wage_demand: int = 2_500
 @export var contract_years: int = 2
 @export var greed: float = 1.0
+@export var is_transfer_listed: bool = false
+@export var sell_on_clause: Dictionary = {}
 @export_range(0.0, 1.0) var fitness: float = 1.0
 @export var consecutive_starts: int = 0
 
@@ -83,6 +85,39 @@ func get_overall() -> int:
 		Position.FWD:
 			return int(shooting * 0.40 + speed * 0.25 + dribbling * 0.20 + passing * 0.10 + stamina * 0.05)
 	return 60
+
+func get_position_penalty(slot_position: int) -> int:
+	if position == slot_position:
+		return 0
+	match position:
+		Position.FWD:
+			# Attaquant : milieu = petit malus (-4), défenseur = moyen (-10), gardien = très gros (-20)
+			match slot_position:
+				Position.MID: return 4
+				Position.DEF: return 10
+				Position.GK: return 20
+		Position.MID:
+			# Milieu : attaquant = petit malus (-4), défenseur = moyen (-5), gardien = gros (-18)
+			match slot_position:
+				Position.FWD: return 4
+				Position.DEF: return 5
+				Position.GK: return 18
+		Position.DEF:
+			# Défenseur : milieu = petit malus (-4), gardien = modéré (-6), attaquant = gros malus (-12)
+			match slot_position:
+				Position.MID: return 4
+				Position.GK: return 6
+				Position.FWD: return 12
+		Position.GK:
+			# Gardien : milieu = modéré (-10), défenseur/attaquant = gros malus (-18 à -20)
+			match slot_position:
+				Position.MID: return 10
+				Position.DEF: return 18
+				Position.FWD: return 20
+	return 8
+
+func get_effective_overall(slot_position: int) -> int:
+	return clampi(get_overall() - get_position_penalty(slot_position), 20, 99)
 
 func get_average_rating() -> float:
 	var m: int = stats_current_season.get("matches", 0)

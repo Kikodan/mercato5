@@ -187,7 +187,9 @@ func _render_opp_scouting() -> void:
 	for child in opp_lineup_list.get_children():
 		child.queue_free()
 
-	if not opp_club.is_lineup_valid():
+	if not opp_club.is_user_controlled:
+		opp_club.auto_pick_lineup()
+	elif not opp_club.is_lineup_valid():
 		opp_club.auto_pick_lineup()
 
 	for p in opp_club.starting_five:
