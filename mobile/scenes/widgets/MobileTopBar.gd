@@ -1,7 +1,9 @@
 class_name MobileTopBar
 extends PanelContainer
 
-signal day_selected(day_idx: int)
+## Barre supérieure mobile : Info club, trésorerie, roulette d'options et timeline de la semaine (progression strictement linéaire).
+
+signal options_requested()
 
 const Club = preload("res://scripts/Club.gd")
 const ClubBadge = preload("res://scripts/ClubBadge.gd")
@@ -11,7 +13,8 @@ var badge: ClubBadge
 var lbl_club_name: Label
 var lbl_div: Label
 var lbl_budget: Label
-var day_buttons: Array[Button] = []
+var btn_options_cog: Button
+var day_indicators: Array[Button] = []
 
 const DAYS_NAMES = ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"]
 const DAYS_DESC = ["Effectif", "Mercato", "Mercato", "Tactique", "Tactique", "Match", "Économie"]
@@ -32,7 +35,7 @@ func _init() -> void:
 	main_vbox.add_theme_constant_override("separation", 8)
 	add_child(main_vbox)
 
-	# Ligne 1 : Info Club & Budget
+	# Ligne 1 : Info Club & Budget & Roulette d'options ⚙️
 	var top_hbox = HBoxContainer.new()
 	top_hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 	main_vbox.add_child(top_hbox)
@@ -75,7 +78,24 @@ func _init() -> void:
 	lbl_budget.add_theme_color_override("font_color", Color("34d399"))
 	budget_box.add_child(lbl_budget)
 
-	# Ligne 2 : Bandeau des 7 Jours de la Semaine
+	# Bouton Roulette d'options ⚙️ en jeu
+	btn_options_cog = Button.new()
+	btn_options_cog.text = "⚙️"
+	btn_options_cog.tooltip_text = "Options audio & musique"
+	btn_options_cog.custom_minimum_size = Vector2(40, 36)
+	btn_options_cog.add_theme_font_size_override("font_size", 16)
+	btn_options_cog.focus_mode = Control.FOCUS_NONE
+
+	var sb_cog = StyleBoxFlat.new()
+	sb_cog.bg_color = Color(0.12, 0.18, 0.28, 0.85)
+	sb_cog.border_color = Color("38bdf8")
+	sb_cog.set_border_width_all(1)
+	sb_cog.set_corner_radius_all(6)
+	btn_options_cog.add_theme_stylebox_override("normal", sb_cog)
+	btn_options_cog.pressed.connect(func(): options_requested.emit())
+	top_hbox.add_child(btn_options_cog)
+
+	# Ligne 2 : Timeline des 7 Jours de la Semaine (indicateurs en lecture seule, pas de saut en arrière)
 	var days_hbox = HBoxContainer.new()
 	days_hbox.add_theme_constant_override("separation", 4)
 	days_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -88,10 +108,10 @@ func _init() -> void:
 		btn.text = "%s\n%s" % [DAYS_NAMES[i], DAYS_DESC[i]]
 		btn.add_theme_font_size_override("font_size", 9)
 		btn.focus_mode = Control.FOCUS_NONE
-		var day_idx = i
-		btn.pressed.connect(func(): day_selected.emit(day_idx))
+		# Rendre non-cliquable pour empêcher de reculer/sauter
+		btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		days_hbox.add_child(btn)
-		day_buttons.append(btn)
+		day_indicators.append(btn)
 
 func setup_club(p_club: Club, p_div_name: String = "") -> void:
 	if p_club == null:
@@ -111,28 +131,33 @@ func update_budget(amount: int) -> void:
 		lbl_budget.text = "%s €" % FormatUtils.format_number(amount)
 
 func set_active_day(current_day_idx: int) -> void:
-	for i in range(day_buttons.size()):
-		var b = day_buttons[i]
+	for i in range(day_indicators.size()):
+		var b = day_indicators[i]
 		var is_active = (i == current_day_idx)
 		var is_past = (i < current_day_idx)
 
 		var sb = StyleBoxFlat.new()
 		sb.set_corner_radius_all(4)
+
 		if is_active:
+			b.text = "▶ %s\n%s" % [DAYS_NAMES[i], DAYS_DESC[i]]
 			sb.bg_color = Color(0.98, 0.80, 0.08, 0.25)
 			sb.border_color = Color("facc15")
 			sb.set_border_width_all(2)
 			b.add_theme_color_override("font_color", Color("facc15"))
 		elif is_past:
+			b.text = "✓ %s\n%s" % [DAYS_NAMES[i], DAYS_DESC[i]]
 			sb.bg_color = Color(0.08, 0.12, 0.20, 0.80)
 			sb.border_color = Color(0.20, 0.28, 0.40, 0.40)
 			sb.set_border_width_all(1)
 			b.add_theme_color_override("font_color", Color("64748b"))
 		else:
+			b.text = "%s\n%s" % [DAYS_NAMES[i], DAYS_DESC[i]]
 			sb.bg_color = Color(0.08, 0.12, 0.22, 0.90)
 			sb.border_color = Color(0.25, 0.35, 0.50, 0.60)
 			sb.set_border_width_all(1)
-			b.add_theme_color_override("font_color", Color("e2e8f0"))
+			b.add_theme_color_override("font_color", Color("94a3b8"))
+
 		b.add_theme_stylebox_override("normal", sb)
 
 func update_header(p_club: Club, current_day_idx: int) -> void:

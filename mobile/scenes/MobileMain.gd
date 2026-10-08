@@ -11,6 +11,7 @@ const FormatUtils = preload("res://scripts/FormatUtils.gd")
 
 const MobileTopBar = preload("res://scenes/widgets/MobileTopBar.gd")
 const MobileBottomBar = preload("res://scenes/widgets/MobileBottomBar.gd")
+const MobileOptionsMenuModal = preload("res://scenes/widgets/MobileOptionsMenuModal.gd")
 const DayEffectif = preload("res://scenes/DayEffectif.gd")
 const DayMercato = preload("res://scenes/DayMercato.gd")
 const DayTactique = preload("res://scenes/DayTactique.gd")
@@ -29,6 +30,7 @@ var is_match_played_this_week: bool = false
 # UI Nodes
 var top_bar: MobileTopBar
 var bottom_bar: MobileBottomBar
+var options_modal: MobileOptionsMenuModal
 var content_container: MarginContainer
 var day_effectif: DayEffectif
 var day_mercato: DayMercato
@@ -63,9 +65,9 @@ func _init_ui_layout() -> void:
 	main_vbox.add_theme_constant_override("separation", 0)
 	add_child(main_vbox)
 
-	# 1. Barre Supérieure
+	# 1. Barre Supérieure avec roulette d'options ⚙️
 	top_bar = MobileTopBar.new()
-	top_bar.day_selected.connect(_on_day_selected_from_bar)
+	top_bar.options_requested.connect(_on_options_requested)
 	main_vbox.add_child(top_bar)
 
 	# 2. Zone de Contenu Principale
@@ -106,7 +108,12 @@ func _init_ui_layout() -> void:
 	bottom_bar.save_requested.connect(_on_save_requested)
 	main_vbox.add_child(bottom_bar)
 
-	# 4. Toast Overlay (notifications flottantes)
+	# 4. Modale Options Mobile (Roulette d'options)
+	options_modal = MobileOptionsMenuModal.new()
+	options_modal.return_to_main_menu_requested.connect(_on_return_to_main_menu)
+	add_child(options_modal)
+
+	# 5. Toast Overlay (notifications flottantes)
 	toast_panel = PanelContainer.new()
 	var sb_t = StyleBoxFlat.new()
 	sb_t.bg_color = Color(0.08, 0.15, 0.28, 0.95)
@@ -134,6 +141,18 @@ func _init_ui_layout() -> void:
 	toast_panel.add_child(toast_label)
 
 func _init_or_load_game() -> void:
+	# 1. Vérifier si une nouvelle partie a été paramétrée depuis le menu d'accueil
+	if GameGlobal.new_game_selected_club != null:
+		user_club = GameGlobal.new_game_selected_club
+		current_league = GameGlobal.new_game_selected_league
+		all_leagues = GameGlobal.new_game_all_leagues
+		market = GameGlobal.new_game_market
+		GameGlobal.clear_transitions()
+		# Enregistrer directement la nouvelle carrière
+		SaveManager.save_game(user_club, current_league, all_leagues, market, 1)
+		return
+
+	# 2. Sinon charger la sauvegarde existante
 	if SaveManager.has_save():
 		var data = SaveManager.load_game()
 		user_club = data.get("player_club", null)
@@ -141,6 +160,7 @@ func _init_or_load_game() -> void:
 		all_leagues = data.get("all_leagues", [])
 		market = data.get("market", null)
 
+	# 3. Fallback : Créer un monde par défaut
 	if user_club == null or current_league == null or all_leagues.is_empty():
 		var default_data = GameWorld.create_default_world()
 		all_leagues = default_data["all_leagues"]
@@ -165,15 +185,15 @@ func _switch_to_day(day_idx: int) -> void:
 	day_match.visible = false
 	day_economie.visible = false
 
-	# Mettre à jour l'en-tête
+	# Mettre à jour l'en-tête (indicateur linéaire)
 	top_bar.set_active_day(current_day_index)
 	top_bar.update_budget(user_club.budget)
 
 	# Afficher le jour sélectionné
 	match current_day_index:
-		0: # LUNDI : Effectif
+		0: # LUNDI : Effectif & Classement
 			day_effectif.visible = true
-			day_effectif.setup(user_club)
+			day_effectif.setup(user_club, current_league)
 			bottom_bar.set_advance_text("Mardi : Marché des Transferts ➡️", false, false)
 
 		1, 2: # MARDI / MERCREDI : Mercato
@@ -217,7 +237,6 @@ func _prepare_saturday_match() -> void:
 	if user_club == null or current_league == null:
 		return
 
-	# Si déjà joué cette semaine, ne pas recharger
 	if is_match_played_this_week and day_match.is_finished:
 		return
 
@@ -247,7 +266,6 @@ func _prepare_saturday_match() -> void:
 			is_home = (current_league.playoff_final_home == user_club)
 			match_title = "GRANDE FINALE PLAYOFFS"
 
-	# Secours si aucun match trouvé
 	if opp_club == null:
 		for c in current_league.clubs:
 			if c != user_club:
@@ -257,9 +275,7 @@ func _prepare_saturday_match() -> void:
 
 	day_match.setup(user_club, opp_club, is_home, match_title, current_league)
 
-func _on_day_selected_from_bar(day_idx: int) -> void:
-	_switch_to_day(day_idx)
-
+## Progression strictement vers l'avant (impossible de revenir en arrière)
 func _on_advance_requested() -> void:
 	if current_day_index == 5:
 		if not is_match_played_this_week:
@@ -278,7 +294,6 @@ func _on_advance_requested() -> void:
 func _on_match_completed(report: MatchEngine.MatchReport) -> void:
 	is_match_played_this_week = true
 
-	# 1. Enregistrer le score dans la ligue si match régulier
 	if current_league.current_matchday_index < current_league.schedule.size():
 		var day_matches = current_league.schedule[current_league.current_matchday_index]
 		for pair in day_matches:
@@ -289,13 +304,11 @@ func _on_match_completed(report: MatchEngine.MatchReport) -> void:
 			elif a == user_club and h == report.home_club:
 				current_league.record_match_result(h, a, report.home_score, report.away_score)
 			else:
-				# Simuler les autres matchs IA de la journée
 				var ai_rep = MatchEngine.simulate_match(h, a, 5)
 				current_league.record_match_result(h, a, ai_rep.home_score, ai_rep.away_score)
 
 		current_league.current_matchday_index += 1
 
-	# 2. Recette de billetterie si à domicile
 	if report.home_club == user_club:
 		var fin = user_club.get_finances()
 		var won = report.home_score > report.away_score
@@ -308,7 +321,6 @@ func _on_match_completed(report: MatchEngine.MatchReport) -> void:
 	bottom_bar.set_advance_text("Dimanche : Bilan Économique ➡️", false, false)
 
 func _process_weekly_rollover() -> void:
-	# Traiter le cycle financier, la forme et les jeunes pour tous les clubs
 	for l in all_leagues:
 		for c in l.clubs:
 			c.recover_fitness()
@@ -324,6 +336,14 @@ func _on_save_requested() -> void:
 		show_toast("💾 Partie sauvegardée avec succès !")
 	else:
 		show_toast("❌ Erreur lors de la sauvegarde.")
+
+func _on_options_requested() -> void:
+	options_modal.open_modal(true)
+
+func _on_return_to_main_menu() -> void:
+	# Sauvegarder l'état actuel avant de retourner au menu d'accueil
+	SaveManager.save_game(user_club, current_league, all_leagues, market, 1)
+	get_tree().change_scene_to_file("res://scenes/MobileStartMenu.tscn")
 
 func _on_child_data_changed() -> void:
 	top_bar.update_budget(user_club.budget)

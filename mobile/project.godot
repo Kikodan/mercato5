@@ -9,7 +9,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Mercato 5 Mobile"
 config/description="Jeu de gestion de foot a 5 - Version Mobile"
-run/main_scene="res://scenes/MobileMain.tscn"
+run/main_scene="res://scenes/MobileStartMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
