@@ -17,7 +17,7 @@ var btn_options_cog: Button
 var day_indicators: Array[Button] = []
 
 const DAYS_NAMES = ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"]
-const DAYS_DESC = ["Effectif", "Mercato", "Mercato", "Tactique", "Tactique", "Match", "Économie"]
+const DAYS_DESC = ["Effectif", "Mercato", "Mercato", "Tactique", "Formation", "Match", "Économie"]
 
 func _init() -> void:
 	custom_minimum_size.y = 110.0

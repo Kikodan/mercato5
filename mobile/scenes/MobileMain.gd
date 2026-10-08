@@ -15,6 +15,7 @@ const MobileOptionsMenuModal = preload("res://scenes/widgets/MobileOptionsMenuMo
 const DayEffectif = preload("res://scenes/DayEffectif.gd")
 const DayMercato = preload("res://scenes/DayMercato.gd")
 const DayTactique = preload("res://scenes/DayTactique.gd")
+const DayFormation = preload("res://scenes/DayFormation.gd")
 const DayMatch = preload("res://scenes/DayMatch.gd")
 const DayEconomie = preload("res://scenes/DayEconomie.gd")
 
@@ -35,6 +36,7 @@ var content_container: MarginContainer
 var day_effectif: DayEffectif
 var day_mercato: DayMercato
 var day_tactique: DayTactique
+var day_formation: DayFormation
 var day_match: DayMatch
 var day_economie: DayEconomie
 
@@ -92,6 +94,10 @@ func _init_ui_layout() -> void:
 	day_tactique = DayTactique.new()
 	day_tactique.data_changed.connect(_on_child_data_changed)
 	content_container.add_child(day_tactique)
+
+	day_formation = DayFormation.new()
+	day_formation.data_changed.connect(_on_child_data_changed)
+	content_container.add_child(day_formation)
 
 	day_match = DayMatch.new()
 	day_match.match_completed.connect(_on_match_completed)
@@ -182,6 +188,7 @@ func _switch_to_day(day_idx: int) -> void:
 	day_effectif.visible = false
 	day_mercato.visible = false
 	day_tactique.visible = false
+	day_formation.visible = false
 	day_match.visible = false
 	day_economie.visible = false
 
@@ -204,13 +211,15 @@ func _switch_to_day(day_idx: int) -> void:
 			else:
 				bottom_bar.set_advance_text("Jeudi : Préparer la Tactique ➡️", false, false)
 
-		3, 4: # JEUDI / VENDREDI : Tactique & Formations
+		3: # JEUDI : Tactique & Formations
 			day_tactique.visible = true
 			day_tactique.setup(user_club)
-			if current_day_index == 3:
-				bottom_bar.set_advance_text("Vendredi : Ajustements Tactiques ➡️", false, false)
-			else:
-				bottom_bar.set_advance_text("Samedi : JOUR DE MATCH ! ⚽", true, false)
+			bottom_bar.set_advance_text("Vendredi : Formation & Surveillance ➡️", false, false)
+
+		4: # VENDREDI : Formation & Surveillance
+			day_formation.visible = true
+			day_formation.setup(user_club, current_league, _get_saturday_opponent())
+			bottom_bar.set_advance_text("Samedi : JOUR DE MATCH ! ⚽", true, false)
 
 		5: # SAMEDI : Match
 			day_match.visible = true
@@ -233,6 +242,33 @@ func _get_other_clubs() -> Array[Club]:
 				others.append(c)
 	return others
 
+func _get_saturday_opponent() -> Club:
+	if user_club == null or current_league == null:
+		return null
+
+	var opp: Club = null
+	if current_league.current_matchday_index < current_league.schedule.size():
+		var day_matches = current_league.schedule[current_league.current_matchday_index]
+		for pair in day_matches:
+			if pair[0] == user_club:
+				opp = pair[1]
+				break
+			elif pair[1] == user_club:
+				opp = pair[0]
+				break
+	elif current_league.is_playoffs_active():
+		if current_league.playoff_phase == 1:
+			opp = current_league.playoff_semi_away if current_league.playoff_semi_home == user_club else current_league.playoff_semi_home
+		elif current_league.playoff_phase == 2:
+			opp = current_league.playoff_final_away if current_league.playoff_final_home == user_club else current_league.playoff_final_home
+
+	if opp == null:
+		for c in current_league.clubs:
+			if c != user_club:
+				opp = c
+				break
+	return opp
+
 func _prepare_saturday_match() -> void:
 	if user_club == null or current_league == null:
 		return
@@ -240,7 +276,7 @@ func _prepare_saturday_match() -> void:
 	if is_match_played_this_week and day_match.is_finished:
 		return
 
-	var opp_club: Club = null
+	var opp_club: Club = _get_saturday_opponent()
 	var is_home = true
 	var match_title = "JOURNÉE DE CHAMPIONNAT"
 
@@ -248,29 +284,21 @@ func _prepare_saturday_match() -> void:
 		var day_matches = current_league.schedule[current_league.current_matchday_index]
 		for pair in day_matches:
 			if pair[0] == user_club:
-				opp_club = pair[1]
 				is_home = true
 				break
 			elif pair[1] == user_club:
-				opp_club = pair[0]
 				is_home = false
 				break
 		match_title = "Ligue %s - Journée %d / %d" % [current_league.league_name, current_league.current_matchday_index + 1, current_league.schedule.size()]
 	elif current_league.is_playoffs_active():
 		if current_league.playoff_phase == 1:
-			opp_club = current_league.playoff_semi_away if current_league.playoff_semi_home == user_club else current_league.playoff_semi_home
 			is_home = (current_league.playoff_semi_home == user_club)
 			match_title = "DEMI-FINALE PLAYOFFS"
 		elif current_league.playoff_phase == 2:
-			opp_club = current_league.playoff_final_away if current_league.playoff_final_home == user_club else current_league.playoff_final_home
 			is_home = (current_league.playoff_final_home == user_club)
 			match_title = "GRANDE FINALE PLAYOFFS"
 
 	if opp_club == null:
-		for c in current_league.clubs:
-			if c != user_club:
-				opp_club = c
-				break
 		match_title = "MATCH AMICAL DE GALA"
 
 	day_match.setup(user_club, opp_club, is_home, match_title, current_league)
