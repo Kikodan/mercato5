@@ -77,6 +77,22 @@ func _init_tactic_options() -> void:
 			user_club.training_focus = idx
 	)
 
+	var tactic_box = opt_user_tactic.get_parent()
+	if tactic_box and tactic_box.get_node_or_null("OptFormation") == null:
+		var opt_formation = OptionButton.new()
+		opt_formation.name = "OptFormation"
+		opt_formation.add_item("1-2-1 Losange (bat 2-1-1)", Tactics.TacticalFormation.FORMATION_1_2_1)
+		opt_formation.add_item("1-1-2 Double Attaque (bat 1-2-1)", Tactics.TacticalFormation.FORMATION_1_1_2)
+		opt_formation.add_item("2-1-1 Double Défense (bat 1-1-2)", Tactics.TacticalFormation.FORMATION_2_1_1)
+		opt_formation.item_selected.connect(func(idx: int):
+			if user_club != null:
+				user_club.tactical_formation = idx
+				_render_opp_scouting()
+				_render_user_lineup_and_bench()
+		)
+		tactic_box.add_child(opt_formation)
+		tactic_box.move_child(opt_formation, 0)
+
 func setup(player_c: Club, enemy_c: Club, matchday_title: String, is_spectator: bool = false) -> void:
 	user_club = player_c
 	opp_club = enemy_c
@@ -113,16 +129,28 @@ func setup(player_c: Club, enemy_c: Club, matchday_title: String, is_spectator: 
 	# User Team
 	opt_user_tactic.selected = user_club.tactical_style
 	opt_user_training.selected = user_club.training_focus
+	var opt_form = opt_user_tactic.get_parent().get_node_or_null("OptFormation")
+	if opt_form:
+		opt_form.selected = user_club.tactical_formation
 	_render_user_lineup_and_bench()
 
 func _render_opp_scouting() -> void:
 	if opp_club == null:
 		return
 
-	# Style tactique adverse
+	# Style tactique et formation adverse
 	var t_name = Tactics.get_style_name(opp_club.tactical_style)
 	var t_desc = Tactics.get_style_desc(opp_club.tactical_style)
-	lbl_opp_tactic_desc.text = "Dispositif : %s\n%s" % [t_name, t_desc]
+	var opp_form_name = Tactics.get_formation_name(opp_club.tactical_formation)
+	var matchup = Tactics.get_formation_matchup(user_club.tactical_formation, opp_club.tactical_formation)
+	var rps_badge = ""
+	if matchup.winner == 1:
+		rps_badge = "\n⚔️ Avantage Tactique (+15%) : %s" % matchup.desc
+	elif matchup.winner == 2:
+		rps_badge = "\n🛡️ Désavantage Tactique (-15%) : %s" % matchup.desc
+	else:
+		rps_badge = "\n⚖️ Neutralité : Aucun bonus tactique."
+	lbl_opp_tactic_desc.text = "Formation : %s | Dispositif : %s\n%s%s" % [opp_form_name, t_name, t_desc, rps_badge]
 
 	# Identifier le joueur star adverse (meilleur buteur ou OVR le plus élevé)
 	var star: Player = null

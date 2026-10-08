@@ -1,0 +1,49 @@
+; Engine configuration file for Mercato 5 Mobile.
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="Mercato 5 Mobile"
+config/description="Jeu de gestion de foot a 5 - Version Mobile"
+run/main_scene="res://scenes/MobileMain.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+GameGlobal="*res://scripts/GameGlobal.gd"
+MusicManager="*res://scripts/MusicManager.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/dpi/allow_hidpi=true
+window/handheld/orientation="portrait"
+
+[gui]
+
+theme/custom_font="res://assets/fonts/app_font.tres"
+theme/default_font_antialiasing=1
+theme/default_font_hinting=1
+theme/default_font_subpixel_positioning=1
+fonts/dynamic_fonts/use_oversampling=true
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method.web="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.04, 0.06, 0.11, 1)
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true

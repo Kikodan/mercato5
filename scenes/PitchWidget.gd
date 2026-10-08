@@ -6,21 +6,14 @@ signal player_right_clicked(player: Player)
 
 var starting_five: Array[Player] = []
 var selected_player: Player = null
+var tactical_formation: int = Tactics.TacticalFormation.FORMATION_1_2_1
 
-# Positions normalisées pour la formation 1-2-1 de foot à 5
-const FORMATION_POSITIONS = [
-	Vector2(0.5, 0.86),  # 0: Gardien
-	Vector2(0.5, 0.66),  # 1: Défenseur
-	Vector2(0.24, 0.44), # 2: Milieu Gauche
-	Vector2(0.76, 0.44), # 3: Milieu Droit
-	Vector2(0.5, 0.20)   # 4: Pivot / Attaquant
-]
-
-func set_starting_five(players: Array[Player], selected: Player = null) -> void:
+func set_starting_five(players: Array[Player], selected: Player = null, formation: int = -1) -> void:
 	starting_five = players
 	selected_player = selected
+	if formation >= 0:
+		tactical_formation = formation
 	queue_redraw()
-
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
@@ -31,10 +24,17 @@ func _gui_input(event: InputEvent) -> void:
 			elif event.button_index == MOUSE_BUTTON_LEFT:
 				player_clicked.emit(starting_five[clicked_idx])
 
+func _get_formation_positions() -> Array[Vector2]:
+	return Tactics.get_formation_positions(tactical_formation)
+
+func _get_slot_roles() -> Array:
+	return Tactics.get_slot_roles(tactical_formation)
+
 func _get_slot_at_pos(pos: Vector2) -> int:
 	var s = size
-	for i in FORMATION_POSITIONS.size():
-		var slot_center = FORMATION_POSITIONS[i] * s
+	var positions = _get_formation_positions()
+	for i in positions.size():
+		var slot_center = positions[i] * s
 		if pos.distance_to(slot_center) <= 32.0:
 			return i
 	return -1
@@ -86,7 +86,7 @@ func _draw() -> void:
 
 	# Bannière Note Moyenne d'Équipe en direct
 	if starting_five.size() > 0:
-		var slot_roles = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.MID, Player.Position.FWD]
+		var slot_roles = _get_slot_roles()
 		var sum_eff: float = 0.0
 		for idx in range(starting_five.size()):
 			var p_item = starting_five[idx]
@@ -94,20 +94,21 @@ func _draw() -> void:
 			sum_eff += float(p_item.get_effective_overall(target_role))
 		var avg_team = sum_eff / float(starting_five.size())
 
-		var banner_w = minf(230.0, s.x - pad * 2.0 - 10.0)
+		var banner_w = minf(260.0, s.x - pad * 2.0 - 10.0)
 		var banner_h = 24.0
 		var banner_rect = Rect2((s.x - banner_w) * 0.5, pad + 4.0, banner_w, banner_h)
 		draw_rect(banner_rect, Color(0.06, 0.10, 0.18, 0.94), true)
 		draw_rect(banner_rect, Color("facc15"), false, 1.2)
 
-		var banner_txt = "⭐ 5 DE DÉPART : %.1f OVR" % avg_team
+		var form_name = Tactics.get_formation_name(tactical_formation)
+		var banner_txt = "⭐ %s : %.1f OVR" % [form_name, avg_team]
 		var b_size = default_font.get_string_size(banner_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 11)
 		draw_string(default_font, Vector2((s.x - b_size.x) * 0.5, pad + 20.0), banner_txt, HORIZONTAL_ALIGNMENT_CENTER, -1, 11, Color("facc15"))
 
 	# Jetons de joueurs
-
-	for i in FORMATION_POSITIONS.size():
-		var slot_pos = FORMATION_POSITIONS[i] * s
+	var positions = _get_formation_positions()
+	for i in positions.size():
+		var slot_pos = positions[i] * s
 		if i < starting_five.size():
 			var p = starting_five[i]
 			_draw_player_token(slot_pos, p, default_font, font_size, i)
@@ -125,7 +126,7 @@ func _draw_player_token(pos: Vector2, p: Player, font: Font, font_size: int, slo
 		Player.Position.MID: pos_color = Color("10b981")
 		Player.Position.FWD: pos_color = Color("f43f5e")
 
-	var slot_roles = [Player.Position.GK, Player.Position.DEF, Player.Position.MID, Player.Position.MID, Player.Position.FWD]
+	var slot_roles = _get_slot_roles()
 	var slot_role = slot_roles[slot_idx] if slot_idx < slot_roles.size() else p.position
 	var penalty = p.get_position_penalty(slot_role)
 	var eff_ovr = p.get_effective_overall(slot_role)

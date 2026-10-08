@@ -245,6 +245,41 @@ func _on_btn_main_menu_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 func _init_tactics_ui() -> void:
+	# Sélecteur de Formation (1-2-1, 1-1-2, 2-1-1)
+	var parent_vbox = opt_tactic_style.get_parent()
+	if parent_vbox and parent_vbox.get_node_or_null("OptionFormation") == null:
+		var lbl_form_title = Label.new()
+		lbl_form_title.name = "LabelFormationTitle"
+		lbl_form_title.text = "📐 Formation (Pierre-Feuille-Ciseaux) :"
+		lbl_form_title.add_theme_color_override("font_color", Color("facc15"))
+		lbl_form_title.add_theme_font_size_override("font_size", 12)
+		parent_vbox.add_child(lbl_form_title)
+		parent_vbox.move_child(lbl_form_title, 0)
+
+		var opt_formation = OptionButton.new()
+		opt_formation.name = "OptionFormation"
+		opt_formation.add_item("1-2-1 (Losange • Bat 2-1-1)", Tactics.TacticalFormation.FORMATION_1_2_1)
+		opt_formation.add_item("1-1-2 (Double Attaque • Bat 1-2-1)", Tactics.TacticalFormation.FORMATION_1_1_2)
+		opt_formation.add_item("2-1-1 (Double Défense • Bat 1-1-2)", Tactics.TacticalFormation.FORMATION_2_1_1)
+		opt_formation.selected = player_club.tactical_formation
+		parent_vbox.add_child(opt_formation)
+		parent_vbox.move_child(opt_formation, 1)
+
+		var lbl_form_desc = Label.new()
+		lbl_form_desc.name = "LabelFormationDesc"
+		lbl_form_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lbl_form_desc.add_theme_font_size_override("font_size", 11)
+		lbl_form_desc.add_theme_color_override("font_color", Color("94a3b8"))
+		lbl_form_desc.text = Tactics.get_formation_desc(player_club.tactical_formation)
+		parent_vbox.add_child(lbl_form_desc)
+		parent_vbox.move_child(lbl_form_desc, 2)
+
+		opt_formation.item_selected.connect(func(idx: int):
+			player_club.tactical_formation = idx
+			lbl_form_desc.text = Tactics.get_formation_desc(idx)
+			_render_squad_view()
+		)
+
 	opt_tactic_style.clear()
 	opt_tactic_style.add_item("Équilibré", Tactics.Style.BALANCED)
 	opt_tactic_style.add_item("Attaque Totale", Tactics.Style.ALL_OUT_ATTACK)
@@ -871,7 +906,7 @@ func _on_pitch_player_clicked(p: Player) -> void:
 	_render_squad_view()
 
 func _render_squad_view() -> void:
-	pitch.set_starting_five(player_club.starting_five, selected_swap_player)
+	pitch.set_starting_five(player_club.starting_five, selected_swap_player, player_club.tactical_formation)
 
 	# Consignes dynamiques
 	if selected_swap_player != null:
