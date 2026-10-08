@@ -7,6 +7,7 @@ const os = require('os');
 const HTTP_PORT = 8000;
 const HTTPS_PORT = 8443;
 const WEB_DIR = path.join(__dirname, '..', 'build', 'web');
+const MOBILE_WEB_DIR = path.join(__dirname, '..', 'mobile', 'build', 'web');
 const PFX_PATH = path.join(__dirname, 'cert.pfx');
 
 const MIME_TYPES = {
@@ -37,13 +38,21 @@ function getLocalIp() {
 
 function handleRequest(req, res) {
     let reqPath = decodeURIComponent(req.url.split('?')[0]);
-    if (reqPath === '/' || reqPath === '') {
+    let targetDir = WEB_DIR;
+
+    if (reqPath.startsWith('/mobile')) {
+        targetDir = MOBILE_WEB_DIR;
+        reqPath = reqPath.slice('/mobile'.length);
+        if (reqPath === '' || reqPath === '/') {
+            reqPath = '/index.html';
+        }
+    } else if (reqPath === '/' || reqPath === '') {
         reqPath = '/index.html';
     }
 
-    const filePath = path.join(WEB_DIR, reqPath);
+    const filePath = path.join(targetDir, reqPath);
 
-    if (!filePath.startsWith(WEB_DIR)) {
+    if (!filePath.startsWith(targetDir)) {
         res.writeHead(403);
         res.end('Access Denied');
         return;
@@ -93,22 +102,21 @@ if (fs.existsSync(PFX_PATH)) {
 }
 
 console.log('\n=============================================================');
-console.log('⚽ MERCATO 5 - SERVEUR MOBILE OPÉRATIONNEL (iOS & Android)');
+console.log('⚽ MERCATO 5 - SERVEUR LOCAL (PC & MOBILE)');
 console.log('=============================================================');
-console.log('\n📱 Pour jouer sur votre iPhone / iPad ou téléphone Android :');
+console.log('\n📱 Pour jouer sur votre smartphone (iPhone / Android) :');
 console.log('   1. Connectez votre téléphone au même réseau Wi-Fi que ce PC.');
 console.log('   2. Ouvrez Safari (iPhone) ou Chrome (Android).');
-console.log('   3. Tapez l\'une des adresses suivantes :');
-console.log('\n      👉  http://' + localIp + ':' + HTTP_PORT);
+console.log('   3. Tapez l\'adresse :');
+console.log('\n      👉 VERSION MOBILE PORTRAIT : http://' + localIp + ':' + HTTP_PORT + '/mobile');
+console.log('      👉 VERSION PC PAYSAGE      : http://' + localIp + ':' + HTTP_PORT);
 if (hasHttps) {
-    console.log('      👉  https://' + localIp + ':' + HTTPS_PORT + ' (Recommandé sur iOS Safari)\n');
-    console.log('   ℹ️  Sur HTTPS avec certificat local :');
-    console.log('      • Safari affichera "Ce site web n\'est pas sécurisé" (normal en réseau local).');
-    console.log('      • Touchez "Afficher les détails" en bas, puis "Visiter ce site web".');
+    console.log('\n      🔒 HTTPS MOBILE            : https://' + localIp + ':' + HTTPS_PORT + '/mobile');
 }
-console.log('\n   4. Pour passer en PLEIN ÉCRAN PAYSAGE (sur iPhone) :');
-console.log('      • Touchez le bouton \'Partager\' (carré avec flèche)');
-console.log('      • Choisissez \'Sur l\'écran d\'accueil\'');
-console.log('      • Lancez Mercato 5 comme une vraie application !');
-console.log('\n💻 Sur ce PC : http://localhost:' + HTTP_PORT);
+console.log('\n   4. Pour installer l\'application sur l\'écran d\'accueil :');
+console.log('      • Sur iPhone (Safari) : Bouton \'Partager\' -> \'Sur l\'écran d\'accueil\'');
+console.log('      • Sur Android (Chrome): Menu (3 points) -> \'Installer l\'application\'');
+console.log('\n💻 Sur ce PC :');
+console.log('   • Mobile : http://localhost:' + HTTP_PORT + '/mobile');
+console.log('   • PC     : http://localhost:' + HTTP_PORT);
 console.log('=============================================================\n');

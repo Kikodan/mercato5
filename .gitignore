@@ -12,6 +12,12 @@ bin/godot_console.exe
 *.bak
 scratch/
 
+# Build outputs
+build/pc/
+build/*.zip
+build/*.exe
+mobile/build/
+
 # Operating System files
 .DS_Store
 Thumbs.db
